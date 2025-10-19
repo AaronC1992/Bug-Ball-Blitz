@@ -317,20 +317,39 @@ class Game {
     }
     
     getTowerLevelConfig(level) {
-        // Levels 1-4: Single AI with increasing difficulty
-        if (level === 1) return { difficulty: 'easy', aiCount: 1 };
-        if (level === 2) return { difficulty: 'medium', aiCount: 1 };
-        if (level === 3) return { difficulty: 'hard', aiCount: 1 };
-        if (level === 4) return { difficulty: 'pro', aiCount: 1 };
+        // Levels 1-4: Single AI - Learn the basics
+        if (level === 1) return { difficulty: 'easy', aiCount: 1, name: 'Tutorial Match' };
+        if (level === 2) return { difficulty: 'medium', aiCount: 1, name: 'Rookie Challenge' };
+        if (level === 3) return { difficulty: 'hard', aiCount: 1, name: 'Advanced Opponent' };
+        if (level === 4) return { difficulty: 'pro', aiCount: 1, name: 'Expert Showdown' };
         
-        // Levels 5-8: Two AIs with increasing difficulty
-        if (level === 5) return { difficulty: 'easy', aiCount: 2 };
-        if (level === 6) return { difficulty: 'medium', aiCount: 2 };
-        if (level === 7) return { difficulty: 'hard', aiCount: 2 };
-        if (level === 8) return { difficulty: 'pro', aiCount: 2 };
+        // Levels 5-8: Two AIs - Team coordination needed
+        if (level === 5) return { difficulty: 'easy', aiCount: 2, name: 'Double Trouble Easy' };
+        if (level === 6) return { difficulty: 'medium', aiCount: 2, name: 'Double Trouble Medium' };
+        if (level === 7) return { difficulty: 'hard', aiCount: 2, name: 'Double Trouble Hard' };
+        if (level === 8) return { difficulty: 'pro', aiCount: 2, name: 'Double Trouble Pro' };
         
-        // Beyond level 8 (shouldn't happen, but just in case)
-        return { difficulty: 'pro', aiCount: 2 };
+        // Levels 9-12: Back to 1v1 but harder
+        if (level === 9) return { difficulty: 'easy', aiCount: 1, name: 'Speed Trial Easy' };
+        if (level === 10) return { difficulty: 'medium', aiCount: 1, name: 'Speed Trial Medium' };
+        if (level === 11) return { difficulty: 'hard', aiCount: 1, name: 'Speed Trial Hard' };
+        if (level === 12) return { difficulty: 'pro', aiCount: 1, name: 'Speed Trial Pro' };
+        
+        // Levels 13-16: 2v1 again with more challenge
+        if (level === 13) return { difficulty: 'easy', aiCount: 2, name: 'Team Assault Easy' };
+        if (level === 14) return { difficulty: 'medium', aiCount: 2, name: 'Team Assault Medium' };
+        if (level === 15) return { difficulty: 'hard', aiCount: 2, name: 'Team Assault Hard' };
+        if (level === 16) return { difficulty: 'pro', aiCount: 2, name: 'Team Assault Pro' };
+        
+        // Levels 17-20: Elite challenges
+        if (level === 17) return { difficulty: 'hard', aiCount: 1, name: 'Elite Solo Hard' };
+        if (level === 18) return { difficulty: 'pro', aiCount: 1, name: 'Elite Solo Pro' };
+        if (level === 19) return { difficulty: 'hard', aiCount: 2, name: 'Elite Team Hard' };
+        if (level === 20) return { difficulty: 'pro', aiCount: 2, name: 'Final Boss' };
+        
+        // Beyond level 20 - Ultimate challenges repeat
+        const cycleLevel = ((level - 21) % 4) + 17;
+        return this.getTowerLevelConfig(cycleLevel);
     }
     
     showDifficultySelection() {
@@ -455,6 +474,16 @@ class Game {
         
         this.updateScoreDisplay();
         this.updateTimerDisplay();
+        
+        // Show level info if in tower mode
+        const levelInfoEl = document.getElementById('levelInfo');
+        if (this.gameMode === 'tower') {
+            const config = this.getTowerLevelConfig(this.towerLevel);
+            levelInfoEl.textContent = `Level ${this.towerLevel}: ${config.name}`;
+            levelInfoEl.style.display = 'block';
+        } else {
+            levelInfoEl.style.display = 'none';
+        }
         
         // Start with countdown
         this.gameState = 'countdown';
@@ -857,7 +886,14 @@ class Game {
             titleEl.textContent = 'Draw!';
             titleEl.style.color = '#ffa500';
         } else if (playerWon) {
-            titleEl.textContent = 'Victory!';
+            // Show level completion if in tower mode
+            if (this.gameMode === 'tower') {
+                const config = this.getTowerLevelConfig(this.towerLevel);
+                titleEl.textContent = `🏆 Level ${this.towerLevel} Complete! 🏆`;
+                titleEl.style.fontSize = '32px';
+            } else {
+                titleEl.textContent = 'Victory!';
+            }
             titleEl.style.color = '#7ed321';
         } else {
             titleEl.textContent = 'Defeat';
@@ -871,9 +907,9 @@ class Game {
             </div>
         `;
         
-        // Hide continue button if not tower mode or if lost
+        // Show continue button if tower mode, won, and not at final level (20)
         const continueBtn = document.getElementById('continueBtn');
-        if (this.gameMode === 'tower' && playerWon && this.towerLevel < 8) {
+        if (this.gameMode === 'tower' && playerWon && this.towerLevel < 20) {
             continueBtn.style.display = 'block';
         } else {
             continueBtn.style.display = 'none';
@@ -885,13 +921,20 @@ class Game {
     showTowerVictory() {
         const statsEl = document.getElementById('towerVictoryStats');
         statsEl.innerHTML = `
+            <p style="font-size: 20px; margin-bottom: 20px; color: #FFD700;">
+                🎉 Congratulations! You've completed all 20 Tower Levels! 🎉
+            </p>
             <div class="stat-row">
-                <span>Wins:</span>
+                <span>Total Wins:</span>
                 <span style="color: #7ed321;">${this.ui.currentProfile.stats.wins}</span>
             </div>
             <div class="stat-row">
-                <span>Goals Scored:</span>
+                <span>Total Goals:</span>
                 <span style="color: #7ed321;">${this.ui.currentProfile.stats.goalsScored}</span>
+            </div>
+            <div class="stat-row">
+                <span>Tower Mastery:</span>
+                <span style="color: #FFD700;">CHAMPION 👑</span>
             </div>
         `;
         
