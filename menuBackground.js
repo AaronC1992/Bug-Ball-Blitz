@@ -318,15 +318,13 @@ export class MenuBackground {
         this.drawGoals();
         this.ctx.globalAlpha = 1;
         
-        // Draw ball
+        // Draw ball (full color)
         this.drawBall();
         
-        // Draw players with slight transparency
-        this.ctx.globalAlpha = 0.7;
+        // Draw players (full color)
         this.players.forEach(player => {
             this.drawPlayer(player);
         });
-        this.ctx.globalAlpha = 1;
         
         // Draw celebration if active
         if (this.celebrationActive && this.celebrationPlayer) {
@@ -353,7 +351,6 @@ export class MenuBackground {
     
     drawBall() {
         this.ctx.save();
-        this.ctx.globalAlpha = 0.7;
         this.ctx.font = '30px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
