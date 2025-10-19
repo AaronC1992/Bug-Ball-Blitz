@@ -25,10 +25,19 @@ export class MenuBackground {
         this.celebrationPlayer = null;
         this.celebrationEmojis = ['🎉', '⚡', '💪', '🔥', '⭐', '🏆', '✨', '🎊', '🌟', '💥'];
         
+        // Interactive ball dragging
+        this.isDraggingBall = false;
+        this.dragStartTime = 0;
+        this.lastMouseX = 0;
+        this.lastMouseY = 0;
+        this.mouseX = 0;
+        this.mouseY = 0;
+        
         console.log('MenuBackground constructor - canvas dimensions:', canvas.width, 'x', canvas.height);
         
         if (canvas.width > 0 && canvas.height > 0) {
             this.setupMatch();
+            this.setupInteraction();
         } else {
             console.warn('Canvas has zero dimensions, skipping setup');
         }
@@ -209,6 +218,77 @@ export class MenuBackground {
         this.ais.push(new AI(difficulty, player, this.ball, this.physics, 'right'));
     }
     
+    setupInteraction() {
+        // Mouse/touch events for ball dragging
+        const getEventPos = (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        };
+        
+        const handleStart = (e) => {
+            const pos = getEventPos(e);
+            this.mouseX = pos.x;
+            this.mouseY = pos.y;
+            
+            // Check if clicking/touching the ball
+            if (this.ball) {
+                const distance = Math.hypot(this.mouseX - this.ball.x, this.mouseY - this.ball.y);
+                if (distance < 30) { // Ball radius
+                    this.isDraggingBall = true;
+                    this.dragStartTime = Date.now();
+                    this.lastMouseX = this.mouseX;
+                    this.lastMouseY = this.mouseY;
+                    e.preventDefault();
+                }
+            }
+        };
+        
+        const handleMove = (e) => {
+            const pos = getEventPos(e);
+            this.lastMouseX = this.mouseX;
+            this.lastMouseY = this.mouseY;
+            this.mouseX = pos.x;
+            this.mouseY = pos.y;
+            
+            if (this.isDraggingBall) {
+                e.preventDefault();
+            }
+        };
+        
+        const handleEnd = (e) => {
+            if (this.isDraggingBall) {
+                // Calculate throw velocity based on drag speed
+                const dragDuration = (Date.now() - this.dragStartTime) / 1000;
+                const velocityX = (this.mouseX - this.lastMouseX) / Math.max(dragDuration, 0.016);
+                const velocityY = (this.mouseY - this.lastMouseY) / Math.max(dragDuration, 0.016);
+                
+                // Apply velocity to ball (with some dampening)
+                this.ball.vx = velocityX * 0.5;
+                this.ball.vy = velocityY * 0.5;
+                
+                this.isDraggingBall = false;
+                e.preventDefault();
+            }
+        };
+        
+        // Mouse events
+        this.canvas.addEventListener('mousedown', handleStart);
+        this.canvas.addEventListener('mousemove', handleMove);
+        this.canvas.addEventListener('mouseup', handleEnd);
+        this.canvas.addEventListener('mouseleave', handleEnd);
+        
+        // Touch events
+        this.canvas.addEventListener('touchstart', handleStart, { passive: false });
+        this.canvas.addEventListener('touchmove', handleMove, { passive: false });
+        this.canvas.addEventListener('touchend', handleEnd, { passive: false });
+        this.canvas.addEventListener('touchcancel', handleEnd, { passive: false });
+    }
+    
     start() {
         if (!this.physics || !this.arena) {
             console.error('Cannot start - physics or arena not initialized');
@@ -243,6 +323,15 @@ export class MenuBackground {
     }
     
     update() {
+        // Handle ball dragging
+        if (this.isDraggingBall && this.ball) {
+            this.ball.x = this.mouseX;
+            this.ball.y = this.mouseY;
+            this.ball.vx = 0;
+            this.ball.vy = 0;
+            return; // Skip normal physics when dragging
+        }
+        
         // Update celebration if active
         if (this.celebrationActive) {
             this.celebrationFrames++;
