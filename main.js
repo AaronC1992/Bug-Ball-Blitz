@@ -62,6 +62,7 @@ class Game {
         
         // Settings
         this.touchControlsEnabled = this.loadTouchControlsPreference();
+        this.settingsSource = 'game'; // Track where settings was opened from
         
         // Animation
         this.animationId = null;
@@ -142,7 +143,11 @@ class Game {
         
         // Settings menu
         document.getElementById('settingsBtn').addEventListener('click', () => {
-            this.openSettings();
+            this.openSettings('game');
+        });
+        
+        document.getElementById('pauseSettingsBtn').addEventListener('click', () => {
+            this.openSettings('pause');
         });
         
         document.getElementById('closeSettingsBtn').addEventListener('click', () => {
@@ -903,9 +908,15 @@ class Game {
         this.startMatch();
     }
     
-    openSettings() {
-        if (this.gameState === 'playing') {
+    openSettings(source = 'game') {
+        // Store where settings was opened from
+        this.settingsSource = source;
+        
+        if (source === 'game' && this.gameState === 'playing') {
             this.pauseGame();
+        } else if (source === 'pause') {
+            // Hide pause menu while showing settings
+            this.ui.hideOverlay('pauseMenu');
         }
         
         // Update toggle to reflect current preference
@@ -919,8 +930,12 @@ class Game {
         // Update controls visibility based on preference
         this.updateTouchControlsVisibility();
         
-        // Resume game if it was paused only for settings
-        if (this.gameState === 'paused') {
+        // Return to appropriate state based on where settings was opened from
+        if (this.settingsSource === 'pause') {
+            // Return to pause menu
+            this.ui.showOverlay('pauseMenu');
+        } else if (this.settingsSource === 'game' && this.gameState === 'paused') {
+            // Resume game if it was paused only for settings
             this.resumeGame();
         }
     }
