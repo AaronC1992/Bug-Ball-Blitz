@@ -114,7 +114,8 @@ export class MenuBackground {
         this.players.push(player);
         
         const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
-        this.ais.push(new AI(player, this.ball, 'left', difficulty));
+        // AI constructor: (difficulty, player, ball, physics, side)
+        this.ais.push(new AI(difficulty, player, this.ball, this.physics, 'left'));
     }
     
     setupPlayer1b(side, bugType) {
@@ -141,7 +142,8 @@ export class MenuBackground {
         this.players.push(player);
         
         const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
-        this.ais.push(new AI(player, this.ball, 'left', difficulty));
+        // AI constructor: (difficulty, player, ball, physics, side)
+        this.ais.push(new AI(difficulty, player, this.ball, this.physics, 'left'));
     }
     
     setupPlayer2(side, bugType) {
@@ -168,8 +170,8 @@ export class MenuBackground {
         this.players.push(player);
         
         const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
-        // Use regular AI for simplicity in background animation
-        this.ais.push(new AI(player, this.ball, side, difficulty));
+        // AI constructor: (difficulty, player, ball, physics, side)
+        this.ais.push(new AI(difficulty, player, this.ball, this.physics, side));
     }
     
     setupPlayer3(side, bugType) {
@@ -196,7 +198,8 @@ export class MenuBackground {
         this.players.push(player);
         
         const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
-        this.ais.push(new AI(player, this.ball, 'right', difficulty));
+        // AI constructor: (difficulty, player, ball, physics, side)
+        this.ais.push(new AI(difficulty, player, this.ball, this.physics, 'right'));
     }
     
     start() {
