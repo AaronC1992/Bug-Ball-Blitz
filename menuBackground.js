@@ -17,53 +17,74 @@ export class MenuBackground {
         this.animationId = null;
         this.isRunning = false;
         
-        this.setupMatch();
+        console.log('MenuBackground constructor - canvas dimensions:', canvas.width, 'x', canvas.height);
+        
+        if (canvas.width > 0 && canvas.height > 0) {
+            this.setupMatch();
+        } else {
+            console.warn('Canvas has zero dimensions, skipping setup');
+        }
     }
     
     setupMatch() {
-        // Randomly select arena
-        const arenaIds = ['grassField', 'desertDunes', 'snowyPeak', 'spaceDome', 'neonCity', 
-                         'enchantedForest', 'volcanoArena', 'underwaterCave', 'cloudPalace', 
-                         'candyLand', 'mysticTemple', 'arcticBase', 'jungleCourt', 'cyberpunkAlley', 'hauntedMansion'];
-        const randomArena = arenaIds[Math.floor(Math.random() * arenaIds.length)];
-        this.arena = getArenaById(randomArena);
+        console.log('Setting up match with canvas:', this.canvas.width, 'x', this.canvas.height);
         
-        // Randomly select match type: 1v1, 1v2, or 2v2
-        const matchTypes = ['1v1', '1v2', '2v2'];
-        const matchType = matchTypes[Math.floor(Math.random() * matchTypes.length)];
+        if (this.canvas.width === 0 || this.canvas.height === 0) {
+            console.error('Cannot setup match - canvas has zero dimensions');
+            return;
+        }
         
-        // Random bug types
-        const bugTypes = ['ladybug', 'bee', 'butterfly', 'ant', 'spider', 'grasshopper', 'beetle', 'dragonfly'];
-        
-        // Initialize physics
-        this.physics = new Physics(this.canvas.width, this.canvas.height);
-        
-        // Setup ball
-        this.ball = {
-            x: this.canvas.width / 2,
-            y: this.canvas.height * 0.5,
-            vx: 0,
-            vy: 0,
-            radius: 15
-        };
-        
-        // Clear previous players and AIs
-        this.players = [];
-        this.ais = [];
-        
-        // Setup players based on match type
-        if (matchType === '1v1') {
-            this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
-            this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
-        } else if (matchType === '1v2') {
-            this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
-            this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
-            this.setupPlayer3('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
-        } else { // 2v2
-            this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
-            this.setupPlayer1b('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
-            this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
-            this.setupPlayer3('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+        try {
+            // Randomly select arena
+            const arenaIds = ['grassField', 'desertDunes', 'snowyPeak', 'spaceDome', 'neonCity', 
+                             'enchantedForest', 'volcanoArena', 'underwaterCave', 'cloudPalace', 
+                             'candyLand', 'mysticTemple', 'arcticBase', 'jungleCourt', 'cyberpunkAlley', 'hauntedMansion'];
+            const randomArena = arenaIds[Math.floor(Math.random() * arenaIds.length)];
+            this.arena = getArenaById(randomArena);
+            console.log('Selected arena:', randomArena);
+            
+            // Randomly select match type: 1v1, 1v2, or 2v2
+            const matchTypes = ['1v1', '1v2', '2v2'];
+            const matchType = matchTypes[Math.floor(Math.random() * matchTypes.length)];
+            console.log('Selected match type:', matchType);
+            
+            // Random bug types
+            const bugTypes = ['ladybug', 'bee', 'butterfly', 'ant', 'spider', 'grasshopper', 'beetle', 'dragonfly'];
+            
+            // Initialize physics
+            this.physics = new Physics(this.canvas.width, this.canvas.height);
+            
+            // Setup ball
+            this.ball = {
+                x: this.canvas.width / 2,
+                y: this.canvas.height * 0.5,
+                vx: 0,
+                vy: 0,
+                radius: 15
+            };
+            
+            // Clear previous players and AIs
+            this.players = [];
+            this.ais = [];
+            
+            // Setup players based on match type
+            if (matchType === '1v1') {
+                this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+                this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            } else if (matchType === '1v2') {
+                this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+                this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+                this.setupPlayer3('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            } else { // 2v2
+                this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+                this.setupPlayer1b('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+                this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+                this.setupPlayer3('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            }
+            
+            console.log('Match setup complete - players:', this.players.length, 'AIs:', this.ais.length);
+        } catch (error) {
+            console.error('Error setting up match:', error);
         }
     }
     
@@ -162,11 +183,17 @@ export class MenuBackground {
     }
     
     start() {
+        if (!this.physics || !this.arena) {
+            console.error('Cannot start - physics or arena not initialized');
+            return;
+        }
+        console.log('Starting menu background animation');
         this.isRunning = true;
         this.animate();
     }
     
     stop() {
+        console.log('Stopping menu background animation');
         this.isRunning = false;
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);

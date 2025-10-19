@@ -102,15 +102,29 @@ class Game {
         window.addEventListener('resize', () => this.resizeCanvas());
         
         // Initialize menu background
-        this.resizeMenuBackgroundCanvas();
-        this.menuBackground = new MenuBackground(this.menuBackgroundCanvas, this.menuBackgroundCtx);
-        this.menuBackground.start();
+        try {
+            this.resizeMenuBackgroundCanvas();
+            if (this.menuBackgroundCanvas && this.menuBackgroundCtx) {
+                this.menuBackground = new MenuBackground(this.menuBackgroundCanvas, this.menuBackgroundCtx);
+                this.menuBackground.start();
+                console.log('Menu background initialized successfully');
+            } else {
+                console.error('Menu background canvas or context not found');
+            }
+        } catch (error) {
+            console.error('Error initializing menu background:', error);
+        }
     }
     
     resizeMenuBackgroundCanvas() {
         const titleScreen = document.getElementById('titleScreen');
-        this.menuBackgroundCanvas.width = titleScreen.clientWidth;
-        this.menuBackgroundCanvas.height = titleScreen.clientHeight;
+        if (titleScreen) {
+            this.menuBackgroundCanvas.width = titleScreen.clientWidth;
+            this.menuBackgroundCanvas.height = titleScreen.clientHeight;
+            console.log('Menu background canvas resized:', this.menuBackgroundCanvas.width, 'x', this.menuBackgroundCanvas.height);
+        } else {
+            console.error('Title screen element not found');
+        }
     }
     
     resizeCanvas() {
