@@ -33,8 +33,6 @@ export class MenuBackground {
         this.mouseX = 0;
         this.mouseY = 0;
         
-        console.log('MenuBackground constructor - canvas dimensions:', canvas.width, 'x', canvas.height);
-        
         if (canvas.width > 0 && canvas.height > 0) {
             this.setupMatch();
             this.setupInteraction();
@@ -44,8 +42,6 @@ export class MenuBackground {
     }
     
     setupMatch() {
-        console.log('Setting up match with canvas:', this.canvas.width, 'x', this.canvas.height);
-        
         if (this.canvas.width === 0 || this.canvas.height === 0) {
             console.error('Cannot setup match - canvas has zero dimensions');
             return;
@@ -59,12 +55,10 @@ export class MenuBackground {
                              'jungleVines', 'crystalCavern'];
             const randomArena = arenaIds[Math.floor(Math.random() * arenaIds.length)];
             this.arena = getArenaById(randomArena);
-            console.log('Selected arena:', randomArena);
             
             // Randomly select match type: 1v1, 1v2, or 2v2
             const matchTypes = ['1v1', '1v2', '2v2'];
             const matchType = matchTypes[Math.floor(Math.random() * matchTypes.length)];
-            console.log('Selected match type:', matchType);
             
             // Random bug types - use correct bug IDs
             const bugTypes = ['stagBeetle', 'grasshopper', 'ladybug', 'ant', 'spider'];
@@ -100,8 +94,6 @@ export class MenuBackground {
                 this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
                 this.setupPlayer3('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
             }
-            
-            console.log('Match setup complete - players:', this.players.length, 'AIs:', this.ais.length);
         } catch (error) {
             console.error('Error setting up match:', error);
         }
@@ -295,13 +287,11 @@ export class MenuBackground {
             console.error('Cannot start - physics or arena not initialized');
             return;
         }
-        console.log('Starting menu background animation');
         this.isRunning = true;
         this.animate();
     }
     
     stop() {
-        console.log('Stopping menu background animation');
         this.isRunning = false;
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
@@ -313,9 +303,6 @@ export class MenuBackground {
         if (!this.isRunning) return;
         
         this.frameCount++;
-        if (this.frameCount % 60 === 0) {
-            console.log('Menu background animating - frame:', this.frameCount);
-        }
         
         this.update();
         this.render();

@@ -132,7 +132,6 @@ class Game {
                         this.menuBackground.setupMatch();
                     }
                     this.menuBackground.start();
-                    console.log('Menu background initialized successfully');
                 } else {
                     console.error('Menu background canvas has zero dimensions:', this.menuBackgroundCanvas.width, 'x', this.menuBackgroundCanvas.height);
                 }
@@ -155,7 +154,6 @@ class Game {
                         this.mainMenuBackground.setupMatch();
                     }
                     this.mainMenuBackground.start();
-                    console.log('Main menu background initialized successfully');
                 } else {
                     console.error('Main menu background canvas has zero dimensions:', this.mainMenuBackgroundCanvas.width, 'x', this.mainMenuBackgroundCanvas.height);
                 }
@@ -172,7 +170,6 @@ class Game {
         if (titleScreen) {
             this.menuBackgroundCanvas.width = titleScreen.clientWidth;
             this.menuBackgroundCanvas.height = titleScreen.clientHeight;
-            console.log('Menu background canvas resized:', this.menuBackgroundCanvas.width, 'x', this.menuBackgroundCanvas.height);
         } else {
             console.error('Title screen element not found');
         }
@@ -183,7 +180,6 @@ class Game {
         if (mainMenu && this.mainMenuBackgroundCanvas) {
             this.mainMenuBackgroundCanvas.width = mainMenu.clientWidth;
             this.mainMenuBackgroundCanvas.height = mainMenu.clientHeight;
-            console.log('Main menu background canvas resized:', this.mainMenuBackgroundCanvas.width, 'x', this.mainMenuBackgroundCanvas.height);
         } else {
             console.error('Main menu element not found');
         }
@@ -1194,19 +1190,14 @@ class Game {
     }
     
     setTouchControlsPreference(enabled) {
-        console.log('[Settings] Touch controls toggled:', enabled);
-        console.log('[Settings] Current game state:', this.gameState);
         this.touchControlsEnabled = enabled;
         localStorage.setItem('touchControlsEnabled', enabled.toString());
         this.updateTouchControlsVisibility();
     }
     
     updateTouchControlsVisibility() {
-        console.log('[Touch Controls] Update called, game state:', this.gameState);
-        
         // Allow updating during gameplay (playing, countdown, or paused)
         if (this.gameState !== 'playing' && this.gameState !== 'countdown' && this.gameState !== 'paused') {
-            console.log('[Touch Controls] Not in active game state, skipping');
             return;
         }
         
@@ -1219,21 +1210,14 @@ class Game {
             ? this.touchControlsEnabled 
             : (this.ui.isMobile || this.ui.isTablet);
         
-        console.log('[Touch Controls] Should show:', shouldShow);
-        console.log('[Touch Controls] touchControlsEnabled:', this.touchControlsEnabled);
-        console.log('[Touch Controls] isMobile:', this.ui.isMobile, 'isTablet:', this.ui.isTablet);
-        
         if (shouldShow) {
             mobileControls.classList.add('active');
-            console.log('[Touch Controls] Added active class to player 1 controls');
             if (this.gameMode === 'multiplayer' && (this.ui.isTablet || this.touchControlsEnabled)) {
                 mobileControlsP2.classList.add('active');
-                console.log('[Touch Controls] Added active class to player 2 controls');
             }
         } else {
             mobileControls.classList.remove('active');
             mobileControlsP2.classList.remove('active');
-            console.log('[Touch Controls] Removed active class from controls');
         }
     }
     
