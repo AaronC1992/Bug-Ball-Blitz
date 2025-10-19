@@ -602,6 +602,15 @@ input[type="text"]:focus {
     margin-bottom: 20px;
 }
 
+/* Active state for touch controls (works on all devices when manually enabled) */
+.mobile-controls.active {
+    display: block !important;
+}
+
+.mobile-controls-p2.active {
+    display: block !important;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     #gameContainer {
