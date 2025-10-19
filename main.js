@@ -19,10 +19,7 @@ class Game {
         this.difficulty = 'medium';
         this.towerLevel = 1;
         
-        // Match settings - Simple Timer
-        this.matchDuration = 120; // 2 minutes in seconds
-        this.matchTimer = 120; // Current time remaining
-        this.timerPaused = true; // Timer starts paused during countdown
+        // Match settings
         this.countdownValue = 5; // Countdown before match starts
         this.countdownStartTime = 0;
         
@@ -432,14 +429,11 @@ class Game {
         this.score1 = 0;
         this.score2 = 0;
         
-        // Reset scores and timer for new match
+        // Reset scores for new match
         this.score1 = 0;
         this.score2 = 0;
-        this.matchTimer = this.matchDuration;
-        this.timerPaused = true;
         
         this.updateScoreDisplay();
-        this.updateTimerDisplay();
         
         // Start with countdown
         this.gameState = 'countdown';
@@ -472,7 +466,6 @@ class Game {
         // Start/resume match when countdown finishes
         if (this.countdownValue <= 0) {
             this.gameState = 'playing';
-            this.timerPaused = false; // Start/resume the timer
         }
     }
     
@@ -529,19 +522,6 @@ class Game {
     }
     
     update() {
-        // Simple timer - counts down 1 second per 60 frames (assuming 60 FPS)
-        if (!this.timerPaused) {
-            this.matchTimer -= 1/60; // Decrease by 1/60th of a second each frame
-            this.updateTimerDisplay();
-            
-            // Check if time is up
-            if (this.matchTimer <= 0) {
-                this.matchTimer = 0;
-                this.endMatch();
-                return;
-            }
-        }
-        
         // Update player 1 input
         this.updatePlayer1Input();
         
@@ -754,8 +734,7 @@ class Game {
         if (this.score1 >= 5 || this.score2 >= 5) {
             this.endMatch();
         } else {
-            // Pause timer and start countdown after goal
-            this.timerPaused = true;
+            // Start countdown after goal
             this.gameState = 'countdown';
             this.countdownValue = 3;
             this.initialCountdownValue = 3;
@@ -766,13 +745,6 @@ class Game {
     updateScoreDisplay() {
         document.getElementById('player1Score').textContent = this.score1;
         document.getElementById('player2Score').textContent = this.score2;
-    }
-    
-    updateTimerDisplay() {
-        const minutes = Math.floor(this.matchTimer / 60);
-        const seconds = Math.floor(this.matchTimer % 60);
-        document.getElementById('timerDisplay').textContent = 
-            `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
     
     endMatch() {
@@ -874,7 +846,6 @@ class Game {
     pauseGame() {
         if (this.gameState === 'playing') {
             this.gameState = 'paused';
-            this.timerPaused = true;
             cancelAnimationFrame(this.animationId);
             this.ui.showOverlay('pauseMenu');
         }
@@ -883,7 +854,6 @@ class Game {
     resumeGame() {
         if (this.gameState === 'paused') {
             this.gameState = 'playing';
-            this.timerPaused = false;
             this.ui.hideOverlay('pauseMenu');
             this.gameLoop();
         }
