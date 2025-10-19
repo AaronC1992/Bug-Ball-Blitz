@@ -414,15 +414,10 @@ export class MenuBackground {
             const x = player.x + Math.cos(angle + progress * Math.PI * 2) * radius;
             const y = player.y - player.height / 2 + Math.sin(angle + progress * Math.PI * 2) * radius;
             
-            // Fade in and out
-            const fadeProgress = progress < 0.2 ? progress / 0.2 : progress > 0.8 ? (1 - progress) / 0.2 : 1;
-            this.ctx.globalAlpha = fadeProgress * 0.9;
-            
             this.ctx.fillText(emoji, x, y);
         });
         
-        // Draw "GOAL!" text
-        this.ctx.globalAlpha = progress < 0.3 ? progress / 0.3 : progress > 0.7 ? (1 - progress) / 0.3 : 1;
+        // Draw "GOAL!" text (full opacity)
         this.ctx.font = 'bold 40px Arial';
         this.ctx.fillStyle = '#FFD700';
         this.ctx.strokeStyle = '#000000';
