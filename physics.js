@@ -154,9 +154,22 @@ export class Physics {
         if (distance < ball.radius) {
             // Collision detected - ball is overlapping player
             
+            // Determine which part of the player hit the ball
+            const ballRelativeX = ball.x - player.x; // Negative = left side, Positive = right side
+            const ballRelativeY = ball.y - (player.y - player.height / 2); // Negative = above center
+            
+            // Calculate contact angle from player center to ball
+            const contactAngle = Math.atan2(ballRelativeY, ballRelativeX);
+            
             // Determine collision normal (direction to push ball)
             let normalX = dx;
             let normalY = dy;
+            
+            // Detect hit location (top, side, bottom)
+            const hitTop = ball.y < playerTop + player.height * 0.3;
+            const hitBottom = ball.y > playerBottom - player.height * 0.2;
+            const hitLeftSide = ball.x < player.x && !hitTop && !hitBottom;
+            const hitRightSide = ball.x > player.x && !hitTop && !hitBottom;
             
             // If ball center is inside rectangle, use position to determine push direction
             if (ball.x >= playerLeft && ball.x <= playerRight && 
@@ -200,8 +213,55 @@ export class Physics {
             const playerVelocity = Math.sqrt(player.vx * player.vx + player.vy * player.vy);
             const totalPower = kickPower + playerVelocity * 0.5;
             
-            ball.vx = normalX * totalPower + player.vx * 0.5;
-            ball.vy = normalY * totalPower + player.vy * 0.5;
+            // IMPROVED DIRECTIONAL CONTROL
+            // Factor in player's facing direction and movement
+            const playerFacingInfluence = player.facing * 0.3; // -1 for left, +1 for right
+            const playerMovingLeft = player.moveLeft ? -1 : 0;
+            const playerMovingRight = player.moveRight ? 1 : 0;
+            const movementDirection = playerMovingLeft + playerMovingRight;
+            
+            // Base ball velocity on contact angle and normal
+            let ballDirectionX = normalX;
+            let ballDirectionY = normalY;
+            
+            // Apply directional control based on hit location
+            if (hitTop) {
+                // Top hit - header! Use contact angle more, add facing influence
+                ballDirectionX = Math.cos(contactAngle);
+                ballDirectionY = Math.sin(contactAngle);
+                // Add player facing/movement to steer the header
+                ballDirectionX += (movementDirection * 0.5 + playerFacingInfluence);
+            } else if (hitLeftSide || hitRightSide) {
+                // Side hit - strong directional control
+                // Ball goes in direction player is facing/moving
+                const sideDirection = hitLeftSide ? -1 : 1;
+                ballDirectionX = sideDirection;
+                // Add movement influence for steering
+                if (movementDirection !== 0) {
+                    ballDirectionX = movementDirection; // Override with movement direction
+                }
+                ballDirectionY = normalY * 0.7; // Reduce vertical component for side hits
+            } else if (hitBottom) {
+                // Bottom/foot hit - most control
+                // Strong horizontal influence from movement/facing
+                if (movementDirection !== 0) {
+                    ballDirectionX = movementDirection * 1.2; // Strong horizontal component
+                } else {
+                    ballDirectionX = normalX + playerFacingInfluence;
+                }
+                ballDirectionY = Math.min(normalY, -0.3); // Slight upward angle
+            }
+            
+            // Normalize direction vector
+            const dirLength = Math.sqrt(ballDirectionX * ballDirectionX + ballDirectionY * ballDirectionY);
+            if (dirLength > 0) {
+                ballDirectionX /= dirLength;
+                ballDirectionY /= dirLength;
+            }
+            
+            // Apply velocity with improved direction
+            ball.vx = ballDirectionX * totalPower + player.vx * 0.3;
+            ball.vy = ballDirectionY * totalPower + player.vy * 0.3;
             
             // Check if player landed on top of ball (collision from above)
             const isLandingOnBall = normalY < -0.5 && player.vy > 0;
