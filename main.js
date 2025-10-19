@@ -22,7 +22,7 @@ class Game {
         // Match settings
         this.matchTime = 120; // 2 minutes
         this.timeRemaining = this.matchTime;
-        this.timeStarted = 0;
+        this.timeStarted = null;
         this.countdownValue = 5; // Countdown before match starts
         this.countdownStartTime = 0;
         
@@ -534,15 +534,17 @@ class Game {
     }
     
     update() {
-        // Update timer
-        const elapsed = (Date.now() - this.timeStarted) / 1000;
-        this.timeRemaining = Math.max(0, this.matchTime - elapsed);
-        this.updateTimerDisplay();
-        
-        // Check time up
-        if (this.timeRemaining <= 0) {
-            this.endMatch();
-            return;
+        // Update timer (only if match has started)
+        if (this.timeStarted !== null) {
+            const elapsed = (Date.now() - this.timeStarted) / 1000;
+            this.timeRemaining = Math.max(0, this.matchTime - elapsed);
+            this.updateTimerDisplay();
+            
+            // Check time up
+            if (this.timeRemaining <= 0) {
+                this.endMatch();
+                return;
+            }
         }
         
         // Update player 1 input
