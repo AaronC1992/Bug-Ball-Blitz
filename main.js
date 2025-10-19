@@ -357,10 +357,6 @@ class Game {
             }
         }
         
-        // Reset timer completely
-        this.timeStarted = null;
-        this.timeRemaining = this.matchTime;
-        
         this.resizeCanvas();
         this.physics = new Physics(this.canvas.width, this.canvas.height);
         
@@ -432,12 +428,19 @@ class Game {
             }
         }
         
-        // Reset scores and time
+        // Reset scores and time - CRITICAL RESET SECTION
         this.score1 = 0;
         this.score2 = 0;
+        
+        // Complete timer reset for new match
+        this.timeStarted = null;
         this.timeRemaining = this.matchTime;
         
+        // Verify timer reset
+        console.log('[Match Start] Timer Reset - timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining);
+        
         this.updateScoreDisplay();
+        this.updateTimerDisplay();
         
         // Start with countdown
         this.gameState = 'countdown';
@@ -470,13 +473,15 @@ class Game {
         // Start/resume match when countdown finishes
         if (this.countdownValue <= 0) {
             this.gameState = 'playing';
-            // Only set timeStarted if this is the initial countdown
+            // Only set timeStarted if this is the initial countdown (5 seconds)
             if (this.timeStarted === null) {
                 this.timeStarted = Date.now();
+                console.log('[Countdown Complete] Timer Started - timeStarted:', this.timeStarted);
             } else {
-                // Resume timer after goal
+                // Resume timer after goal (3 second countdown)
                 const pausedTime = Date.now() - this.countdownStartTime;
                 this.timeStarted += pausedTime;
+                console.log('[Goal Resume] Timer Resumed - timeStarted adjusted by:', pausedTime);
             }
         }
     }
