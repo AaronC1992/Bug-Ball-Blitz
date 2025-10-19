@@ -155,6 +155,7 @@ class Game {
         });
         
         document.getElementById('touchControlsToggle').addEventListener('change', (e) => {
+            e.stopPropagation(); // Prevent event bubbling
             this.setTouchControlsPreference(e.target.checked);
         });
         
@@ -920,11 +921,20 @@ class Game {
         }
         
         // Update toggle to reflect current preference
-        document.getElementById('touchControlsToggle').checked = this.touchControlsEnabled;
+        // If null (auto mode), check if auto-detected device would show controls
+        const shouldBeChecked = this.touchControlsEnabled !== null 
+            ? this.touchControlsEnabled 
+            : (this.ui.isMobile || this.ui.isTablet);
+        document.getElementById('touchControlsToggle').checked = shouldBeChecked;
         this.ui.showOverlay('settingsMenu');
     }
     
     closeSettings() {
+        // Blur any focused element (like the toggle switch) to prevent accidental re-clicks
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+        
         this.ui.hideOverlay('settingsMenu');
         
         // Update controls visibility based on preference
