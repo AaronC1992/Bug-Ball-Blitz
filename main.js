@@ -375,9 +375,6 @@ class Game {
     startMatch() {
         this.ui.showScreen('gameScreen');
         
-        // Show touch controls based on user preference or auto-detection
-        this.updateTouchControlsVisibility();
-        
         this.resizeCanvas();
         this.physics = new Physics(this.canvas.width, this.canvas.height);
         
@@ -463,6 +460,10 @@ class Game {
         this.countdownValue = 5;
         this.initialCountdownValue = 5;
         this.countdownStartTime = Date.now();
+        
+        // Show touch controls based on user preference or auto-detection (after state is set)
+        this.updateTouchControlsVisibility();
+        
         this.gameLoop();
     }
     
