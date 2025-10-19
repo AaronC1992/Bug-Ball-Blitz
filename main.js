@@ -924,14 +924,21 @@ class Game {
     }
     
     setTouchControlsPreference(enabled) {
+        console.log('[Settings] Touch controls toggled:', enabled);
+        console.log('[Settings] Current game state:', this.gameState);
         this.touchControlsEnabled = enabled;
         localStorage.setItem('touchControlsEnabled', enabled.toString());
         this.updateTouchControlsVisibility();
     }
     
     updateTouchControlsVisibility() {
+        console.log('[Touch Controls] Update called, game state:', this.gameState);
+        
         // Allow updating during gameplay (playing, countdown, or paused)
-        if (this.gameState !== 'playing' && this.gameState !== 'countdown' && this.gameState !== 'paused') return;
+        if (this.gameState !== 'playing' && this.gameState !== 'countdown' && this.gameState !== 'paused') {
+            console.log('[Touch Controls] Not in active game state, skipping');
+            return;
+        }
         
         const mobileControls = document.getElementById('mobileControls');
         const mobileControlsP2 = document.getElementById('mobileControlsP2');
@@ -942,14 +949,21 @@ class Game {
             ? this.touchControlsEnabled 
             : (this.ui.isMobile || this.ui.isTablet);
         
+        console.log('[Touch Controls] Should show:', shouldShow);
+        console.log('[Touch Controls] touchControlsEnabled:', this.touchControlsEnabled);
+        console.log('[Touch Controls] isMobile:', this.ui.isMobile, 'isTablet:', this.ui.isTablet);
+        
         if (shouldShow) {
             mobileControls.classList.add('active');
+            console.log('[Touch Controls] Added active class to player 1 controls');
             if (this.gameMode === 'multiplayer' && (this.ui.isTablet || this.touchControlsEnabled)) {
                 mobileControlsP2.classList.add('active');
+                console.log('[Touch Controls] Added active class to player 2 controls');
             }
         } else {
             mobileControls.classList.remove('active');
             mobileControlsP2.classList.remove('active');
+            console.log('[Touch Controls] Removed active class from controls');
         }
     }
     
