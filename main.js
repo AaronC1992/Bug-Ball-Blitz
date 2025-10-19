@@ -835,11 +835,11 @@ class Game {
     
     handleGoal(goal) {
         // Trigger celebration animation
-        const profile = SaveSystem.loadProfile();
+        const profile = this.ui.currentProfile;
         this.celebrationActive = true;
         this.celebrationFrame = 0;
         this.celebrationSide = goal;
-        this.celebrationType = profile.selectedCelebration || 'classic';
+        this.celebrationType = (profile && profile.selectedCelebration) ? profile.selectedCelebration : 'classic';
         
         if (goal === 'left') {
             this.score2++;
@@ -1123,7 +1123,12 @@ class Game {
     }
     
     showStylesMenu() {
-        const profile = SaveSystem.loadProfile();
+        const profile = this.ui.currentProfile;
+        if (!profile) {
+            console.error('No profile loaded');
+            return;
+        }
+        
         const grid = document.getElementById('celebrationGrid');
         grid.innerHTML = '';
         
@@ -1148,6 +1153,7 @@ class Game {
                     // Update selected celebration
                     profile.selectedCelebration = celebration.id;
                     SaveSystem.saveProfile(profile);
+                    this.ui.currentProfile = profile; // Update the UI's reference
                     
                     // Update UI
                     document.querySelectorAll('.celebration-card').forEach(c => c.classList.remove('selected'));
