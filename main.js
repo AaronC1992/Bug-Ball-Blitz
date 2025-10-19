@@ -20,6 +20,9 @@ class Game {
         this.towerLevel = 1;
         
         // Match settings
+        this.matchTimeLimit = 120; // 2 minutes
+        this.matchTimeElapsed = 0; // Time elapsed in seconds
+        this.lastFrameTime = null; // For delta time calculation
         this.countdownValue = 5; // Countdown before match starts
         this.countdownStartTime = 0;
         
@@ -425,15 +428,14 @@ class Game {
             }
         }
         
-        // Reset scores and time - CRITICAL RESET SECTION
+        // Reset scores and timer for new match
         this.score1 = 0;
         this.score2 = 0;
-        
-        // Reset scores for new match
-        this.score1 = 0;
-        this.score2 = 0;
+        this.matchTimeElapsed = 0;
+        this.lastFrameTime = null;
         
         this.updateScoreDisplay();
+        this.updateTimerDisplay();
         
         // Start with countdown
         this.gameState = 'countdown';
@@ -466,6 +468,7 @@ class Game {
         // Start/resume match when countdown finishes
         if (this.countdownValue <= 0) {
             this.gameState = 'playing';
+            this.lastFrameTime = performance.now(); // Start timer
         }
     }
     
@@ -522,6 +525,22 @@ class Game {
     }
     
     update() {
+        // Update timer
+        if (this.lastFrameTime !== null) {
+            const currentTime = performance.now();
+            const deltaTime = (currentTime - this.lastFrameTime) / 1000; // Convert to seconds
+            this.lastFrameTime = currentTime;
+            
+            this.matchTimeElapsed += deltaTime;
+            this.updateTimerDisplay();
+            
+            // Check if time is up
+            if (this.matchTimeElapsed >= this.matchTimeLimit) {
+                this.endMatch();
+                return;
+            }
+        }
+        
         // Update player 1 input
         this.updatePlayer1Input();
         
@@ -734,7 +753,8 @@ class Game {
         if (this.score1 >= 5 || this.score2 >= 5) {
             this.endMatch();
         } else {
-            // Start countdown after goal
+            // Pause timer and start countdown after goal
+            this.lastFrameTime = null; // Pause timer
             this.gameState = 'countdown';
             this.countdownValue = 3;
             this.initialCountdownValue = 3;
@@ -745,6 +765,14 @@ class Game {
     updateScoreDisplay() {
         document.getElementById('player1Score').textContent = this.score1;
         document.getElementById('player2Score').textContent = this.score2;
+    }
+    
+    updateTimerDisplay() {
+        const timeRemaining = Math.max(0, this.matchTimeLimit - this.matchTimeElapsed);
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = Math.floor(timeRemaining % 60);
+        document.getElementById('timerDisplay').textContent = 
+            `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
     
     endMatch() {
@@ -846,6 +874,7 @@ class Game {
     pauseGame() {
         if (this.gameState === 'playing') {
             this.gameState = 'paused';
+            this.lastFrameTime = null; // Pause timer
             cancelAnimationFrame(this.animationId);
             this.ui.showOverlay('pauseMenu');
         }
@@ -854,6 +883,7 @@ class Game {
     resumeGame() {
         if (this.gameState === 'paused') {
             this.gameState = 'playing';
+            this.lastFrameTime = performance.now(); // Resume timer
             this.ui.hideOverlay('pauseMenu');
             this.gameLoop();
         }
