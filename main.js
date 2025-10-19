@@ -62,7 +62,6 @@ class Game {
         
         // Settings
         this.touchControlsEnabled = this.loadTouchControlsPreference();
-        this.settingsSource = 'game'; // Track where settings was opened from
         
         // Animation
         this.animationId = null;
@@ -141,13 +140,9 @@ class Game {
             this.ui.showScreen('mainMenu');
         });
         
-        // Settings menu
-        document.getElementById('settingsBtn').addEventListener('click', () => {
-            this.openSettings('game');
-        });
-        
+        // Settings menu (only accessible from pause menu)
         document.getElementById('pauseSettingsBtn').addEventListener('click', () => {
-            this.openSettings('pause');
+            this.openSettings();
         });
         
         document.getElementById('closeSettingsBtn').addEventListener('click', () => {
@@ -909,16 +904,9 @@ class Game {
         this.startMatch();
     }
     
-    openSettings(source = 'game') {
-        // Store where settings was opened from
-        this.settingsSource = source;
-        
-        if (source === 'game' && this.gameState === 'playing') {
-            this.pauseGame();
-        } else if (source === 'pause') {
-            // Hide pause menu while showing settings
-            this.ui.hideOverlay('pauseMenu');
-        }
+    openSettings() {
+        // Hide pause menu while showing settings
+        this.ui.hideOverlay('pauseMenu');
         
         // Update toggle to reflect current preference
         // If null (auto mode), check if auto-detected device would show controls
@@ -940,14 +928,8 @@ class Game {
         // Update controls visibility based on preference
         this.updateTouchControlsVisibility();
         
-        // Return to appropriate state based on where settings was opened from
-        if (this.settingsSource === 'pause') {
-            // Return to pause menu
-            this.ui.showOverlay('pauseMenu');
-        } else if (this.settingsSource === 'game' && this.gameState === 'paused') {
-            // Resume game if it was paused only for settings
-            this.resumeGame();
-        }
+        // Return to pause menu (game stays paused)
+        this.ui.showOverlay('pauseMenu');
     }
     
     loadTouchControlsPreference() {
