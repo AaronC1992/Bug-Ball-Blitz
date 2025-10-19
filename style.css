@@ -14,6 +14,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    /* Safe area padding for notched phones */
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
 
 #gameContainer {
@@ -381,17 +383,18 @@ input[type="text"]:focus {
     right: 0;
     height: 200px;
     z-index: 10;
+    padding-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for notched phones */
 }
 
 .joystick-container {
     position: absolute;
-    left: 40px;
-    bottom: 40px;
+    left: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
 
 .joystick {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     background: rgba(0, 0, 0, 0.5);
     border: 3px solid rgba(126, 211, 33, 0.8);
     border-radius: 50%;
@@ -399,8 +402,8 @@ input[type="text"]:focus {
 }
 
 .joystick-stick {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     background: rgba(126, 211, 33, 0.9);
     border-radius: 50%;
     position: absolute;
@@ -412,23 +415,24 @@ input[type="text"]:focus {
 
 .action-buttons {
     position: absolute;
-    right: 40px;
-    bottom: 40px;
+    right: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     display: flex;
-    gap: 15px;
+    gap: 12px;
 }
 
 .action-btn {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     background: rgba(126, 211, 33, 0.9);
     border: 3px solid rgba(95, 179, 4, 1);
     border-radius: 50%;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     color: white;
     cursor: pointer;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    touch-action: manipulation; /* Prevent double-tap zoom */
 }
 
 .action-btn:active {
@@ -438,12 +442,52 @@ input[type="text"]:focus {
 /* Mobile Landscape Mode - Smaller Controls */
 @media screen and (max-height: 500px) and (orientation: landscape) {
     .mobile-controls {
-        height: 140px;
+        height: 120px;
     }
     
     .joystick-container {
-        left: 20px;
-        bottom: 20px;
+        left: 15px;
+        bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .joystick {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .joystick-stick {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .action-buttons {
+        right: 15px;
+        bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+        gap: 8px;
+    }
+    
+    .action-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 11px;
+    }
+    
+    .mobile-controls-p2 .joystick-container {
+        right: 120px;
+        left: auto;
+    }
+    
+    .mobile-controls-p2 .action-buttons {
+        left: 15px;
+        right: auto;
+    }
+}
+
+/* Small Phone Portrait Mode */
+@media screen and (max-width: 400px) and (orientation: portrait) {
+    .joystick-container {
+        left: 15px;
+        bottom: calc(15px + env(safe-area-inset-bottom, 0px));
     }
     
     .joystick {
@@ -457,23 +501,15 @@ input[type="text"]:focus {
     }
     
     .action-buttons {
-        right: 20px;
-        bottom: 20px;
+        right: 15px;
+        bottom: calc(15px + env(safe-area-inset-bottom, 0px));
         gap: 10px;
     }
     
     .action-btn {
-        width: 60px;
-        height: 60px;
-        font-size: 11px;
-    }
-    
-    .mobile-controls-p2 .joystick-container {
-        right: 140px;
-    }
-    
-    .mobile-controls-p2 .action-buttons {
-        left: 20px;
+        width: 65px;
+        height: 65px;
+        font-size: 12px;
     }
 }
 
