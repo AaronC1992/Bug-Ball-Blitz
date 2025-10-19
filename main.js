@@ -521,6 +521,9 @@ class Game {
         } else if (this.gameState === 'playing') {
             this.update();
             this.render();
+        } else if (this.gameState === 'goal_scored') {
+            // Just render the celebration, don't update game logic
+            this.renderCountdown(); // Reuse countdown render which includes celebration
         } else {
             return;
         }
@@ -834,6 +837,14 @@ class Game {
     }
     
     handleGoal(goal) {
+        // Prevent multiple goal detections
+        if (this.gameState !== 'playing') {
+            return;
+        }
+        
+        // Immediately change state to prevent multiple detections
+        this.gameState = 'goal_scored';
+        
         // Trigger celebration animation
         const profile = this.ui.currentProfile;
         this.celebrationActive = true;
