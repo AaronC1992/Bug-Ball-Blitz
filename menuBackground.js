@@ -351,6 +351,7 @@ export class MenuBackground {
     
     drawBall() {
         this.ctx.save();
+        this.ctx.globalAlpha = 1.0; // Force full opacity
         this.ctx.font = '30px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
@@ -402,6 +403,7 @@ export class MenuBackground {
         }
         
         this.ctx.save();
+        this.ctx.globalAlpha = 1.0; // Force full opacity for celebrations
         
         // Draw floating emojis around the player
         this.ctx.font = '30px Arial';

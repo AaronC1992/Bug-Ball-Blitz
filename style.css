@@ -130,6 +130,7 @@ body {
     height: 100%;
     z-index: 0;
     pointer-events: none; /* Allow clicks to pass through to buttons */
+    opacity: 1; /* Ensure full opacity */
 }
 
 /* Title Screen Styling */
