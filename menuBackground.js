@@ -244,9 +244,9 @@ export class MenuBackground {
         // Update ball physics
         this.physics.updateBall(this.ball);
         
-        // Check ball collisions with players
+        // Check ball collisions with players - pass bug object for stats
         this.players.forEach(player => {
-            this.physics.checkBallPlayerCollision(this.ball, player);
+            this.physics.checkBallPlayerCollision(this.ball, player, player.bug);
         });
         
         // Check for goals and reset
