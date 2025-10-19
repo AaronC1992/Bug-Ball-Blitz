@@ -907,6 +907,11 @@ class Game {
         
         // Update controls visibility based on preference
         this.updateTouchControlsVisibility();
+        
+        // Resume game if it was paused only for settings
+        if (this.gameState === 'paused') {
+            this.resumeGame();
+        }
     }
     
     loadTouchControlsPreference() {
@@ -925,7 +930,8 @@ class Game {
     }
     
     updateTouchControlsVisibility() {
-        if (this.gameState !== 'playing' && this.gameState !== 'countdown') return;
+        // Allow updating during gameplay (playing, countdown, or paused)
+        if (this.gameState !== 'playing' && this.gameState !== 'countdown' && this.gameState !== 'paused') return;
         
         const mobileControls = document.getElementById('mobileControls');
         const mobileControlsP2 = document.getElementById('mobileControlsP2');
@@ -938,7 +944,7 @@ class Game {
         
         if (shouldShow) {
             mobileControls.classList.add('active');
-            if (this.gameMode === 'multiplayer' && this.ui.isTablet) {
+            if (this.gameMode === 'multiplayer' && (this.ui.isTablet || this.touchControlsEnabled)) {
                 mobileControlsP2.classList.add('active');
             }
         } else {
