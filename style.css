@@ -53,109 +53,98 @@ body {
     overflow: hidden;
 }
 
-/* Animated Background */
-.title-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    z-index: 0;
-}
-
-.bug-particle {
-    position: absolute;
-    font-size: 40px;
-    opacity: 0.3;
-    animation: floatBug 8s ease-in-out infinite;
-}
-
-@keyframes floatBug {
-    0%, 100% { 
-        transform: translateY(100vh) rotate(0deg);
-        opacity: 0;
-    }
-    10% {
-        opacity: 0.3;
-    }
-    50% {
-        opacity: 0.5;
-        transform: translateY(-20vh) rotate(180deg);
-    }
-    90% {
-        opacity: 0.3;
-    }
-}
-
-.logo-container {
-    margin-bottom: 50px;
-    animation: float 3s ease-in-out infinite;
+/* Title Screen Styling */
+.title-content {
+    margin-bottom: 60px;
+    text-align: center;
     position: relative;
     z-index: 1;
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+.game-title {
+    position: relative;
+    margin-bottom: 20px;
 }
 
-.title-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
-    filter: blur(40px);
-    animation: pulse 2s ease-in-out infinite;
+.title-main {
+    font-size: 72px;
+    font-weight: 900;
+    color: #7ed321;
+    margin: 0;
+    line-height: 1;
+    text-shadow: 
+        3px 3px 0px #2d2d2d,
+        5px 5px 10px rgba(0, 0, 0, 0.5);
+    letter-spacing: 8px;
+    animation: bounceIn 1s ease-out;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+.title-sub {
+    font-size: 48px;
+    font-weight: 900;
+    color: #fff;
+    margin: 5px 0 0 0;
+    line-height: 1;
+    text-shadow: 
+        2px 2px 0px #2d2d2d,
+        4px 4px 8px rgba(0, 0, 0, 0.5);
+    letter-spacing: 16px;
+    animation: bounceIn 1s ease-out 0.2s backwards;
 }
 
-.game-logo {
-    width: 100%;
-    max-width: 500px;
-    filter: drop-shadow(0 10px 30px rgba(255, 215, 0, 0.5));
-    animation: titleShine 3s ease-in-out infinite;
+.title-icon {
+    font-size: 48px;
+    margin-top: 10px;
+    animation: wiggle 2s ease-in-out infinite;
 }
 
-@keyframes titleShine {
-    0%, 100% { filter: drop-shadow(0 10px 30px rgba(255, 215, 0, 0.5)); }
-    50% { filter: drop-shadow(0 10px 40px rgba(255, 165, 0, 0.8)); }
-}
-
-.soccer-ball-icon {
-    font-size: 60px;
-    position: absolute;
-    top: -30px;
-    right: -30px;
-    animation: spin 4s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.subtitle {
-    font-size: 18px;
-    color: #FFD700;
-    text-align: center;
-    margin-top: 20px;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    font-weight: bold;
+.game-tagline {
+    font-size: 22px;
+    color: #aaa;
+    font-weight: 600;
     letter-spacing: 2px;
-    animation: glow 2s ease-in-out infinite;
+    margin: 0;
+    animation: fadeIn 1s ease-out 0.5s backwards;
 }
 
-@keyframes glow {
-    0%, 100% { text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.3); }
-    50% { text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.6); }
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(-50px);
+    }
+    50% {
+        transform: scale(1.05) translateY(0);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-10deg);
+    }
+    75% {
+        transform: rotate(10deg);
+    }
 }
 
 .version-info {

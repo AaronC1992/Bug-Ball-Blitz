@@ -10,42 +10,13 @@
     <div id="gameContainer">
         <!-- Title Screen -->
         <div id="titleScreen" class="screen active">
-            <div class="title-background">
-                <div class="bug-particle" style="left: 10%; animation-delay: 0s;">🐛</div>
-                <div class="bug-particle" style="left: 25%; animation-delay: 1.5s;">🦋</div>
-                <div class="bug-particle" style="left: 40%; animation-delay: 3s;">🐝</div>
-                <div class="bug-particle" style="left: 60%; animation-delay: 2s;">🦗</div>
-                <div class="bug-particle" style="left: 75%; animation-delay: 4s;">🐞</div>
-                <div class="bug-particle" style="left: 90%; animation-delay: 0.5s;">🕷️</div>
-            </div>
-            <div class="logo-container">
-                <div class="title-glow"></div>
-                <svg viewBox="0 0 400 120" class="game-logo">
-                    <defs>
-                        <linearGradient id="titleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
-                        </linearGradient>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                            <feMerge>
-                                <feMergeNode in="coloredBlur"/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
-                    </defs>
-                    <text x="200" y="45" font-family="'Arial Black', sans-serif" font-size="52" 
-                          fill="url(#titleGradient)" text-anchor="middle" dominant-baseline="middle" 
-                          stroke="#2d1a00" stroke-width="4" filter="url(#glow)"
-                          style="letter-spacing: 3px;">BUG BALL</text>
-                    <text x="200" y="95" font-family="'Arial Black', sans-serif" font-size="38" 
-                          fill="url(#titleGradient)" text-anchor="middle" dominant-baseline="middle" 
-                          stroke="#2d1a00" stroke-width="3" filter="url(#glow)"
-                          style="letter-spacing: 8px;">BLITZ</text>
-                </svg>
-                <div class="soccer-ball-icon">⚽</div>
-                <p class="subtitle">🏆 Insect Soccer Championship 🏆</p>
+            <div class="title-content">
+                <div class="game-title">
+                    <h1 class="title-main">BUG BALL</h1>
+                    <h2 class="title-sub">BLITZ</h2>
+                    <div class="title-icon">⚽🐛</div>
+                </div>
+                <p class="game-tagline">Insect Soccer Mayhem!</p>
             </div>
             <div class="menu-buttons">
                 <button class="menu-btn primary-btn" id="createProfileBtn">
