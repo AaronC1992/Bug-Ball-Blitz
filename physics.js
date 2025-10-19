@@ -164,6 +164,9 @@ export class Physics {
         if (distance < ball.radius) {
             // Collision detected - ball is overlapping player
             
+            // Calculate overlap amount (how much ball is inside player)
+            const overlap = ball.radius - distance;
+            
             // Determine which part of the player hit the ball
             const ballRelativeX = ball.x - player.x; // Negative = left side, Positive = right side
             const ballRelativeY = ball.y - (player.y - player.height / 2); // Negative = above center
@@ -214,9 +217,13 @@ export class Physics {
                 normalY /= len;
             }
             
-            // Push ball out of player
-            ball.x = closestX + normalX * ball.radius;
-            ball.y = closestY + normalY * ball.radius;
+            // IMPROVED SEPARATION: Push ball completely out of player with extra buffer
+            // Use the overlap amount plus a small buffer to ensure clean separation
+            const separationBuffer = 2; // Extra pixels to prevent re-collision
+            const separationDistance = overlap + separationBuffer;
+            
+            ball.x += normalX * separationDistance;
+            ball.y += normalY * separationDistance;
             
             // CRITICAL FIX: Ensure ball never goes below ground when pushed
             // This prevents ball from getting stuck under players during collisions
@@ -225,6 +232,14 @@ export class Physics {
                 ball.y = minBallY;
                 // If ball was underground, push it up with force
                 normalY = Math.min(normalY, -0.5); // Ensure upward component
+            }
+            
+            // ADDITIONAL FIX: Keep ball within horizontal boundaries during collision
+            if (ball.x - ball.radius < 0) {
+                ball.x = ball.radius;
+            }
+            if (ball.x + ball.radius > this.width) {
+                ball.x = this.width - ball.radius;
             }
             
             // Calculate kick force based on bug stats and player movement
