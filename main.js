@@ -346,10 +346,17 @@ class Game {
         });
         
         document.getElementById('resumeBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
             this.resumeGame();
         });
         
+        document.getElementById('restartMatchBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.restartMatch();
+        });
+        
         document.getElementById('quitToMenuBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
             this.quitToMenu();
         });
         
@@ -1524,6 +1531,16 @@ class Game {
             this.gameState = 'paused';
             this.lastFrameTime = null; // Pause timer
             cancelAnimationFrame(this.animationId);
+            
+            // Update pause menu with current score and time
+            document.getElementById('pauseScore1').textContent = this.score1;
+            document.getElementById('pauseScore2').textContent = this.score2;
+            
+            const minutes = Math.floor(this.matchTimeElapsed / 60);
+            const seconds = Math.floor(this.matchTimeElapsed % 60);
+            document.getElementById('pauseTimeDisplay').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
             this.ui.showOverlay('pauseMenu');
         }
     }
@@ -1535,6 +1552,20 @@ class Game {
             this.ui.hideOverlay('pauseMenu');
             this.gameLoop();
         }
+    }
+    
+    restartMatch() {
+        // Reset match state
+        this.score1 = 0;
+        this.score2 = 0;
+        this.matchTimeElapsed = 0;
+        this.lastFrameTime = null;
+        
+        // Hide pause menu
+        this.ui.hideOverlay('pauseMenu');
+        
+        // Restart the match with intro
+        this.startMatch();
     }
     
     quitToMenu() {

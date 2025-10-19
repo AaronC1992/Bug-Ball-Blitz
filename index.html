@@ -183,12 +183,21 @@
 
         <!-- Pause Menu -->
         <div id="pauseMenu" class="overlay-menu">
-            <div class="menu-panel">
-                <h2>Paused</h2>
+            <div class="menu-panel pause-panel">
+                <h2>⏸️ Paused</h2>
+                <div class="pause-info">
+                    <div class="pause-score">
+                        <span id="pauseScore1" class="score-display">0</span>
+                        <span class="score-separator">-</span>
+                        <span id="pauseScore2" class="score-display">0</span>
+                    </div>
+                    <div class="pause-time" id="pauseTimeDisplay">0:00</div>
+                </div>
                 <div class="menu-buttons">
-                    <button class="menu-btn" id="resumeBtn">▶ Resume</button>
+                    <button class="menu-btn primary-btn" id="resumeBtn">▶️ Resume</button>
+                    <button class="menu-btn" id="restartMatchBtn">🔄 Restart Match</button>
                     <button class="menu-btn" id="pauseSettingsBtn">⚙️ Settings</button>
-                    <button class="menu-btn" id="quitToMenuBtn">🏠 Main Menu</button>
+                    <button class="menu-btn danger-btn" id="quitToMenuBtn">🏠 Quit to Menu</button>
                 </div>
             </div>
         </div>
