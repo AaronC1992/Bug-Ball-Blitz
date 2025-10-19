@@ -354,7 +354,7 @@ input[type="text"]:focus {
     color: white;
 }
 
-.pause-btn {
+.settings-btn, .pause-btn {
     background: rgba(0, 0, 0, 0.8);
     border: none;
     padding: 10px 15px;
@@ -364,8 +364,12 @@ input[type="text"]:focus {
     transition: all 0.3s ease;
 }
 
-.pause-btn:hover {
+.settings-btn:hover, .pause-btn:hover {
     background: rgba(126, 211, 33, 0.8);
+}
+
+.settings-btn {
+    margin-right: 10px;
 }
 
 /* Mobile Controls */
@@ -503,6 +507,85 @@ input[type="text"]:focus {
 
 .menu-panel h2 {
     margin-bottom: 20px;
+}
+
+/* Settings Menu */
+.settings-options {
+    margin: 30px 0;
+    text-align: left;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.setting-item label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.setting-item label span {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.setting-item label small {
+    font-size: 14px;
+    color: #aaa;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #444;
+    transition: 0.3s;
+    border-radius: 30px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #7ed321;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(30px);
 }
 
 #matchStats, #towerVictoryStats {

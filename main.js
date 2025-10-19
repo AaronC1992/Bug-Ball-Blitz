@@ -60,12 +60,27 @@ class Game {
             jumpPressed: false
         };
         
+        // Settings
+        this.touchControlsEnabled = this.loadTouchControlsPreference();
+        
         // Animation
         this.animationId = null;
         
         this.initializeCanvas();
         this.setupEventListeners();
         this.setupMobileControls();
+        this.initializeSettings();
+    }
+    
+    initializeSettings() {
+        // Set initial toggle state
+        const toggle = document.getElementById('touchControlsToggle');
+        if (this.touchControlsEnabled !== null) {
+            toggle.checked = this.touchControlsEnabled;
+        } else {
+            // Auto mode - show as checked if on mobile/tablet
+            toggle.checked = this.ui.isMobile || this.ui.isTablet;
+        }
     }
     
     initializeCanvas() {
@@ -123,6 +138,19 @@ class Game {
         
         document.getElementById('cancelDifficultyBtn').addEventListener('click', () => {
             this.ui.showScreen('mainMenu');
+        });
+        
+        // Settings menu
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            this.openSettings();
+        });
+        
+        document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+            this.closeSettings();
+        });
+        
+        document.getElementById('touchControlsToggle').addEventListener('change', (e) => {
+            this.setTouchControlsPreference(e.target.checked);
         });
         
         // Pause menu
@@ -349,13 +377,8 @@ class Game {
     startMatch() {
         this.ui.showScreen('gameScreen');
         
-        if (this.ui.isMobile) {
-            document.getElementById('mobileControls').classList.add('active');
-            // Show P2 controls for multiplayer on tablets
-            if (this.ui.isTablet && this.gameMode === 'multiplayer') {
-                document.getElementById('mobileControlsP2').classList.add('active');
-            }
-        }
+        // Show touch controls based on user preference or auto-detection
+        this.updateTouchControlsVisibility();
         
         this.resizeCanvas();
         this.physics = new Physics(this.canvas.width, this.canvas.height);
@@ -871,6 +894,61 @@ class Game {
         this.startMatch();
     }
     
+    openSettings() {
+        if (this.gameState === 'playing') {
+            this.pauseGame();
+        }
+        
+        // Update toggle to reflect current preference
+        document.getElementById('touchControlsToggle').checked = this.touchControlsEnabled;
+        this.ui.showOverlay('settingsMenu');
+    }
+    
+    closeSettings() {
+        this.ui.hideOverlay('settingsMenu');
+        
+        // Update controls visibility based on preference
+        this.updateTouchControlsVisibility();
+    }
+    
+    loadTouchControlsPreference() {
+        const saved = localStorage.getItem('touchControlsEnabled');
+        // Default to auto-detect (null = auto)
+        if (saved === null) {
+            return null; // Auto mode
+        }
+        return saved === 'true';
+    }
+    
+    setTouchControlsPreference(enabled) {
+        this.touchControlsEnabled = enabled;
+        localStorage.setItem('touchControlsEnabled', enabled.toString());
+        this.updateTouchControlsVisibility();
+    }
+    
+    updateTouchControlsVisibility() {
+        if (this.gameState !== 'playing' && this.gameState !== 'countdown') return;
+        
+        const mobileControls = document.getElementById('mobileControls');
+        const mobileControlsP2 = document.getElementById('mobileControlsP2');
+        
+        // If user has explicitly enabled/disabled, use that preference
+        // Otherwise, use auto-detection (isMobile/isTablet)
+        const shouldShow = this.touchControlsEnabled !== null 
+            ? this.touchControlsEnabled 
+            : (this.ui.isMobile || this.ui.isTablet);
+        
+        if (shouldShow) {
+            mobileControls.classList.add('active');
+            if (this.gameMode === 'multiplayer' && this.ui.isTablet) {
+                mobileControlsP2.classList.add('active');
+            }
+        } else {
+            mobileControls.classList.remove('active');
+            mobileControlsP2.classList.remove('active');
+        }
+    }
+    
     pauseGame() {
         if (this.gameState === 'playing') {
             this.gameState = 'paused';
@@ -909,21 +987,10 @@ class Game {
         // If not in a match, nothing to do
         if (this.gameState !== 'playing') return;
         
-        const mobileControls = document.getElementById('mobileControls');
-        const mobileControlsP2 = document.getElementById('mobileControlsP2');
-        
-        if (isMobile) {
-            // Switched to tablet/touch mode - show controls
-            mobileControls.classList.add('active');
-            
-            // Show P2 controls if in multiplayer on tablet
-            if (isTablet && this.gameMode === 'multiplayer') {
-                mobileControlsP2.classList.add('active');
-            }
-        } else {
-            // Switched to laptop/PC mode - hide controls
-            mobileControls.classList.remove('active');
-            mobileControlsP2.classList.remove('active');
+        // Update controls visibility based on new device mode
+        // Only update if user hasn't set a manual preference
+        if (this.touchControlsEnabled === null) {
+            this.updateTouchControlsVisibility();
         }
     }
 }
