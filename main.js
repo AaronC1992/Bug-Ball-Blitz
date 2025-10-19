@@ -1041,6 +1041,31 @@ class Game {
     }
     
     drawPlayer(player, bug) {
+        // Draw dynamic shadow first (before the player)
+        const groundY = this.physics.groundY;
+        const playerGroundY = groundY - player.height / 2;
+        const playerHeight = playerGroundY - player.y;
+        const maxJumpHeight = 150;
+        
+        // Calculate shadow scale based on jump height
+        const jumpRatio = Math.min(playerHeight / maxJumpHeight, 1);
+        const shadowScale = 1 - (jumpRatio * 0.5); // Shadow shrinks up to 50% at max jump
+        const shadowOpacity = 0.3 * (1 - jumpRatio * 0.6); // Shadow fades when jumping
+        
+        this.ctx.save();
+        this.ctx.fillStyle = `rgba(0, 0, 0, ${shadowOpacity})`;
+        this.ctx.beginPath();
+        this.ctx.ellipse(
+            player.x, 
+            groundY + 5, 
+            player.width * 0.5 * shadowScale, 
+            player.height * 0.2 * shadowScale, 
+            0, 0, Math.PI * 2
+        );
+        this.ctx.fill();
+        this.ctx.restore();
+        
+        // Draw player
         this.ctx.save();
         this.ctx.translate(player.x, player.y);
         
@@ -1069,12 +1094,7 @@ class Game {
         this.ctx.arc(player.width * 0.15, -player.height * 0.1, player.width * 0.08, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Shadow
         this.ctx.restore();
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        this.ctx.beginPath();
-        this.ctx.ellipse(player.x, this.physics.groundY + 5, player.width * 0.5, player.height * 0.2, 0, 0, Math.PI * 2);
-        this.ctx.fill();
     }
     
     handleGoal(goal) {

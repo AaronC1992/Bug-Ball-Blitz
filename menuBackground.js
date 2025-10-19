@@ -477,6 +477,30 @@ export class MenuBackground {
     }
     
     drawPlayer(player) {
+        // Draw dynamic shadow first
+        const groundY = this.physics.groundY;
+        const playerGroundY = groundY - player.height / 2;
+        const playerHeight = playerGroundY - player.y;
+        const maxJumpHeight = 150;
+        
+        const jumpRatio = Math.min(playerHeight / maxJumpHeight, 1);
+        const shadowScale = 1 - (jumpRatio * 0.5);
+        const shadowOpacity = 0.3 * (1 - jumpRatio * 0.6);
+        
+        this.ctx.save();
+        this.ctx.fillStyle = `rgba(0, 0, 0, ${shadowOpacity})`;
+        this.ctx.beginPath();
+        this.ctx.ellipse(
+            player.x, 
+            groundY + 5, 
+            player.width * 0.5 * shadowScale, 
+            player.height * 0.2 * shadowScale, 
+            0, 0, Math.PI * 2
+        );
+        this.ctx.fill();
+        this.ctx.restore();
+        
+        // Draw player
         this.ctx.save();
         
         // Draw as a colored circle with darker outline
