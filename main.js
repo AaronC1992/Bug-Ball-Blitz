@@ -50,6 +50,9 @@ class Game {
         this.introCountdownDuration = 3000; // 3 seconds for 3-2-1 countdown
         this.introGoDuration = 800; // 0.8 seconds for GO
         
+        // Crowd reactions
+        this.lastNearMissTime = 0; // Prevent spam
+        
         // Players
         this.player1 = null;
         this.player2 = null;
@@ -1048,6 +1051,34 @@ class Game {
             }
         }
         
+        // Check for near misses (ball close to goal but not in)
+        const now = Date.now();
+        if (now - this.lastNearMissTime > 2000) { // Only every 2 seconds
+            const goalWidth = this.canvas.width * 0.15;
+            const goalTop = this.canvas.height * 0.3;
+            const goalBottom = this.canvas.height * 0.7;
+            const nearMissDistance = 80; // pixels
+            
+            // Check left goal area
+            if (this.ball.x < goalWidth + nearMissDistance && 
+                this.ball.x > goalWidth &&
+                this.ball.y > goalTop - nearMissDistance && 
+                this.ball.y < goalBottom + nearMissDistance &&
+                Math.abs(this.ball.vx) > 5) {
+                this.audio.playSound('crowd_ooh');
+                this.lastNearMissTime = now;
+            }
+            // Check right goal area
+            else if (this.ball.x > this.canvas.width - goalWidth - nearMissDistance && 
+                     this.ball.x < this.canvas.width - goalWidth &&
+                     this.ball.y > goalTop - nearMissDistance && 
+                     this.ball.y < goalBottom + nearMissDistance &&
+                     Math.abs(this.ball.vx) > 5) {
+                this.audio.playSound('crowd_ooh');
+                this.lastNearMissTime = now;
+            }
+        }
+        
         // Check goals
         const goal = this.physics.checkGoal(this.ball);
         if (goal) {
@@ -1285,8 +1316,10 @@ class Game {
             scoringPlayer = 'player1';
         }
         
-        // Only show celebration if the human player scored (player 1)
+        // Crowd reaction based on who scored
         if (scoringPlayer === 'player1') {
+            // Player 1 scored - crowd cheers
+            this.audio.playSound('crowd_cheer');
             this.celebrationActive = true;
             this.celebrationFrame = 0;
             this.celebrationSide = goal;
@@ -1294,6 +1327,8 @@ class Game {
             // Play celebration sound
             this.audio.playSound('celebration');
         } else {
+            // Player 2/AI scored - crowd boos
+            this.audio.playSound('crowd_boo');
             this.celebrationActive = false;
         }
         

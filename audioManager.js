@@ -53,7 +53,10 @@ export class AudioManager {
             goal: this.createGoalSound(),
             whistle: this.createWhistleSound(),
             ui_click: this.createClickSound(),
-            celebration: this.createCelebrationSound()
+            celebration: this.createCelebrationSound(),
+            crowd_cheer: this.createCrowdCheerSound(),
+            crowd_boo: this.createCrowdBooSound(),
+            crowd_ooh: this.createCrowdOohSound()
         };
     }
     
@@ -187,6 +190,92 @@ export class AudioManager {
                 oscillator.start(startTime);
                 oscillator.stop(startTime + 0.15);
             });
+        };
+    }
+    
+    createCrowdCheerSound() {
+        return () => {
+            if (!this.soundEnabled) return;
+            
+            // Layered noise burst for crowd cheer
+            for (let i = 0; i < 3; i++) {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+                
+                oscillator.type = 'sawtooth';
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                const baseFreq = 200 + (i * 100);
+                oscillator.frequency.setValueAtTime(baseFreq, this.audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, this.audioContext.currentTime + 0.8);
+                
+                filter.type = 'bandpass';
+                filter.frequency.value = 1000 + (i * 500);
+                filter.Q.value = 5;
+                
+                gainNode.gain.setValueAtTime(0.15 * this.soundVolume, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 1.0);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + 1.0);
+            }
+        };
+    }
+    
+    createCrowdBooSound() {
+        return () => {
+            if (!this.soundEnabled) return;
+            
+            // Low rumbling sound for boos
+            for (let i = 0; i < 2; i++) {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.type = 'sawtooth';
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(100 + (i * 50), this.audioContext.currentTime);
+                oscillator.frequency.linearRampToValueAtTime(80 + (i * 40), this.audioContext.currentTime + 0.6);
+                
+                gainNode.gain.setValueAtTime(0.2 * this.soundVolume, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.7);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + 0.7);
+            }
+        };
+    }
+    
+    createCrowdOohSound() {
+        return () => {
+            if (!this.soundEnabled) return;
+            
+            // Rising then falling "oooh" for close calls
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            const filter = this.audioContext.createBiquadFilter();
+            
+            oscillator.type = 'sine';
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            filter.type = 'lowpass';
+            filter.frequency.value = 800;
+            
+            oscillator.frequency.setValueAtTime(400, this.audioContext.currentTime);
+            oscillator.frequency.linearRampToValueAtTime(600, this.audioContext.currentTime + 0.3);
+            oscillator.frequency.linearRampToValueAtTime(350, this.audioContext.currentTime + 0.6);
+            
+            gainNode.gain.setValueAtTime(0.25 * this.soundVolume, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.7);
+            
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + 0.7);
         };
     }
     
