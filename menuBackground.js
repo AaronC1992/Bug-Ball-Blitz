@@ -108,7 +108,8 @@ export class MenuBackground {
             moveRight: false,
             jump: false,
             color: bug.color,
-            bugName: bug.name
+            bugName: bug.name,
+            bug: bug  // Store bug reference for physics
         };
         this.players.push(player);
         
@@ -134,7 +135,8 @@ export class MenuBackground {
             moveRight: false,
             jump: false,
             color: bug.color,
-            bugName: bug.name
+            bugName: bug.name,
+            bug: bug  // Store bug reference for physics
         };
         this.players.push(player);
         
@@ -160,7 +162,8 @@ export class MenuBackground {
             moveRight: false,
             jump: false,
             color: bug.color,
-            bugName: bug.name
+            bugName: bug.name,
+            bug: bug  // Store bug reference for physics
         };
         this.players.push(player);
         
@@ -187,7 +190,8 @@ export class MenuBackground {
             moveRight: false,
             jump: false,
             color: bug.color,
-            bugName: bug.name
+            bugName: bug.name,
+            bug: bug  // Store bug reference for physics
         };
         this.players.push(player);
         
@@ -232,9 +236,9 @@ export class MenuBackground {
         // Update AI decisions
         this.ais.forEach(ai => ai.update());
         
-        // Update player physics
+        // Update player physics - pass bug object for stats
         this.players.forEach(player => {
-            this.physics.updatePlayer(player);
+            this.physics.updatePlayer(player, player.bug);
         });
         
         // Update ball physics
