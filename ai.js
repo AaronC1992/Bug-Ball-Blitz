@@ -158,6 +158,23 @@ export class AI {
         const playerX = this.player.x;
         const playerY = this.player.y;
         const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
+        const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
+        
+        // Check if ball is between AI and own goal - DANGER!
+        const ballBetweenPlayerAndGoal = this.side === 'right' ?
+            (ballX > playerX && ballX < ownGoalX) :
+            (ballX < playerX && ballX > ownGoalX);
+        
+        const distanceX = Math.abs(ballX - playerX);
+        const ballOnGround = ballY > this.physics.groundY - this.ball.radius - 50;
+        
+        // CRITICAL: If ball is between AI and own goal, jump over it to get on correct side
+        if (ballBetweenPlayerAndGoal && distanceX < 70 && ballOnGround && this.player.isGrounded) {
+            this.shouldJump = true;
+            // Continue moving toward goal side to get behind ball
+            this.targetX = this.side === 'right' ? ballX + 60 : ballX - 60;
+            return;
+        }
         
         // Position between ball and goal
         const defensivePosition = (ballX + ownGoalX) / 2;
@@ -176,7 +193,6 @@ export class AI {
         }
         
         // Jump decision - defensive clears
-        const distanceX = Math.abs(ballX - playerX);
         const ballInRange = distanceX < 100;
         const ballHigh = ballY < playerY - 40;
         
@@ -190,6 +206,23 @@ export class AI {
         const playerX = this.player.x;
         const playerY = this.player.y;
         const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
+        const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
+        
+        // Check if ball is between AI and own goal - AVOID PUSHING IT IN!
+        const ballBetweenPlayerAndGoal = this.side === 'right' ?
+            (ballX > playerX && ballX < ownGoalX) :
+            (ballX < playerX && ballX > ownGoalX);
+        
+        const distanceX = Math.abs(ballX - playerX);
+        const ballOnGround = ballY > this.physics.groundY - this.ball.radius - 50;
+        
+        // CRITICAL: If ball is between AI and own goal, jump over it!
+        if (ballBetweenPlayerAndGoal && distanceX < 70 && ballOnGround && this.player.isGrounded) {
+            this.shouldJump = true;
+            // Move to get on the goal side of the ball
+            this.targetX = this.side === 'right' ? ballX + 60 : ballX - 60;
+            return;
+        }
         
         // Position to strike toward goal
         let strikePosition;
@@ -209,7 +242,6 @@ export class AI {
         
         // Jump for headers when close to goal
         const distanceToGoal = Math.abs(ballX - opponentGoalX);
-        const distanceX = Math.abs(ballX - playerX);
         const ballHigh = ballY < playerY - 25;
         const closeToGoal = distanceToGoal < 200;
         
@@ -218,6 +250,28 @@ export class AI {
     }
     
     interceptStrategy() {
+        const ballX = this.ball.x;
+        const ballY = this.ball.y;
+        const playerX = this.player.x;
+        const playerY = this.player.y;
+        const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
+        
+        // Check if ball is between AI and own goal - DON'T PUSH IT IN!
+        const ballBetweenPlayerAndGoal = this.side === 'right' ?
+            (ballX > playerX && ballX < ownGoalX) :
+            (ballX < playerX && ballX > ownGoalX);
+        
+        const distanceX = Math.abs(ballX - playerX);
+        const ballOnGround = ballY > this.physics.groundY - this.ball.radius - 50;
+        
+        // CRITICAL: Jump over ball if it's between AI and own goal
+        if (ballBetweenPlayerAndGoal && distanceX < 70 && ballOnGround && this.player.isGrounded) {
+            this.shouldJump = true;
+            // Move to get on correct side of ball
+            this.targetX = this.side === 'right' ? ballX + 60 : ballX - 60;
+            return;
+        }
+        
         // Predict where ball will land
         const prediction = this.predictBallPosition();
         
@@ -226,9 +280,6 @@ export class AI {
         this.targetX = prediction.x + (Math.random() - 0.5) * predictionError;
         
         // Jump to intercept aerial balls
-        const ballY = this.ball.y;
-        const playerY = this.player.y;
-        const distanceX = Math.abs(this.ball.x - this.player.x);
         const ballHigh = ballY < playerY - 30;
         const ballMovingDown = this.ball.vy > 0;
         
@@ -432,6 +483,25 @@ export class MultiAI {
         const playerX = player.x;
         const playerY = player.y;
         
+        // Check if ball is between AI and own goal - CRITICAL DANGER!
+        const ballBetweenPlayerAndGoal = this.side === 'right' ?
+            (ballX > playerX && ballX < ownGoalX) :
+            (ballX < playerX && ballX > ownGoalX);
+        
+        const distanceX = Math.abs(ballX - playerX);
+        const ballOnGround = ballY > this.physics.groundY - this.ball.radius - 50;
+        
+        // JUMP OVER BALL to avoid pushing into own goal!
+        if (ballBetweenPlayerAndGoal && distanceX < 70 && ballOnGround && player.isGrounded) {
+            player.jump = true;
+            // Target: get on the correct side of the ball
+            const targetX = this.side === 'right' ? ballX + 60 : ballX - 60;
+            
+            player.moveLeft = targetX < playerX;
+            player.moveRight = targetX > playerX;
+            return;
+        }
+        
         // Safety: Don't get too close to own goal
         const distanceToOwnGoal = Math.abs(playerX - ownGoalX);
         
@@ -445,7 +515,6 @@ export class MultiAI {
             const ballDistanceToGoal = Math.abs(ballX - opponentGoalX);
             
             // Check if ball is directly overhead (being bounced)
-            const distanceX = Math.abs(ballX - playerX);
             const ballAbove = ballY < playerY - 50;
             
             if (ballAbove && distanceX < 35) {
@@ -492,7 +561,6 @@ export class MultiAI {
         }
         
         // Jump for aerial shots
-        const distanceX = Math.abs(ballX - playerX);
         const ballHigh = ballY < playerY - 25;
         const closeToGoal = Math.abs(ballX - opponentGoalX) < 200;
         
@@ -517,6 +585,25 @@ export class MultiAI {
         const ballY = this.ball.y;
         const playerX = player.x;
         const playerY = player.y;
+        
+        // Check if ball is between AI and own goal - DANGEROUS!
+        const ballBetweenPlayerAndGoal = this.side === 'right' ?
+            (ballX > playerX && ballX < ownGoalX) :
+            (ballX < playerX && ballX > ownGoalX);
+        
+        const distanceX = Math.abs(ballX - playerX);
+        const ballOnGround = ballY > this.physics.groundY - this.ball.radius - 50;
+        
+        // JUMP OVER BALL if it's between AI and own goal!
+        if (ballBetweenPlayerAndGoal && distanceX < 70 && ballOnGround && player.isGrounded) {
+            player.jump = true;
+            // Target: get behind the ball (on goal side)
+            const targetX = this.side === 'right' ? ballX + 60 : ballX - 60;
+            
+            player.moveLeft = targetX < playerX;
+            player.moveRight = targetX > playerX;
+            return;
+        }
         
         // Check if ball is dangerous
         const ballDistanceToGoal = Math.abs(ballX - ownGoalX);
@@ -557,7 +644,6 @@ export class MultiAI {
         }
         
         // Jump for defensive headers
-        const distanceX = Math.abs(ballX - playerX);
         const ballHigh = ballY < playerY - 35;
         
         if (ballHigh && distanceX < 90 && player.isGrounded) {
