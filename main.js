@@ -762,12 +762,10 @@ class Game {
         
         // Update ball rotation based on velocity (rolling effect)
         if (this.ball) {
-            const speed = Math.hypot(this.ball.vx, this.ball.vy);
-            // Rotate based on distance traveled (circumference = 2πr)
-            const rotationSpeed = speed / (2 * Math.PI * this.ball.radius);
+            // Rotate based on horizontal velocity (positive = clockwise, negative = counter-clockwise)
+            // Using vx because horizontal movement is most visible
+            const rotationSpeed = this.ball.vx / (2 * Math.PI * this.ball.radius);
             this.ball.rotation += rotationSpeed;
-            // Keep rotation within 0-2π range
-            this.ball.rotation = this.ball.rotation % (Math.PI * 2);
         }
         
         // Check collisions
