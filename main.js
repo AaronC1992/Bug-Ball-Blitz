@@ -186,7 +186,7 @@ class Game {
     }
     
     setupMobileControls() {
-        if (!this.ui.isMobile) return;
+        // Always setup touch controls so users can enable them manually on touchscreen laptops
         
         // Player 1 Controls
         const joystick = document.getElementById('joystick');
@@ -225,9 +225,7 @@ class Game {
             this.mobileControls.jumpPressed = false;
         });
         
-        // Player 2 Controls (tablets only)
-        if (!this.ui.isTablet) return;
-        
+        // Player 2 Controls (always setup for multiplayer on any touchscreen)
         const joystickP2 = document.getElementById('joystickP2');
         const stickP2 = joystickP2.querySelector('.joystick-stick');
         const jumpBtnP2 = document.getElementById('jumpBtnP2');
