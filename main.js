@@ -30,6 +30,10 @@ class Game {
         this.difficulty = 'medium';
         this.towerLevel = 1;
         
+        // Rotation handling
+        this.isRotating = false;
+        this.wasPlaying = false;
+        
         // Match settings
         this.matchTimeLimit = 120; // 2 minutes
         this.matchTimeElapsed = 0; // Time elapsed in seconds
@@ -103,15 +107,50 @@ class Game {
     
     initializeCanvas() {
         this.resizeCanvas();
-        window.addEventListener('resize', () => {
-            this.resizeCanvas();
-            if (this.menuBackground && this.ui.currentScreen === 'titleScreen') {
-                this.resizeMenuBackgroundCanvas();
-                this.menuBackground.setupMatch();
+        
+        // Handle both resize and orientation change events
+        const handleResize = () => {
+            // Auto-pause game during rotation if playing
+            if (this.gameState === 'playing' && !this.isRotating) {
+                this.wasPlaying = true;
+                this.isRotating = true;
+                // Don't change gameState, just flag rotation
             }
-            if (this.mainMenuBackground && this.ui.currentScreen === 'mainMenu') {
-                this.resizeMainMenuBackgroundCanvas();
-                this.mainMenuBackground.setupMatch();
+            
+            // Delay resize to allow browser to complete rotation
+            setTimeout(() => {
+                this.resizeCanvas();
+                if (this.menuBackground && this.ui.currentScreen === 'titleScreen') {
+                    this.resizeMenuBackgroundCanvas();
+                    this.menuBackground.setupMatch();
+                }
+                if (this.mainMenuBackground && this.ui.currentScreen === 'mainMenu') {
+                    this.resizeMainMenuBackgroundCanvas();
+                    this.mainMenuBackground.setupMatch();
+                }
+                // Update touch controls visibility after rotation
+                if (this.gameState === 'playing' || this.gameState === 'countdown' || this.gameState === 'paused') {
+                    this.updateTouchControlsVisibility();
+                }
+                
+                // Resume game after rotation completes
+                setTimeout(() => {
+                    if (this.isRotating && this.wasPlaying) {
+                        this.isRotating = false;
+                        this.wasPlaying = false;
+                        // Game will auto-resume on next frame
+                    }
+                }, 300);
+            }, 100);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+        
+        // Detect when app loses/gains focus (rotation can trigger this)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && this.gameState === 'playing') {
+                // Don't auto-pause, let rotation handler manage it
             }
         });
         
@@ -187,10 +226,46 @@ class Game {
     
     resizeCanvas() {
         const container = document.getElementById('gameScreen');
+        const oldWidth = this.canvas.width;
+        const oldHeight = this.canvas.height;
+        
         this.canvas.width = container.clientWidth;
         this.canvas.height = container.clientHeight;
         
-        if (this.physics) {
+        // If game is active and canvas size changed significantly, scale positions
+        if (this.physics && (oldWidth !== this.canvas.width || oldHeight !== this.canvas.height)) {
+            const scaleX = this.canvas.width / oldWidth;
+            const scaleY = this.canvas.height / oldHeight;
+            
+            // Update physics dimensions
+            this.physics.width = this.canvas.width;
+            this.physics.height = this.canvas.height;
+            this.physics.groundY = this.canvas.height * 0.7;
+            
+            // Scale player and ball positions if game is active
+            if (this.gameState === 'playing' || this.gameState === 'paused' || this.gameState === 'countdown') {
+                // Scale ball position
+                if (this.ball && oldWidth > 0 && oldHeight > 0) {
+                    this.ball.x *= scaleX;
+                    this.ball.y *= scaleY;
+                }
+                
+                // Scale player positions
+                if (this.player1 && oldWidth > 0) {
+                    this.player1.x *= scaleX;
+                    this.player1.y = this.physics.groundY - this.player1.height / 2;
+                }
+                if (this.player2 && oldWidth > 0) {
+                    this.player2.x *= scaleX;
+                    this.player2.y = this.physics.groundY - this.player2.height / 2;
+                }
+                if (this.player3 && oldWidth > 0) {
+                    this.player3.x *= scaleX;
+                    this.player3.y = this.physics.groundY - this.player3.height / 2;
+                }
+            }
+        } else if (this.physics) {
+            // First time initialization
             this.physics.width = this.canvas.width;
             this.physics.height = this.canvas.height;
             this.physics.groundY = this.canvas.height * 0.7;
@@ -620,6 +695,15 @@ class Game {
     }
     
     gameLoop() {
+        // Skip updates during rotation but keep rendering
+        if (this.isRotating) {
+            if (this.gameState === 'playing') {
+                this.render();
+            }
+            this.animationId = requestAnimationFrame(() => this.gameLoop());
+            return;
+        }
+        
         if (this.gameState === 'countdown') {
             this.updateCountdown();
             this.renderCountdown();
