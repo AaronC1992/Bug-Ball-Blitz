@@ -121,46 +121,6 @@ body {
     100% { background-position: 50px 50px; }
 }
 
-.floating-bugs {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-}
-
-.float-bug {
-    position: absolute;
-    font-size: 48px;
-    left: var(--x);
-    animation: floatUp 6s ease-in infinite;
-    animation-delay: var(--delay);
-    opacity: 0;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-}
-
-@keyframes floatUp {
-    0% {
-        bottom: -10%;
-        opacity: 0;
-        transform: translateX(-50%) rotate(0deg);
-    }
-    10% {
-        opacity: 0.6;
-    }
-    50% {
-        opacity: 0.8;
-    }
-    90% {
-        opacity: 0.4;
-    }
-    100% {
-        bottom: 110%;
-        opacity: 0;
-        transform: translateX(-50%) rotate(360deg);
-    }
-}
-
 /* Title Screen Styling */
 .title-content {
     margin-bottom: 50px;
@@ -247,46 +207,6 @@ body {
     50% {
         transform: translateY(-20px) rotate(180deg);
     }
-}
-
-.arcade-border {
-    background: linear-gradient(90deg, 
-        transparent 0%,
-        #ff00ff 10%,
-        #00ffff 30%,
-        #ffff00 50%,
-        #00ffff 70%,
-        #ff00ff 90%,
-        transparent 100%);
-    padding: 3px;
-    border-radius: 20px;
-    display: inline-block;
-    animation: borderShift 3s linear infinite;
-    box-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
-}
-
-@keyframes borderShift {
-    0% {
-        filter: hue-rotate(0deg);
-    }
-    100% {
-        filter: hue-rotate(360deg);
-    }
-}
-
-.game-tagline {
-    font-size: 24px;
-    color: #fff;
-    font-weight: 900;
-    letter-spacing: 4px;
-    margin: 0;
-    padding: 12px 40px;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 18px;
-    text-shadow: 
-        0 0 10px rgba(255, 255, 0, 0.8),
-        0 0 20px rgba(255, 0, 255, 0.6),
-        0 0 30px rgba(0, 255, 255, 0.4);
 }
 
 .version-info {
