@@ -18,6 +18,13 @@ export class MenuBackground {
         this.isRunning = false;
         this.frameCount = 0;
         
+        // Celebration tracking
+        this.celebrationActive = false;
+        this.celebrationFrames = 0;
+        this.celebrationDuration = 120; // 2 seconds at 60fps
+        this.celebrationPlayer = null;
+        this.celebrationEmojis = ['🎉', '⚡', '💪', '🔥', '⭐', '🏆', '✨', '🎊', '🌟', '💥'];
+        
         console.log('MenuBackground constructor - canvas dimensions:', canvas.width, 'x', canvas.height);
         
         if (canvas.width > 0 && canvas.height > 0) {
@@ -236,6 +243,17 @@ export class MenuBackground {
     }
     
     update() {
+        // Update celebration if active
+        if (this.celebrationActive) {
+            this.celebrationFrames++;
+            if (this.celebrationFrames >= this.celebrationDuration) {
+                this.celebrationActive = false;
+                this.celebrationFrames = 0;
+                this.celebrationPlayer = null;
+            }
+            return; // Don't update game during celebration
+        }
+        
         // Update AI decisions
         this.ais.forEach(ai => ai.update());
         
@@ -255,16 +273,34 @@ export class MenuBackground {
         // Check for goals and reset
         const goal = this.physics.checkGoal(this.ball);
         if (goal) {
-            // Reset ball to center
-            this.ball.x = this.canvas.width / 2;
-            this.ball.y = this.canvas.height * 0.5;
-            this.ball.vx = 0;
-            this.ball.vy = 0;
+            // Find the player who scored (closest to ball or last to touch)
+            let scoringPlayer = this.players[0];
+            let minDistance = Infinity;
+            this.players.forEach(player => {
+                const distance = Math.hypot(player.x - this.ball.x, player.y - this.ball.y);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    scoringPlayer = player;
+                }
+            });
             
-            // Occasionally randomize the match
-            if (Math.random() < 0.3) {
-                this.setupMatch();
-            }
+            // Trigger celebration
+            this.celebrationActive = true;
+            this.celebrationFrames = 0;
+            this.celebrationPlayer = scoringPlayer;
+            
+            // Reset ball to center after celebration
+            setTimeout(() => {
+                this.ball.x = this.canvas.width / 2;
+                this.ball.y = this.canvas.height * 0.5;
+                this.ball.vx = 0;
+                this.ball.vy = 0;
+                
+                // Occasionally randomize the match
+                if (Math.random() < 0.3) {
+                    this.setupMatch();
+                }
+            }, (this.celebrationDuration / 60) * 1000);
         }
     }
     
@@ -291,6 +327,11 @@ export class MenuBackground {
             this.drawPlayer(player);
         });
         this.ctx.globalAlpha = 1;
+        
+        // Draw celebration if active
+        if (this.celebrationActive && this.celebrationPlayer) {
+            this.drawCelebration();
+        }
     }
     
     drawGoals() {
@@ -346,6 +387,52 @@ export class MenuBackground {
         this.ctx.arc(player.x - 8, player.y - player.height / 2 - 5, 2, 0, Math.PI * 2);
         this.ctx.arc(player.x + 8, player.y - player.height / 2 - 5, 2, 0, Math.PI * 2);
         this.ctx.fill();
+        
+        this.ctx.restore();
+    }
+    
+    drawCelebration() {
+        if (!this.celebrationPlayer) return;
+        
+        const player = this.celebrationPlayer;
+        const progress = this.celebrationFrames / this.celebrationDuration;
+        
+        // Pick random emojis for this celebration
+        const emojiCount = 8;
+        const emojis = [];
+        for (let i = 0; i < emojiCount; i++) {
+            emojis.push(this.celebrationEmojis[Math.floor(Math.random() * this.celebrationEmojis.length)]);
+        }
+        
+        this.ctx.save();
+        
+        // Draw floating emojis around the player
+        this.ctx.font = '30px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        
+        emojis.forEach((emoji, index) => {
+            const angle = (index / emojiCount) * Math.PI * 2;
+            const radius = 60 + Math.sin(progress * Math.PI * 4) * 20;
+            const x = player.x + Math.cos(angle + progress * Math.PI * 2) * radius;
+            const y = player.y - player.height / 2 + Math.sin(angle + progress * Math.PI * 2) * radius;
+            
+            // Fade in and out
+            const fadeProgress = progress < 0.2 ? progress / 0.2 : progress > 0.8 ? (1 - progress) / 0.2 : 1;
+            this.ctx.globalAlpha = fadeProgress * 0.9;
+            
+            this.ctx.fillText(emoji, x, y);
+        });
+        
+        // Draw "GOAL!" text
+        this.ctx.globalAlpha = progress < 0.3 ? progress / 0.3 : progress > 0.7 ? (1 - progress) / 0.3 : 1;
+        this.ctx.font = 'bold 40px Arial';
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.strokeStyle = '#000000';
+        this.ctx.lineWidth = 4;
+        const textY = player.y - player.height - 80;
+        this.ctx.strokeText('GOAL!', player.x, textY);
+        this.ctx.fillText('GOAL!', player.x, textY);
         
         this.ctx.restore();
     }

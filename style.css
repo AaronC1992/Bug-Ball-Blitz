@@ -122,7 +122,7 @@ body {
 }
 
 /* Menu Background Canvas */
-#menuBackgroundCanvas {
+#menuBackgroundCanvas, #mainMenuBackgroundCanvas {
     position: absolute;
     top: 0;
     left: 0;
@@ -133,7 +133,7 @@ body {
 }
 
 /* Title Screen Styling */
-.title-content {
+.title-content, .menu-content {
     margin-bottom: 50px;
     text-align: center;
     position: relative;

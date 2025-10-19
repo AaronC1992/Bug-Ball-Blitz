@@ -173,9 +173,17 @@ export class UIManager {
             input.value = '';
             this.showMainMenu();
             
-            // Stop menu background when entering main menu
+            // Stop title menu background, start main menu background
             if (this.game && this.game.menuBackground) {
                 this.game.menuBackground.stop();
+            }
+            if (this.game && this.game.mainMenuBackgroundCanvas) {
+                this.game.resizeMainMenuBackgroundCanvas();
+                if (!this.game.mainMenuBackground) {
+                    this.game.initializeMainMenuBackground();
+                }
+                this.game.mainMenuBackground.setupMatch();
+                this.game.mainMenuBackground.start();
             }
         } else {
             alert(result.error);
@@ -217,9 +225,17 @@ export class UIManager {
             this.currentProfile = profile;
             this.showMainMenu();
             
-            // Stop menu background when entering main menu
+            // Stop title menu background, start main menu background
             if (this.game && this.game.menuBackground) {
                 this.game.menuBackground.stop();
+            }
+            if (this.game && this.game.mainMenuBackgroundCanvas) {
+                this.game.resizeMainMenuBackgroundCanvas();
+                if (!this.game.mainMenuBackground) {
+                    this.game.initializeMainMenuBackground();
+                }
+                this.game.mainMenuBackground.setupMatch();
+                this.game.mainMenuBackground.start();
             }
         }
     }
@@ -286,7 +302,10 @@ export class UIManager {
         this.currentProfile = null;
         this.showScreen('titleScreen');
         
-        // Restart menu background when returning to title screen
+        // Stop main menu background, restart title screen background
+        if (this.game && this.game.mainMenuBackground) {
+            this.game.mainMenuBackground.stop();
+        }
         if (this.game && this.game.menuBackground) {
             this.game.resizeMenuBackgroundCanvas();
             this.game.menuBackground.setupMatch();

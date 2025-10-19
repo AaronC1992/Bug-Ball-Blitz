@@ -15,10 +15,14 @@ class Game {
         this.ctx = this.canvas.getContext('2d');
         this.ui = new UIManager(this);
         
-        // Menu background
+        // Menu backgrounds
         this.menuBackgroundCanvas = document.getElementById('menuBackgroundCanvas');
         this.menuBackgroundCtx = this.menuBackgroundCanvas.getContext('2d');
         this.menuBackground = null;
+        
+        this.mainMenuBackgroundCanvas = document.getElementById('mainMenuBackgroundCanvas');
+        this.mainMenuBackgroundCtx = this.mainMenuBackgroundCanvas ? this.mainMenuBackgroundCanvas.getContext('2d') : null;
+        this.mainMenuBackground = null;
         
         // Game state
         this.gameMode = null; // 'tower', 'quickplay', 'multiplayer'
@@ -105,6 +109,10 @@ class Game {
                 this.resizeMenuBackgroundCanvas();
                 this.menuBackground.setupMatch();
             }
+            if (this.mainMenuBackground && this.ui.currentScreen === 'mainMenu') {
+                this.resizeMainMenuBackgroundCanvas();
+                this.mainMenuBackground.setupMatch();
+            }
         });
         
         // Initialize menu background after a short delay to ensure DOM is rendered
@@ -136,6 +144,29 @@ class Game {
         }
     }
     
+    initializeMainMenuBackground() {
+        try {
+            this.resizeMainMenuBackgroundCanvas();
+            if (this.mainMenuBackgroundCanvas && this.mainMenuBackgroundCtx) {
+                if (this.mainMenuBackgroundCanvas.width > 0 && this.mainMenuBackgroundCanvas.height > 0) {
+                    if (!this.mainMenuBackground) {
+                        this.mainMenuBackground = new MenuBackground(this.mainMenuBackgroundCanvas, this.mainMenuBackgroundCtx);
+                    } else {
+                        this.mainMenuBackground.setupMatch();
+                    }
+                    this.mainMenuBackground.start();
+                    console.log('Main menu background initialized successfully');
+                } else {
+                    console.error('Main menu background canvas has zero dimensions:', this.mainMenuBackgroundCanvas.width, 'x', this.mainMenuBackgroundCanvas.height);
+                }
+            } else {
+                console.error('Main menu background canvas or context not found');
+            }
+        } catch (error) {
+            console.error('Error initializing main menu background:', error);
+        }
+    }
+    
     resizeMenuBackgroundCanvas() {
         const titleScreen = document.getElementById('titleScreen');
         if (titleScreen) {
@@ -144,6 +175,17 @@ class Game {
             console.log('Menu background canvas resized:', this.menuBackgroundCanvas.width, 'x', this.menuBackgroundCanvas.height);
         } else {
             console.error('Title screen element not found');
+        }
+    }
+    
+    resizeMainMenuBackgroundCanvas() {
+        const mainMenu = document.getElementById('mainMenu');
+        if (mainMenu && this.mainMenuBackgroundCanvas) {
+            this.mainMenuBackgroundCanvas.width = mainMenu.clientWidth;
+            this.mainMenuBackgroundCanvas.height = mainMenu.clientHeight;
+            console.log('Main menu background canvas resized:', this.mainMenuBackgroundCanvas.width, 'x', this.mainMenuBackgroundCanvas.height);
+        } else {
+            console.error('Main menu element not found');
         }
     }
     
@@ -359,6 +401,11 @@ class Game {
         this.gameMode = 'tower';
         this.towerLevel = this.ui.currentProfile.tower.currentLevel;
         
+        // Stop main menu background when entering game
+        if (this.mainMenuBackground) {
+            this.mainMenuBackground.stop();
+        }
+        
         this.ui.showBugSelection((bugId) => {
             this.selectedBug1 = getBugById(bugId);
             this.ui.showArenaSelection((arenaId) => {
@@ -427,6 +474,11 @@ class Game {
     startQuickPlay() {
         this.gameMode = 'quickplay';
         
+        // Stop main menu background when entering game
+        if (this.mainMenuBackground) {
+            this.mainMenuBackground.stop();
+        }
+        
         this.ui.showBugSelection((bugId) => {
             this.selectedBug1 = getBugById(bugId);
             this.selectedBug2 = this.getRandomBug();
@@ -439,6 +491,11 @@ class Game {
     
     startMultiplayer() {
         this.gameMode = 'multiplayer';
+        
+        // Stop main menu background when entering game
+        if (this.mainMenuBackground) {
+            this.mainMenuBackground.stop();
+        }
         
         this.ui.showBugSelection((bugId) => {
             this.selectedBug1 = getBugById(bugId);
@@ -1194,9 +1251,14 @@ class Game {
         
         this.ui.showMainMenu();
         
-        // Stop menu background when leaving title screen
-        if (this.menuBackground) {
-            this.menuBackground.stop();
+        // Restart main menu background when returning
+        if (this.mainMenuBackgroundCanvas) {
+            this.resizeMainMenuBackgroundCanvas();
+            if (!this.mainMenuBackground) {
+                this.initializeMainMenuBackground();
+            }
+            this.mainMenuBackground.setupMatch();
+            this.mainMenuBackground.start();
         }
     }
     
