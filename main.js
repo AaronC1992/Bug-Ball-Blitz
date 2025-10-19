@@ -347,6 +347,8 @@ class Game {
     }
     
     startMatch() {
+        console.log('[startMatch] ENTRY - timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining);
+        
         this.ui.showScreen('gameScreen');
         
         if (this.ui.isMobile) {
@@ -433,11 +435,13 @@ class Game {
         this.score2 = 0;
         
         // Complete timer reset for new match
+        console.log('[BEFORE RESET] timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining, 'matchTime:', this.matchTime);
+        
         this.timeStarted = null;
         this.timeRemaining = this.matchTime;
         
         // Verify timer reset
-        console.log('[Match Start] Timer Reset - timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining);
+        console.log('[AFTER RESET] timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining);
         
         this.updateScoreDisplay();
         this.updateTimerDisplay();
@@ -870,6 +874,14 @@ class Game {
     }
     
     rematch() {
+        console.log('[Rematch] Called - Current timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining);
+        
+        // Force stop any running animation frames
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+        
         this.ui.hideOverlay('matchEndScreen');
         this.startMatch();
     }
