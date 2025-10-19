@@ -1,7 +1,7 @@
 // menuBackground.js - Animated AI match background for main menu
 
 import { Physics } from './physics.js';
-import { AI, MultiAI } from './ai.js';
+import { AI } from './ai.js';
 import { getBugById } from './bugs.js';
 import { getArenaById, drawArenaBackground } from './arenas.js';
 
@@ -165,13 +165,8 @@ export class MenuBackground {
         this.players.push(player);
         
         const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
-        if (this.players.length >= 3) {
-            // 1v2 or 2v2 - use MultiAI for coordination
-            const teammate = this.players[this.players.length - 2];
-            this.ais.push(new MultiAI(player, teammate, this.ball, 'right', difficulty));
-        } else {
-            this.ais.push(new AI(player, this.ball, 'right', difficulty));
-        }
+        // Use regular AI for simplicity in background animation
+        this.ais.push(new AI(player, this.ball, side, difficulty));
     }
     
     setupPlayer3(side, bugType) {
