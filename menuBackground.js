@@ -78,7 +78,8 @@ export class MenuBackground {
                 y: this.canvas.height * 0.5,
                 vx: 0,
                 vy: 0,
-                radius: 15
+                radius: 15,
+                rotation: 0 // Track rotation angle for rolling effect
             };
             
             // Clear previous players and AIs
@@ -355,6 +356,16 @@ export class MenuBackground {
             this.physics.updateBall(this.ball);
         }
         
+        // Update ball rotation based on velocity (rolling effect)
+        if (this.ball) {
+            const speed = Math.hypot(this.ball.vx, this.ball.vy);
+            // Rotate based on distance traveled (circumference = 2πr)
+            const rotationSpeed = speed / (2 * Math.PI * this.ball.radius);
+            this.ball.rotation += rotationSpeed;
+            // Keep rotation within 0-2π range
+            this.ball.rotation = this.ball.rotation % (Math.PI * 2);
+        }
+        
         // Check ball collisions with players - pass bug object for stats
         this.players.forEach(player => {
             this.physics.checkBallPlayerCollision(this.ball, player, player.bug);
@@ -442,10 +453,19 @@ export class MenuBackground {
     drawBall() {
         this.ctx.save();
         this.ctx.globalAlpha = 1.0; // Force full opacity
+        
+        // Translate to ball position
+        this.ctx.translate(this.ball.x, this.ball.y);
+        
+        // Rotate based on ball rotation
+        this.ctx.rotate(this.ball.rotation);
+        
+        // Draw the ball at origin (since we translated)
         this.ctx.font = '30px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('⚽', this.ball.x, this.ball.y);
+        this.ctx.fillText('⚽', 0, 0);
+        
         this.ctx.restore();
     }
     
