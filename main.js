@@ -529,7 +529,8 @@ class Game {
             y: this.canvas.height / 2,
             vx: 0,
             vy: 0,
-            radius: 15
+            radius: 15,
+            rotation: 0 // Track rotation angle for rolling effect
         };
         
         // Initialize player 1
@@ -759,6 +760,16 @@ class Game {
         
         this.physics.updateBall(this.ball);
         
+        // Update ball rotation based on velocity (rolling effect)
+        if (this.ball) {
+            const speed = Math.hypot(this.ball.vx, this.ball.vy);
+            // Rotate based on distance traveled (circumference = 2πr)
+            const rotationSpeed = speed / (2 * Math.PI * this.ball.radius);
+            this.ball.rotation += rotationSpeed;
+            // Keep rotation within 0-2π range
+            this.ball.rotation = this.ball.rotation % (Math.PI * 2);
+        }
+        
         // Check collisions
         this.physics.checkBallPlayerCollision(this.ball, this.player1, this.selectedBug1);
         this.physics.checkBallPlayerCollision(this.ball, this.player2, this.selectedBug2);
@@ -883,24 +894,34 @@ class Game {
     }
     
     drawBall() {
-        // Soccer ball
+        this.ctx.save();
+        
+        // Translate to ball position
+        this.ctx.translate(this.ball.x, this.ball.y);
+        
+        // Rotate based on ball rotation
+        this.ctx.rotate(this.ball.rotation);
+        
+        // Draw soccer ball at origin (since we translated)
         this.ctx.fillStyle = 'white';
         this.ctx.beginPath();
-        this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
+        this.ctx.arc(0, 0, this.ball.radius, 0, Math.PI * 2);
         this.ctx.fill();
         
         // Black pentagons
         this.ctx.fillStyle = 'black';
         for (let i = 0; i < 5; i++) {
             const angle = (i * Math.PI * 2 / 5);
-            const x = this.ball.x + Math.cos(angle) * this.ball.radius * 0.6;
-            const y = this.ball.y + Math.sin(angle) * this.ball.radius * 0.6;
+            const x = Math.cos(angle) * this.ball.radius * 0.6;
+            const y = Math.sin(angle) * this.ball.radius * 0.6;
             this.ctx.beginPath();
             this.ctx.arc(x, y, this.ball.radius * 0.25, 0, Math.PI * 2);
             this.ctx.fill();
         }
         
-        // Shadow
+        this.ctx.restore();
+        
+        // Shadow (drawn separately, not rotated)
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         this.ctx.beginPath();
         this.ctx.ellipse(this.ball.x, this.physics.groundY + 5, this.ball.radius * 0.8, this.ball.radius * 0.3, 0, 0, Math.PI * 2);
