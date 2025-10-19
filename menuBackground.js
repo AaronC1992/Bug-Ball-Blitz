@@ -323,15 +323,6 @@ export class MenuBackground {
     }
     
     update() {
-        // Handle ball dragging
-        if (this.isDraggingBall && this.ball) {
-            this.ball.x = this.mouseX;
-            this.ball.y = this.mouseY;
-            this.ball.vx = 0;
-            this.ball.vy = 0;
-            return; // Skip normal physics when dragging
-        }
-        
         // Update celebration if active
         if (this.celebrationActive) {
             this.celebrationFrames++;
@@ -343,7 +334,7 @@ export class MenuBackground {
             return; // Don't update game during celebration
         }
         
-        // Update AI decisions
+        // Update AI decisions (AI should react even when ball is being dragged)
         this.ais.forEach(ai => ai.update());
         
         // Update player physics - pass bug object for stats
@@ -351,8 +342,18 @@ export class MenuBackground {
             this.physics.updatePlayer(player, player.bug);
         });
         
-        // Update ball physics
-        this.physics.updateBall(this.ball);
+        // Handle ball dragging or normal ball physics
+        if (this.isDraggingBall && this.ball) {
+            // Update ball position to follow mouse/touch
+            this.ball.x = this.mouseX;
+            this.ball.y = this.mouseY;
+            this.ball.vx = 0;
+            this.ball.vy = 0;
+            // Don't apply physics to ball while dragging, but AI still updates
+        } else {
+            // Normal ball physics
+            this.physics.updateBall(this.ball);
+        }
         
         // Check ball collisions with players - pass bug object for stats
         this.players.forEach(player => {
