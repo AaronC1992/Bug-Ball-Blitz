@@ -43,6 +43,13 @@ class Game {
         this.countdownValue = 5; // Countdown before match starts
         this.countdownStartTime = 0;
         
+        // Match intro animation
+        this.introState = 'idle'; // 'idle', 'teams', 'countdown', 'go'
+        this.introStartTime = 0;
+        this.introTeamsDuration = 2000; // 2 seconds for team names
+        this.introCountdownDuration = 3000; // 3 seconds for 3-2-1 countdown
+        this.introGoDuration = 800; // 0.8 seconds for GO
+        
         // Players
         this.player1 = null;
         this.player2 = null;
@@ -131,7 +138,7 @@ class Game {
                     this.mainMenuBackground.setupMatch();
                 }
                 // Update touch controls visibility after rotation
-                if (this.gameState === 'playing' || this.gameState === 'countdown' || this.gameState === 'paused') {
+                if (this.gameState === 'playing' || this.gameState === 'intro' || this.gameState === 'countdown' || this.gameState === 'paused') {
                     this.updateTouchControlsVisibility();
                 }
                 
@@ -245,7 +252,7 @@ class Game {
             this.physics.groundY = this.canvas.height * 0.7;
             
             // Scale player and ball positions if game is active
-            if (this.gameState === 'playing' || this.gameState === 'paused' || this.gameState === 'countdown') {
+            if (this.gameState === 'playing' || this.gameState === 'paused' || this.gameState === 'intro' || this.gameState === 'countdown') {
                 // Scale ball position
                 if (this.ball && oldWidth > 0 && oldHeight > 0) {
                     this.ball.x *= scaleX;
@@ -689,14 +696,12 @@ class Game {
             levelInfoEl.style.display = 'none';
         }
         
-        // Start with countdown
-        this.gameState = 'countdown';
-        this.countdownValue = 5;
-        this.initialCountdownValue = 5;
-        this.countdownStartTime = Date.now();
-        
-        // Play whistle sound for match start
-        this.audio.playSound('whistle');
+        // Start with intro animation
+        this.gameState = 'intro';
+        this.introState = 'teams';
+        this.introStartTime = Date.now();
+        this.countdownValue = 3;
+        this.initialCountdownValue = 3;
         
         // Show touch controls based on user preference or auto-detection (after state is set)
         this.updateTouchControlsVisibility();
@@ -714,7 +719,10 @@ class Game {
             return;
         }
         
-        if (this.gameState === 'countdown') {
+        if (this.gameState === 'intro') {
+            this.updateIntro();
+            this.renderIntro();
+        } else if (this.gameState === 'countdown') {
             this.updateCountdown();
             this.renderCountdown();
         } else if (this.gameState === 'playing') {
@@ -728,6 +736,153 @@ class Game {
         }
         
         this.animationId = requestAnimationFrame(() => this.gameLoop());
+    }
+    
+    updateIntro() {
+        const elapsed = Date.now() - this.introStartTime;
+        
+        if (this.introState === 'teams') {
+            if (elapsed >= this.introTeamsDuration) {
+                // Move to countdown phase
+                this.introState = 'countdown';
+                this.introStartTime = Date.now();
+                this.countdownStartTime = Date.now();
+                this.audio.playSound('whistle');
+            }
+        } else if (this.introState === 'countdown') {
+            // Update countdown (3, 2, 1)
+            const countdownElapsed = (Date.now() - this.countdownStartTime) / 1000;
+            this.countdownValue = Math.max(0, this.initialCountdownValue - countdownElapsed);
+            
+            if (this.countdownValue <= 0) {
+                // Move to GO phase
+                this.introState = 'go';
+                this.introStartTime = Date.now();
+                this.audio.playSound('whistle');
+            }
+        } else if (this.introState === 'go') {
+            if (elapsed >= this.introGoDuration) {
+                // Start the match
+                this.gameState = 'playing';
+                this.lastFrameTime = performance.now();
+            }
+        }
+    }
+    
+    renderIntro() {
+        // Clear canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw arena background
+        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height);
+        
+        // Draw goals
+        this.drawGoals();
+        
+        // Draw ball
+        this.drawBall();
+        
+        // Draw players
+        this.drawPlayer(this.player1, this.selectedBug1);
+        this.drawPlayer(this.player2, this.selectedBug2);
+        
+        if (this.player3) {
+            this.drawPlayer(this.player3, this.selectedBug3);
+        }
+        
+        const elapsed = Date.now() - this.introStartTime;
+        
+        if (this.introState === 'teams') {
+            // Show team names with fade in/out
+            const fadeInDuration = 400;
+            const fadeOutStart = this.introTeamsDuration - 400;
+            let opacity = 1;
+            
+            if (elapsed < fadeInDuration) {
+                opacity = elapsed / fadeInDuration;
+            } else if (elapsed > fadeOutStart) {
+                opacity = 1 - ((elapsed - fadeOutStart) / 400);
+            }
+            
+            this.ctx.save();
+            
+            // VS text in center
+            this.ctx.font = 'bold 60px Arial';
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+            this.ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.8})`;
+            this.ctx.lineWidth = 6;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            
+            const centerY = this.canvas.height / 2;
+            this.ctx.strokeText('VS', this.canvas.width / 2, centerY);
+            this.ctx.fillText('VS', this.canvas.width / 2, centerY);
+            
+            // Team 1 (left side)
+            this.ctx.font = 'bold 36px Arial';
+            this.ctx.fillStyle = `rgba(126, 211, 33, ${opacity})`;
+            this.ctx.lineWidth = 4;
+            this.ctx.textAlign = 'center';
+            
+            const team1Name = this.selectedBug1.name.toUpperCase();
+            this.ctx.strokeText(team1Name, this.canvas.width / 4, centerY - 100);
+            this.ctx.fillText(team1Name, this.canvas.width / 4, centerY - 100);
+            
+            // Team 2 (right side)
+            this.ctx.fillStyle = `rgba(255, 69, 58, ${opacity})`;
+            const team2Name = this.selectedBug2.name.toUpperCase();
+            this.ctx.strokeText(team2Name, (this.canvas.width / 4) * 3, centerY - 100);
+            this.ctx.fillText(team2Name, (this.canvas.width / 4) * 3, centerY - 100);
+            
+            this.ctx.restore();
+        } else if (this.introState === 'countdown') {
+            // Show countdown numbers (3, 2, 1)
+            const countdownNum = Math.ceil(this.countdownValue);
+            if (countdownNum > 0) {
+                // Scale effect based on time
+                const timeInSecond = (Date.now() - this.countdownStartTime) % 1000;
+                const scale = 1 + (timeInSecond / 1000) * 0.3; // Grow slightly
+                const opacity = 1 - (timeInSecond / 1000) * 0.3; // Fade slightly
+                
+                this.ctx.save();
+                this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+                this.ctx.scale(scale, scale);
+                
+                this.ctx.font = 'bold 140px Arial';
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                this.ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.8})`;
+                this.ctx.lineWidth = 10;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                
+                const text = countdownNum.toString();
+                this.ctx.strokeText(text, 0, 0);
+                this.ctx.fillText(text, 0, 0);
+                
+                this.ctx.restore();
+            }
+        } else if (this.introState === 'go') {
+            // Show GO with emphasis
+            const progress = elapsed / this.introGoDuration;
+            const scale = 1 + (1 - progress) * 0.5; // Start big, shrink
+            const opacity = 1 - progress; // Fade out
+            
+            this.ctx.save();
+            this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+            this.ctx.scale(scale, scale);
+            
+            this.ctx.font = 'bold 160px Arial';
+            this.ctx.fillStyle = `rgba(126, 211, 33, ${opacity})`;
+            this.ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.8})`;
+            this.ctx.lineWidth = 12;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            
+            this.ctx.strokeText('GO!', 0, 0);
+            this.ctx.fillText('GO!', 0, 0);
+            
+            this.ctx.restore();
+        }
     }
     
     updateCountdown() {
