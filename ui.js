@@ -5,7 +5,8 @@ import { getArenaArray } from './arenas.js';
 import { SaveSystem } from './saveSystem.js';
 
 export class UIManager {
-    constructor() {
+    constructor(game = null) {
+        this.game = game;
         this.currentScreen = 'titleScreen';
         this.currentProfile = null;
         this.isMobile = this.detectMobile();
@@ -171,6 +172,11 @@ export class UIManager {
             this.currentProfile = result.profile;
             input.value = '';
             this.showMainMenu();
+            
+            // Stop menu background when entering main menu
+            if (this.game && this.game.menuBackground) {
+                this.game.menuBackground.stop();
+            }
         } else {
             alert(result.error);
         }
@@ -210,6 +216,11 @@ export class UIManager {
         if (profile) {
             this.currentProfile = profile;
             this.showMainMenu();
+            
+            // Stop menu background when entering main menu
+            if (this.game && this.game.menuBackground) {
+                this.game.menuBackground.stop();
+            }
         }
     }
     
@@ -274,6 +285,13 @@ export class UIManager {
     logout() {
         this.currentProfile = null;
         this.showScreen('titleScreen');
+        
+        // Restart menu background when returning to title screen
+        if (this.game && this.game.menuBackground) {
+            this.game.resizeMenuBackgroundCanvas();
+            this.game.menuBackground.setupMatch();
+            this.game.menuBackground.start();
+        }
     }
     
     showBugSelection(callback) {

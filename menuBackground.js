@@ -1,0 +1,274 @@
+// menuBackground.js - Animated AI match background for main menu
+
+import { Physics } from './physics.js';
+import { AI, MultiAI } from './ai.js';
+import { getBugById } from './bugs.js';
+import { getArenaById, drawArenaBackground } from './arenas.js';
+
+export class MenuBackground {
+    constructor(canvas, ctx) {
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.physics = null;
+        this.ball = null;
+        this.players = [];
+        this.ais = [];
+        this.arena = null;
+        this.animationId = null;
+        this.isRunning = false;
+        
+        this.setupMatch();
+    }
+    
+    setupMatch() {
+        // Randomly select arena
+        const arenaIds = ['grassField', 'desertDunes', 'snowyPeak', 'spaceDome', 'neonCity', 
+                         'enchantedForest', 'volcanoArena', 'underwaterCave', 'cloudPalace', 
+                         'candyLand', 'mysticTemple', 'arcticBase', 'jungleCourt', 'cyberpunkAlley', 'hauntedMansion'];
+        const randomArena = arenaIds[Math.floor(Math.random() * arenaIds.length)];
+        this.arena = getArenaById(randomArena);
+        
+        // Randomly select match type: 1v1, 1v2, or 2v2
+        const matchTypes = ['1v1', '1v2', '2v2'];
+        const matchType = matchTypes[Math.floor(Math.random() * matchTypes.length)];
+        
+        // Random bug types
+        const bugTypes = ['ladybug', 'bee', 'butterfly', 'ant', 'spider', 'grasshopper', 'beetle', 'dragonfly'];
+        
+        // Initialize physics
+        this.physics = new Physics(this.canvas.width, this.canvas.height);
+        
+        // Setup ball
+        this.ball = {
+            x: this.canvas.width / 2,
+            y: this.canvas.height * 0.5,
+            vx: 0,
+            vy: 0,
+            radius: 15
+        };
+        
+        // Clear previous players and AIs
+        this.players = [];
+        this.ais = [];
+        
+        // Setup players based on match type
+        if (matchType === '1v1') {
+            this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+        } else if (matchType === '1v2') {
+            this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            this.setupPlayer3('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+        } else { // 2v2
+            this.setupPlayer1('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            this.setupPlayer1b('left', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            this.setupPlayer2('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+            this.setupPlayer3('right', bugTypes[Math.floor(Math.random() * bugTypes.length)]);
+        }
+    }
+    
+    setupPlayer1(side, bugType) {
+        const bug = getBugById(bugType);
+        const player = {
+            x: side === 'left' ? 150 : this.canvas.width - 150,
+            y: this.physics.groundY - 30,
+            vx: 0,
+            vy: 0,
+            width: 50,
+            height: 40,
+            grounded: true,
+            moveLeft: false,
+            moveRight: false,
+            jump: false,
+            color: bug.color,
+            emoji: bug.emoji
+        };
+        this.players.push(player);
+        
+        const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
+        this.ais.push(new AI(player, this.ball, 'left', difficulty));
+    }
+    
+    setupPlayer1b(side, bugType) {
+        const bug = getBugById(bugType);
+        const player = {
+            x: side === 'left' ? 200 : this.canvas.width - 200,
+            y: this.physics.groundY - 30,
+            vx: 0,
+            vy: 0,
+            width: 50,
+            height: 40,
+            grounded: true,
+            moveLeft: false,
+            moveRight: false,
+            jump: false,
+            color: bug.color,
+            emoji: bug.emoji
+        };
+        this.players.push(player);
+        
+        const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
+        this.ais.push(new AI(player, this.ball, 'left', difficulty));
+    }
+    
+    setupPlayer2(side, bugType) {
+        const bug = getBugById(bugType);
+        const player = {
+            x: side === 'right' ? this.canvas.width - 150 : 150,
+            y: this.physics.groundY - 30,
+            vx: 0,
+            vy: 0,
+            width: 50,
+            height: 40,
+            grounded: true,
+            moveLeft: false,
+            moveRight: false,
+            jump: false,
+            color: bug.color,
+            emoji: bug.emoji
+        };
+        this.players.push(player);
+        
+        const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
+        if (this.players.length >= 3) {
+            // 1v2 or 2v2 - use MultiAI for coordination
+            const teammate = this.players[this.players.length - 2];
+            this.ais.push(new MultiAI(player, teammate, this.ball, 'right', difficulty));
+        } else {
+            this.ais.push(new AI(player, this.ball, 'right', difficulty));
+        }
+    }
+    
+    setupPlayer3(side, bugType) {
+        const bug = getBugById(bugType);
+        const player = {
+            x: side === 'right' ? this.canvas.width - 200 : 200,
+            y: this.physics.groundY - 30,
+            vx: 0,
+            vy: 0,
+            width: 50,
+            height: 40,
+            grounded: true,
+            moveLeft: false,
+            moveRight: false,
+            jump: false,
+            color: bug.color,
+            emoji: bug.emoji
+        };
+        this.players.push(player);
+        
+        const difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
+        this.ais.push(new AI(player, this.ball, 'right', difficulty));
+    }
+    
+    start() {
+        this.isRunning = true;
+        this.animate();
+    }
+    
+    stop() {
+        this.isRunning = false;
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+    
+    animate() {
+        if (!this.isRunning) return;
+        
+        this.update();
+        this.render();
+        
+        this.animationId = requestAnimationFrame(() => this.animate());
+    }
+    
+    update() {
+        // Update AI decisions
+        this.ais.forEach(ai => ai.update());
+        
+        // Update player physics
+        this.players.forEach(player => {
+            this.physics.updatePlayer(player);
+        });
+        
+        // Update ball physics
+        this.physics.updateBall(this.ball);
+        
+        // Check ball collisions with players
+        this.players.forEach(player => {
+            this.physics.checkBallPlayerCollision(this.ball, player);
+        });
+        
+        // Check for goals and reset
+        const goal = this.physics.checkGoal(this.ball);
+        if (goal) {
+            // Reset ball to center
+            this.ball.x = this.canvas.width / 2;
+            this.ball.y = this.canvas.height * 0.5;
+            this.ball.vx = 0;
+            this.ball.vy = 0;
+            
+            // Occasionally randomize the match
+            if (Math.random() < 0.3) {
+                this.setupMatch();
+            }
+        }
+    }
+    
+    render() {
+        // Draw arena background
+        drawArenaBackground(this.ctx, this.arena, this.canvas.width, this.canvas.height);
+        
+        // Draw goals with transparency
+        this.ctx.globalAlpha = 0.5;
+        this.drawGoals();
+        this.ctx.globalAlpha = 1;
+        
+        // Draw ball
+        this.drawBall();
+        
+        // Draw players with slight transparency
+        this.ctx.globalAlpha = 0.7;
+        this.players.forEach(player => {
+            this.drawPlayer(player);
+        });
+        this.ctx.globalAlpha = 1;
+    }
+    
+    drawGoals() {
+        const goalWidth = 20;
+        const goalHeight = 120;
+        const groundY = this.physics.groundY;
+        
+        // Left goal
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        this.ctx.fillRect(0, groundY - goalHeight, goalWidth, goalHeight);
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        this.ctx.lineWidth = 3;
+        this.ctx.strokeRect(0, groundY - goalHeight, goalWidth, goalHeight);
+        
+        // Right goal
+        this.ctx.fillRect(this.canvas.width - goalWidth, groundY - goalHeight, goalWidth, goalHeight);
+        this.ctx.strokeRect(this.canvas.width - goalWidth, groundY - goalHeight, goalWidth, goalHeight);
+    }
+    
+    drawBall() {
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.7;
+        this.ctx.font = '30px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('⚽', this.ball.x, this.ball.y);
+        this.ctx.restore();
+    }
+    
+    drawPlayer(player) {
+        this.ctx.save();
+        this.ctx.font = `${player.height}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'bottom';
+        this.ctx.fillText(player.emoji, player.x, player.y);
+        this.ctx.restore();
+    }
+}

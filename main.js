@@ -7,12 +7,18 @@ import { getArenaById, drawArenaBackground } from './arenas.js';
 import { Physics } from './physics.js';
 import { AI, MultiAI } from './ai.js';
 import { getCelebrationArray, getCelebrationById, checkCelebrationUnlock, drawCelebration } from './celebrations.js';
+import { MenuBackground } from './menuBackground.js';
 
 class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.ui = new UIManager();
+        this.ui = new UIManager(this);
+        
+        // Menu background
+        this.menuBackgroundCanvas = document.getElementById('menuBackgroundCanvas');
+        this.menuBackgroundCtx = this.menuBackgroundCanvas.getContext('2d');
+        this.menuBackground = null;
         
         // Game state
         this.gameMode = null; // 'tower', 'quickplay', 'multiplayer'
@@ -94,6 +100,17 @@ class Game {
     initializeCanvas() {
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
+        
+        // Initialize menu background
+        this.resizeMenuBackgroundCanvas();
+        this.menuBackground = new MenuBackground(this.menuBackgroundCanvas, this.menuBackgroundCtx);
+        this.menuBackground.start();
+    }
+    
+    resizeMenuBackgroundCanvas() {
+        const titleScreen = document.getElementById('titleScreen');
+        this.menuBackgroundCanvas.width = titleScreen.clientWidth;
+        this.menuBackgroundCanvas.height = titleScreen.clientHeight;
     }
     
     resizeCanvas() {
@@ -1142,6 +1159,11 @@ class Game {
         }
         
         this.ui.showMainMenu();
+        
+        // Stop menu background when leaving title screen
+        if (this.menuBackground) {
+            this.menuBackground.stop();
+        }
     }
     
     showStylesMenu() {
