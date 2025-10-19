@@ -26,13 +26,15 @@ export class SaveSystem {
             },
             tower: {
                 currentLevel: 1,
+                highestLevel: 0,
                 isComplete: false,
                 levelsCompleted: 0
             },
             preferences: {
                 selectedBug: 'ladybug',
                 selectedArena: 'grassField'
-            }
+            },
+            selectedCelebration: 'classic'
         };
         
         localStorage.setItem(profileKey, JSON.stringify(profile));
@@ -47,7 +49,17 @@ export class SaveSystem {
             return null;
         }
         
-        return JSON.parse(data);
+        const profile = JSON.parse(data);
+        
+        // Migrate old profiles to new format
+        if (!profile.selectedCelebration) {
+            profile.selectedCelebration = 'classic';
+        }
+        if (!profile.tower.highestLevel) {
+            profile.tower.highestLevel = profile.tower.levelsCompleted || 0;
+        }
+        
+        return profile;
     }
     
     static saveProfile(profile) {

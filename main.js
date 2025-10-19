@@ -6,6 +6,7 @@ import { getBugById } from './bugs.js';
 import { getArenaById, drawArenaBackground } from './arenas.js';
 import { Physics } from './physics.js';
 import { AI, MultiAI } from './ai.js';
+import { getCelebrationArray, getCelebrationById, checkCelebrationUnlock, drawCelebration } from './celebrations.js';
 
 class Game {
     constructor() {
@@ -44,6 +45,13 @@ class Game {
         // Scores
         this.score1 = 0;
         this.score2 = 0;
+        
+        // Goal celebration
+        this.celebrationActive = false;
+        this.celebrationFrame = 0;
+        this.celebrationDuration = 60; // 1 second at 60fps
+        this.celebrationSide = null;
+        this.celebrationType = 'classic';
         
         // Input
         this.keys = {};
@@ -183,6 +191,15 @@ class Game {
         // Tower victory
         document.getElementById('towerDoneBtn').addEventListener('click', () => {
             this.quitToMenu();
+        });
+        
+        // Styles menu
+        document.getElementById('stylesBtn').addEventListener('click', () => {
+            this.showStylesMenu();
+        });
+        
+        document.getElementById('backToMainFromStylesBtn').addEventListener('click', () => {
+            this.ui.showScreen('mainMenu');
         });
     }
     
@@ -545,6 +562,18 @@ class Game {
             this.drawPlayer(this.player3, this.selectedBug3);
         }
         
+        // Draw celebration if active
+        if (this.celebrationActive) {
+            drawCelebration(this.ctx, this.celebrationType, this.celebrationSide, 
+                this.canvas.width, this.canvas.height, this.celebrationFrame);
+            this.celebrationFrame++;
+            
+            if (this.celebrationFrame >= this.celebrationDuration) {
+                this.celebrationActive = false;
+                this.celebrationFrame = 0;
+            }
+        }
+        
         // Draw countdown number
         const countdownNum = Math.ceil(this.countdownValue);
         if (countdownNum > 0) {
@@ -805,6 +834,13 @@ class Game {
     }
     
     handleGoal(goal) {
+        // Trigger celebration animation
+        const profile = SaveSystem.loadProfile();
+        this.celebrationActive = true;
+        this.celebrationFrame = 0;
+        this.celebrationSide = goal;
+        this.celebrationType = profile.selectedCelebration || 'classic';
+        
         if (goal === 'left') {
             this.score2++;
         } else {
@@ -813,25 +849,31 @@ class Game {
         
         this.updateScoreDisplay();
         
-        // Reset positions
-        this.physics.resetBall(this.ball);
-        this.physics.resetPlayer(this.player1, 'left');
-        this.physics.resetPlayer(this.player2, 'right');
-        
-        if (this.player3) {
-            this.physics.resetPlayer(this.player3, 'right');
-        }
+        // Reset positions after a short delay
+        setTimeout(() => {
+            this.physics.resetBall(this.ball);
+            this.physics.resetPlayer(this.player1, 'left');
+            this.physics.resetPlayer(this.player2, 'right');
+            
+            if (this.player3) {
+                this.physics.resetPlayer(this.player3, 'right');
+            }
+        }, 1000);
         
         // Check if match should end
         if (this.score1 >= 5 || this.score2 >= 5) {
-            this.endMatch();
+            setTimeout(() => {
+                this.endMatch();
+            }, 1000);
         } else {
             // Pause timer and start countdown after goal
-            this.lastFrameTime = null; // Pause timer
-            this.gameState = 'countdown';
-            this.countdownValue = 3;
-            this.initialCountdownValue = 3;
-            this.countdownStartTime = Date.now();
+            setTimeout(() => {
+                this.lastFrameTime = null; // Pause timer
+                this.gameState = 'countdown';
+                this.countdownValue = 3;
+                this.initialCountdownValue = 3;
+                this.countdownStartTime = Date.now();
+            }, 1000);
         }
     }
     
@@ -942,6 +984,13 @@ class Game {
     }
     
     handleMatchContinue() {
+        // Update tower progress
+        const profile = SaveSystem.loadProfile(this.ui.currentProfile.name);
+        profile.tower.currentLevel = this.towerLevel + 1;
+        profile.tower.highestLevel = Math.max(profile.tower.highestLevel || 0, this.towerLevel);
+        SaveSystem.saveProfile(profile);
+        this.ui.currentProfile = profile;
+        
         this.ui.hideOverlay('matchEndScreen');
         this.towerLevel++;
         this.initializeTowerMatch();
@@ -1071,6 +1120,45 @@ class Game {
         }
         
         this.ui.showMainMenu();
+    }
+    
+    showStylesMenu() {
+        const profile = SaveSystem.loadProfile();
+        const grid = document.getElementById('celebrationGrid');
+        grid.innerHTML = '';
+        
+        const celebrations = getCelebrationArray();
+        
+        celebrations.forEach(celebration => {
+            const isUnlocked = checkCelebrationUnlock(celebration, profile);
+            const isSelected = profile.selectedCelebration === celebration.id;
+            
+            const card = document.createElement('div');
+            card.className = `celebration-card ${isUnlocked ? '' : 'locked'} ${isSelected ? 'selected' : ''}`;
+            
+            card.innerHTML = `
+                <div class="celebration-icon">${celebration.icon}</div>
+                <h3>${celebration.name}</h3>
+                <p class="celebration-description">${celebration.description}</p>
+                <p class="unlock-condition">${isUnlocked ? '✓ Unlocked' : '🔒 ' + celebration.unlockCondition}</p>
+            `;
+            
+            if (isUnlocked) {
+                card.addEventListener('click', () => {
+                    // Update selected celebration
+                    profile.selectedCelebration = celebration.id;
+                    SaveSystem.saveProfile(profile);
+                    
+                    // Update UI
+                    document.querySelectorAll('.celebration-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                });
+            }
+            
+            grid.appendChild(card);
+        });
+        
+        this.ui.showScreen('stylesScreen');
     }
     
     handleDeviceModeChange(isMobile, isTablet) {
