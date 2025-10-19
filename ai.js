@@ -15,37 +15,52 @@ export class AI {
         this.reactionTimer = 0;
         this.targetX = player.x;
         this.shouldJump = false;
+        this.lastBallTouch = 0; // Frames since last touched ball
+        this.strategyCooldown = 0; // Cooldown for strategy changes
+        this.currentStrategy = 'defend'; // 'defend', 'attack', 'intercept'
     }
     
     getDifficultyParams(difficulty) {
         const params = {
             easy: {
-                reactionTime: 30,
-                predictionAccuracy: 0.3,
-                jumpTiming: 0.4,
-                aggressiveness: 0.5,
-                maxSpeed: 0.6
+                reactionTime: 35,
+                predictionAccuracy: 0.25,
+                jumpTiming: 0.35,
+                aggressiveness: 0.4,
+                maxSpeed: 0.55,
+                positioning: 0.3,
+                shotAccuracy: 0.25,
+                defensiveAwareness: 0.3
             },
             medium: {
-                reactionTime: 20,
-                predictionAccuracy: 0.6,
-                jumpTiming: 0.6,
-                aggressiveness: 0.7,
-                maxSpeed: 0.8
+                reactionTime: 22,
+                predictionAccuracy: 0.55,
+                jumpTiming: 0.60,
+                aggressiveness: 0.65,
+                maxSpeed: 0.75,
+                positioning: 0.6,
+                shotAccuracy: 0.55,
+                defensiveAwareness: 0.6
             },
             hard: {
-                reactionTime: 10,
-                predictionAccuracy: 0.85,
-                jumpTiming: 0.8,
-                aggressiveness: 0.9,
-                maxSpeed: 1.0
+                reactionTime: 12,
+                predictionAccuracy: 0.80,
+                jumpTiming: 0.80,
+                aggressiveness: 0.85,
+                maxSpeed: 0.92,
+                positioning: 0.85,
+                shotAccuracy: 0.80,
+                defensiveAwareness: 0.85
             },
             pro: {
-                reactionTime: 5,
+                reactionTime: 6,
                 predictionAccuracy: 0.95,
-                jumpTiming: 0.95,
-                aggressiveness: 1.0,
-                maxSpeed: 1.0
+                jumpTiming: 0.92,
+                aggressiveness: 0.95,
+                maxSpeed: 1.0,
+                positioning: 0.95,
+                shotAccuracy: 0.92,
+                defensiveAwareness: 0.95
             }
         };
         
@@ -54,103 +69,176 @@ export class AI {
     
     update() {
         this.reactionTimer++;
+        this.lastBallTouch++;
+        this.strategyCooldown = Math.max(0, this.strategyCooldown - 1);
         
         if (this.reactionTimer >= this.params.reactionTime) {
             this.reactionTimer = 0;
+            this.evaluateStrategy();
             this.calculateAction();
         }
         
         this.executeAction();
     }
     
+    evaluateStrategy() {
+        // Only change strategy if cooldown expired
+        if (this.strategyCooldown > 0) return;
+        
+        const ballX = this.ball.x;
+        const playerX = this.player.x;
+        const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
+        const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
+        
+        const ballDistanceToOwnGoal = Math.abs(ballX - ownGoalX);
+        const ballDistanceToOpponentGoal = Math.abs(ballX - opponentGoalX);
+        const distanceToBall = Math.abs(ballX - playerX);
+        
+        // Determine field zones
+        const inDefensiveThird = this.side === 'right' ? 
+            ballX > this.physics.width * 0.65 : 
+            ballX < this.physics.width * 0.35;
+        
+        const inAttackingThird = this.side === 'right' ? 
+            ballX < this.physics.width * 0.35 : 
+            ballX > this.physics.width * 0.65;
+        
+        // PRIORITY 1: Emergency defense
+        if (ballDistanceToOwnGoal < 200) {
+            this.currentStrategy = 'defend';
+            this.strategyCooldown = 20;
+            return;
+        }
+        
+        // PRIORITY 2: Attack when ball is near opponent goal
+        if (ballDistanceToOpponentGoal < 250 && distanceToBall < 150) {
+            this.currentStrategy = 'attack';
+            this.strategyCooldown = 30;
+            return;
+        }
+        
+        // PRIORITY 3: Intercept if ball is moving
+        const ballSpeed = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
+        if (ballSpeed > 3 && distanceToBall < 200) {
+            this.currentStrategy = 'intercept';
+            this.strategyCooldown = 15;
+            return;
+        }
+        
+        // Default: Choose based on position
+        if (inDefensiveThird) {
+            this.currentStrategy = 'defend';
+        } else if (inAttackingThird) {
+            this.currentStrategy = 'attack';
+        } else {
+            // Midfield - be aggressive based on difficulty
+            this.currentStrategy = Math.random() < this.params.aggressiveness ? 'attack' : 'defend';
+        }
+        
+        this.strategyCooldown = 40;
+    }
+    
     calculateAction() {
+        switch (this.currentStrategy) {
+            case 'defend':
+                this.defendStrategy();
+                break;
+            case 'attack':
+                this.attackStrategy();
+                break;
+            case 'intercept':
+                this.interceptStrategy();
+                break;
+        }
+    }
+    
+    defendStrategy() {
         const ballX = this.ball.x;
         const ballY = this.ball.y;
         const playerX = this.player.x;
         const playerY = this.player.y;
-        
-        // Determine opponent's goal position
-        const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
         const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
         
-        // Check if ball is dangerously close to own goal
-        const ballDistanceToOwnGoal = Math.abs(ballX - ownGoalX);
-        const inDangerZone = ballDistanceToOwnGoal < 200;
+        // Position between ball and goal
+        const defensivePosition = (ballX + ownGoalX) / 2;
         
-        // PRIORITY: If ball is near own goal, GO GET IT!
-        if (inDangerZone) {
-            // Emergency defense - go straight for the ball to clear it
-            this.targetX = ballX;
-            this.shouldJump = this.decideJump();
-            return;
+        // Apply positioning skill - better AI positions more precisely
+        const positioningError = (1 - this.params.positioning) * 80;
+        this.targetX = defensivePosition + (Math.random() - 0.5) * positioningError;
+        
+        // Clamp to defensive zone
+        if (this.side === 'right') {
+            this.targetX = Math.max(this.targetX, this.physics.width * 0.5);
+            this.targetX = Math.min(this.targetX, this.physics.width - 100);
+        } else {
+            this.targetX = Math.min(this.targetX, this.physics.width * 0.5);
+            this.targetX = Math.max(this.targetX, 100);
         }
         
-        // Check if ball is directly above AI (being bounced)
+        // Jump decision - defensive clears
         const distanceX = Math.abs(ballX - playerX);
-        const ballAbove = ballY < playerY - 50;
+        const ballInRange = distanceX < 100;
+        const ballHigh = ballY < playerY - 40;
         
-        // If ball is above AI, move sideways to let it drop, then attack
-        if (ballAbove && distanceX < 40) {
-            // Move toward opponent's goal to prepare for attack
-            if (this.side === 'right') {
-                this.targetX = playerX - 60; // Move left toward opponent goal
-            } else {
-                this.targetX = playerX + 60; // Move right toward opponent goal
-            }
-            this.shouldJump = false; // Don't keep bouncing it
-            return;
+        this.shouldJump = ballHigh && ballInRange && this.player.isGrounded && 
+                         Math.random() < this.params.jumpTiming * 0.8;
+    }
+    
+    attackStrategy() {
+        const ballX = this.ball.x;
+        const ballY = this.ball.y;
+        const playerX = this.player.x;
+        const playerY = this.player.y;
+        const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
+        
+        // Position to strike toward goal
+        let strikePosition;
+        if (this.side === 'right') {
+            // AI on right defending right goal, attacking left goal
+            strikePosition = ballX + 35; // Get to right of ball to kick left
+        } else {
+            // AI on left defending left goal, attacking right goal  
+            strikePosition = ballX - 35; // Get to left of ball to kick right
         }
         
-        // Predict ball position
+        // Apply shot accuracy - pro AI positions for better shots
+        const shotError = (1 - this.params.shotAccuracy) * 60;
+        strikePosition += (Math.random() - 0.5) * shotError;
+        
+        this.targetX = strikePosition;
+        
+        // Jump for headers when close to goal
+        const distanceToGoal = Math.abs(ballX - opponentGoalX);
+        const distanceX = Math.abs(ballX - playerX);
+        const ballHigh = ballY < playerY - 25;
+        const closeToGoal = distanceToGoal < 200;
+        
+        this.shouldJump = ballHigh && distanceX < 80 && this.player.isGrounded && 
+                         Math.random() < this.params.jumpTiming && closeToGoal;
+    }
+    
+    interceptStrategy() {
+        // Predict where ball will land
         const prediction = this.predictBallPosition();
         
-        // Decide target position based on ball movement and position
-        if (Math.abs(this.ball.vx) > 1 || Math.abs(this.ball.vy) > 1) {
-            // Ball is moving, intercept it
-            this.targetX = prediction.x;
-            
-            // If ball is heading toward our own goal, intercept aggressively
-            const ballHeadingToOwnGoal = this.side === 'right' ? 
-                (this.ball.vx > 0 && ballX > this.physics.width * 0.5) : 
-                (this.ball.vx < 0 && ballX < this.physics.width * 0.5);
-            
-            if (ballHeadingToOwnGoal) {
-                // Intercept the ball, don't just position
-                this.targetX = ballX;
-            }
-        } else {
-            // Ball is stationary or slow - ATTACK MODE
-            // Position to kick ball toward opponent's goal
-            const distanceToOpponentGoal = Math.abs(ballX - opponentGoalX);
-            
-            if (distanceToOpponentGoal < 300) {
-                // Close to opponent goal - position for direct shot
-                if (this.side === 'right') {
-                    this.targetX = ballX + 40; // Get behind ball
-                } else {
-                    this.targetX = ballX - 40;
-                }
-            } else {
-                // Far from goal - position for powerful kick
-                if (this.side === 'right') {
-                    this.targetX = ballX + 30;
-                } else {
-                    this.targetX = ballX - 30;
-                }
-            }
-        }
-        
         // Apply prediction accuracy
-        const error = (1 - this.params.predictionAccuracy) * 100;
-        this.targetX += (Math.random() - 0.5) * error;
+        const predictionError = (1 - this.params.predictionAccuracy) * 120;
+        this.targetX = prediction.x + (Math.random() - 0.5) * predictionError;
         
-        // Decide if should jump
-        this.shouldJump = this.decideJump();
+        // Jump to intercept aerial balls
+        const ballY = this.ball.y;
+        const playerY = this.player.y;
+        const distanceX = Math.abs(this.ball.x - this.player.x);
+        const ballHigh = ballY < playerY - 30;
+        const ballMovingDown = this.ball.vy > 0;
+        
+        this.shouldJump = ballHigh && !ballMovingDown && distanceX < 70 && 
+                         this.player.isGrounded && Math.random() < this.params.jumpTiming;
     }
     
     predictBallPosition() {
-        // Simple ball trajectory prediction
-        const steps = 30;
+        // Predict ball landing position
+        const steps = Math.floor(30 * this.params.predictionAccuracy);
         let predX = this.ball.x;
         let predY = this.ball.y;
         let predVx = this.ball.vx;
@@ -166,47 +254,29 @@ export class AI {
             if (predY >= this.physics.groundY - this.ball.radius) {
                 break;
             }
+            
+            // Check wall bounces
+            if (predX < this.ball.radius || predX > this.physics.width - this.ball.radius) {
+                predVx *= -0.8;
+                predX = Math.max(this.ball.radius, Math.min(this.physics.width - this.ball.radius, predX));
+            }
         }
         
         return { x: predX, y: predY };
     }
     
-    decideJump() {
-        const ballY = this.ball.y;
-        const playerY = this.player.y;
-        const distanceX = Math.abs(this.ball.x - this.player.x);
-        
-        // Jump if ball is above and close
-        if (ballY < playerY - 30 && distanceX < 80 && this.player.isGrounded) {
-            return Math.random() < this.params.jumpTiming;
-        }
-        
-        // Random jump for unpredictability
-        if (Math.random() < 0.01 * this.params.aggressiveness) {
-            return this.player.isGrounded;
-        }
-        
-        return false;
-    }
-    
     executeAction() {
         const playerX = this.player.x;
-        const threshold = 20;
+        const threshold = 18 + (1 - this.params.positioning) * 15; // Better AI has tighter threshold
         
-        // Safety check: NEVER move toward own goal UNLESS ball is there
+        // Safety: Never enter own goal
         const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
-        const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
+        const tooCloseToGoal = Math.abs(playerX - ownGoalX) < 80;
         
-        const distanceToOwnGoal = Math.abs(playerX - ownGoalX);
-        const distanceToBall = Math.abs(this.ball.x - playerX);
-        const ballDistanceToOwnGoal = Math.abs(this.ball.x - ownGoalX);
-        
-        // EXCEPTION: If ball is near own goal, GO GET IT regardless of position
-        const ballInDangerZone = ballDistanceToOwnGoal < 200;
-        
-        if (!ballInDangerZone && distanceToOwnGoal < 150 && distanceToBall > 50) {
-            // Ball is NOT near goal, and we're too close - move toward center
-            this.targetX = (playerX + opponentGoalX) / 2;
+        if (tooCloseToGoal && this.currentStrategy !== 'defend') {
+            // Move away from goal
+            this.targetX = this.side === 'right' ? 
+                this.physics.width - 150 : 150;
         }
         
         // Reset movement
@@ -214,21 +284,7 @@ export class AI {
         this.player.moveRight = false;
         this.player.jump = false;
         
-        // Prevent moving toward own goal ONLY if ball is not there
-        if (!ballInDangerZone) {
-            const movingTowardOwnGoal = this.side === 'right' ? 
-                (this.targetX > playerX && playerX > this.physics.width * 0.7) :
-                (this.targetX < playerX && playerX < this.physics.width * 0.3);
-            
-            if (movingTowardOwnGoal) {
-                // Don't move toward own goal, stay put or move toward opponent
-                this.targetX = this.side === 'right' ? 
-                    Math.min(this.targetX, this.physics.width * 0.7) :
-                    Math.max(this.targetX, this.physics.width * 0.3);
-            }
-        }
-        
-        // Move towards target
+        // Move towards target with speed based on difficulty
         if (this.targetX < playerX - threshold) {
             this.player.moveLeft = true;
         } else if (this.targetX > playerX + threshold) {
@@ -237,7 +293,7 @@ export class AI {
         
         // Apply max speed limit
         const currentSpeed = Math.abs(this.player.vx);
-        const maxSpeed = this.params.maxSpeed * 5;
+        const maxSpeed = this.params.maxSpeed * 5.5;
         if (currentSpeed > maxSpeed) {
             this.player.vx = Math.sign(this.player.vx) * maxSpeed;
         }
@@ -248,6 +304,7 @@ export class AI {
         }
     }
 }
+
 
 export class MultiAI {
     constructor(difficulty, players, ball, physics, role, side = 'right') {
@@ -260,6 +317,9 @@ export class MultiAI {
         
         this.params = this.getDifficultyParams(difficulty);
         this.reactionTimer = 0;
+        this.roleSwapCooldown = 0;
+        this.currentAttacker = 0; // Index of current attacker
+        this.strategies = [null, null]; // Strategy for each player
     }
     
     getDifficultyParams(difficulty) {
@@ -267,34 +327,38 @@ export class MultiAI {
             easy: {
                 reactionTime: 35,
                 predictionAccuracy: 0.25,
-                jumpTiming: 0.3,
+                jumpTiming: 0.35,
                 aggressiveness: 0.4,
-                maxSpeed: 0.5,
-                teamwork: 0.3
+                maxSpeed: 0.55,
+                teamwork: 0.3,
+                spacing: 100
             },
             medium: {
-                reactionTime: 25,
-                predictionAccuracy: 0.5,
-                jumpTiming: 0.5,
-                aggressiveness: 0.6,
-                maxSpeed: 0.7,
-                teamwork: 0.6
+                reactionTime: 22,
+                predictionAccuracy: 0.55,
+                jumpTiming: 0.60,
+                aggressiveness: 0.65,
+                maxSpeed: 0.75,
+                teamwork: 0.6,
+                spacing: 130
             },
             hard: {
-                reactionTime: 15,
-                predictionAccuracy: 0.75,
-                jumpTiming: 0.7,
-                aggressiveness: 0.8,
-                maxSpeed: 0.9,
-                teamwork: 0.8
+                reactionTime: 12,
+                predictionAccuracy: 0.80,
+                jumpTiming: 0.80,
+                aggressiveness: 0.85,
+                maxSpeed: 0.92,
+                teamwork: 0.85,
+                spacing: 160
             },
             pro: {
-                reactionTime: 8,
-                predictionAccuracy: 0.9,
-                jumpTiming: 0.9,
+                reactionTime: 6,
+                predictionAccuracy: 0.95,
+                jumpTiming: 0.92,
                 aggressiveness: 0.95,
                 maxSpeed: 1.0,
-                teamwork: 0.95
+                teamwork: 0.95,
+                spacing: 180
             }
         };
         
@@ -305,128 +369,209 @@ export class MultiAI {
         const player = this.players[playerIndex];
         
         this.reactionTimer++;
+        this.roleSwapCooldown = Math.max(0, this.roleSwapCooldown - 1);
         
-        if (this.reactionTimer >= this.params.reactionTime) {
-            this.reactionTimer = 0;
+        // Reassign roles periodically
+        if (this.roleSwapCooldown === 0) {
+            this.assignRoles();
+            this.roleSwapCooldown = 60; // Re-evaluate every 60 frames
         }
         
-        // Determine role dynamically
-        const distanceToBall = Math.abs(this.ball.x - player.x);
-        const otherPlayerIndex = playerIndex === 0 ? 1 : 0;
-        const otherDistance = Math.abs(this.ball.x - this.players[otherPlayerIndex].x);
+        // Execute strategy based on role
+        if (this.reactionTimer >= this.params.reactionTime) {
+            this.reactionTimer = 0;
+            
+            if (playerIndex === this.currentAttacker) {
+                this.attackBehavior(player);
+            } else {
+                this.defendBehavior(player);
+            }
+        }
         
-        // Closer player attacks, other defends
-        const isAttacker = distanceToBall < otherDistance || Math.random() < 0.5;
+        // Maintain spacing between teammates
+        this.maintainSpacing(player, playerIndex);
+    }
+    
+    assignRoles() {
+        // Assign roles based on distance to ball and field position
+        const dist0 = Math.abs(this.ball.x - this.players[0].x);
+        const dist1 = Math.abs(this.ball.x - this.players[1].x);
         
-        if (isAttacker) {
-            this.attackBehavior(player);
-        } else {
-            this.defendBehavior(player);
+        // Closer player becomes attacker
+        this.currentAttacker = dist0 < dist1 ? 0 : 1;
+    }
+    
+    maintainSpacing(player, playerIndex) {
+        // Prevent both players from clustering
+        const otherIndex = playerIndex === 0 ? 1 : 0;
+        const otherPlayer = this.players[otherIndex];
+        const distance = Math.abs(player.x - otherPlayer.x);
+        
+        if (distance < this.params.spacing && playerIndex !== this.currentAttacker) {
+            // Defender should back off to create space
+            const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
+            
+            if (this.side === 'right') {
+                // Move closer to right goal
+                player.moveRight = Math.abs(player.x - ownGoalX) > 100;
+                player.moveLeft = false;
+            } else {
+                // Move closer to left goal
+                player.moveLeft = Math.abs(player.x - ownGoalX) > 100;
+                player.moveRight = false;
+            }
         }
     }
     
     attackBehavior(player) {
-        // Attack toward opponent's goal
+        // Aggressive attack toward opponent's goal
         const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
         const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
+        const ballX = this.ball.x;
+        const ballY = this.ball.y;
+        const playerX = player.x;
+        const playerY = player.y;
         
-        // Safety check: Don't get too close to own goal
-        const distanceToOwnGoal = Math.abs(player.x - ownGoalX);
-        const distanceToOpponentGoal = Math.abs(player.x - opponentGoalX);
+        // Safety: Don't get too close to own goal
+        const distanceToOwnGoal = Math.abs(playerX - ownGoalX);
         
-        // Position to kick ball toward opponent's goal
         let targetX;
         
-        // If too close to own goal, move toward center first
-        if (distanceToOwnGoal < 100) {
-            targetX = this.physics.width / 2; // Move to center
+        if (distanceToOwnGoal < 120) {
+            // Too close to own goal - move toward center
+            targetX = this.physics.width / 2;
         } else {
-            // Normal attacking position
-            if (this.side === 'right') {
-                // AI on right, attack left goal - position to right of ball to kick left
-                targetX = Math.max(this.ball.x + 30, this.physics.width * 0.4);
+            // Position to strike ball toward opponent goal
+            const ballDistanceToGoal = Math.abs(ballX - opponentGoalX);
+            
+            // Check if ball is directly overhead (being bounced)
+            const distanceX = Math.abs(ballX - playerX);
+            const ballAbove = ballY < playerY - 50;
+            
+            if (ballAbove && distanceX < 35) {
+                // Ball bouncing on head - move sideways to let it drop
+                targetX = this.side === 'right' ? playerX - 70 : playerX + 70;
+            } else if (ballDistanceToGoal < 250) {
+                // Close to goal - position for direct shot
+                if (this.side === 'right') {
+                    targetX = ballX + 40; // Get behind ball
+                } else {
+                    targetX = ballX - 40;
+                }
             } else {
-                // AI on left, attack right goal - position to left of ball to kick right
-                targetX = Math.min(this.ball.x - 30, this.physics.width * 0.6);
+                // Far from goal - get closer to ball
+                if (this.side === 'right') {
+                    targetX = ballX + 35;
+                } else {
+                    targetX = ballX - 35;
+                }
             }
+            
+            // Apply accuracy variation
+            const error = (1 - this.params.predictionAccuracy) * 50;
+            targetX += (Math.random() - 0.5) * error;
         }
         
+        // Movement execution
         const threshold = 15;
-        
         player.moveLeft = false;
         player.moveRight = false;
         player.jump = false;
         
-        // NEVER move toward own goal
+        // Safety: Never move into own goal
         const wouldMoveTowardOwnGoal = this.side === 'right' ?
-            (targetX > player.x && player.x > this.physics.width * 0.75) :
-            (targetX < player.x && player.x < this.physics.width * 0.25);
+            (targetX > playerX && playerX > this.physics.width * 0.8) :
+            (targetX < playerX && playerX < this.physics.width * 0.2);
         
-        if (wouldMoveTowardOwnGoal) {
-            // Stop or move toward center
-            targetX = this.physics.width / 2;
+        if (!wouldMoveTowardOwnGoal) {
+            if (targetX < playerX - threshold) {
+                player.moveLeft = true;
+            } else if (targetX > playerX + threshold) {
+                player.moveRight = true;
+            }
         }
         
-        if (targetX < player.x - threshold) {
-            player.moveLeft = true;
-        } else if (targetX > player.x + threshold) {
-            player.moveRight = true;
-        }
+        // Jump for aerial shots
+        const distanceX = Math.abs(ballX - playerX);
+        const ballHigh = ballY < playerY - 25;
+        const closeToGoal = Math.abs(ballX - opponentGoalX) < 200;
         
-        // Jump decision
-        const distanceX = Math.abs(this.ball.x - player.x);
-        if (this.ball.y < player.y - 20 && distanceX < 60 && player.isGrounded) {
-            if (Math.random() < this.params.jumpTiming) {
+        if (ballHigh && distanceX < 75 && player.isGrounded && !ballAbove) {
+            if (Math.random() < this.params.jumpTiming * (closeToGoal ? 1.1 : 0.9)) {
                 player.jump = true;
             }
+        }
+        
+        // Apply speed limit
+        const currentSpeed = Math.abs(player.vx);
+        const maxSpeed = this.params.maxSpeed * 5.5;
+        if (currentSpeed > maxSpeed) {
+            player.vx = Math.sign(player.vx) * maxSpeed;
         }
     }
     
     defendBehavior(player) {
-        // Stay closer to own goal and react to ball
+        // Defensive positioning between ball and goal
         const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
-        const defendX = this.side === 'right' ? this.physics.width - 150 : 150;
-        const threshold = 30;
+        const ballX = this.ball.x;
+        const ballY = this.ball.y;
+        const playerX = player.x;
+        const playerY = player.y;
         
-        player.moveLeft = false;
-        player.moveRight = false;
-        player.jump = false;
-        
-        // Check if ball is dangerously close to goal
-        const ballDistanceToGoal = Math.abs(this.ball.x - ownGoalX);
+        // Check if ball is dangerous
+        const ballDistanceToGoal = Math.abs(ballX - ownGoalX);
         const ballInDanger = ballDistanceToGoal < 250;
         
         let targetX;
         
         if (ballInDanger) {
-            // Ball is near goal - GO CLEAR IT!
-            targetX = this.ball.x;
+            // Emergency - clear the ball!
+            targetX = ballX;
         } else {
             // Position between ball and goal
-            targetX = (this.ball.x + defendX) / 2;
+            const defensiveZone = this.side === 'right' ?
+                this.physics.width * 0.7 : this.physics.width * 0.3;
             
-            // Ensure defender stays in proper half of field
+            targetX = (ballX + defensiveZone) / 2;
+            
+            // Keep in defensive half
             if (this.side === 'right') {
-                targetX = Math.max(targetX, this.physics.width * 0.5); // Stay in right half
-                targetX = Math.min(targetX, this.physics.width - 100); // Don't go IN goal
+                targetX = Math.max(targetX, this.physics.width * 0.55);
+                targetX = Math.min(targetX, this.physics.width - 100);
             } else {
-                targetX = Math.min(targetX, this.physics.width * 0.5); // Stay in left half
-                targetX = Math.max(targetX, 100); // Don't go IN goal
+                targetX = Math.min(targetX, this.physics.width * 0.45);
+                targetX = Math.max(targetX, 100);
             }
         }
         
-        if (targetX < player.x - threshold) {
+        // Movement execution
+        const threshold = 20;
+        player.moveLeft = false;
+        player.moveRight = false;
+        player.jump = false;
+        
+        if (targetX < playerX - threshold) {
             player.moveLeft = true;
-        } else if (targetX > player.x + threshold) {
+        } else if (targetX > playerX + threshold) {
             player.moveRight = true;
         }
         
-        // Jump if ball is close and high
-        const distanceX = Math.abs(this.ball.x - player.x);
-        if (this.ball.y < player.y - 30 && distanceX < 100 && player.isGrounded) {
-            if (Math.random() < this.params.jumpTiming * 0.7) {
+        // Jump for defensive headers
+        const distanceX = Math.abs(ballX - playerX);
+        const ballHigh = ballY < playerY - 35;
+        
+        if (ballHigh && distanceX < 90 && player.isGrounded) {
+            if (Math.random() < this.params.jumpTiming * 0.75) {
                 player.jump = true;
             }
         }
+        
+        // Apply speed limit
+        const currentSpeed = Math.abs(player.vx);
+        const maxSpeed = this.params.maxSpeed * 5.0; // Slightly slower when defending
+        if (currentSpeed > maxSpeed) {
+            player.vx = Math.sign(player.vx) * maxSpeed;
+        }
     }
 }
+
