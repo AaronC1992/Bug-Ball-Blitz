@@ -36,10 +36,11 @@ export class MenuBackground {
         }
         
         try {
-            // Randomly select arena
-            const arenaIds = ['grassField', 'desertDunes', 'snowyPeak', 'spaceDome', 'neonCity', 
-                             'enchantedForest', 'volcanoArena', 'underwaterCave', 'cloudPalace', 
-                             'candyLand', 'mysticTemple', 'arcticBase', 'jungleCourt', 'cyberpunkAlley', 'hauntedMansion'];
+            // Randomly select arena - use correct arena IDs
+            const arenaIds = ['grassField', 'dirtPatch', 'leafArena', 'desertOasis', 'snowyPark', 
+                             'volcanicRock', 'mushroomForest', 'beachSand', 'moonCrater', 
+                             'autumnLeaves', 'iceCave', 'gardenPond', 'neonCity', 'candyLand', 
+                             'jungleVines', 'crystalCavern'];
             const randomArena = arenaIds[Math.floor(Math.random() * arenaIds.length)];
             this.arena = getArenaById(randomArena);
             console.log('Selected arena:', randomArena);
@@ -49,8 +50,8 @@ export class MenuBackground {
             const matchType = matchTypes[Math.floor(Math.random() * matchTypes.length)];
             console.log('Selected match type:', matchType);
             
-            // Random bug types
-            const bugTypes = ['ladybug', 'bee', 'butterfly', 'ant', 'spider', 'grasshopper', 'beetle', 'dragonfly'];
+            // Random bug types - use correct bug IDs
+            const bugTypes = ['stagBeetle', 'grasshopper', 'ladybug', 'ant', 'spider'];
             
             // Initialize physics
             this.physics = new Physics(this.canvas.width, this.canvas.height);
@@ -91,6 +92,10 @@ export class MenuBackground {
     
     setupPlayer1(side, bugType) {
         const bug = getBugById(bugType);
+        if (!bug) {
+            console.error('Bug not found:', bugType);
+            return;
+        }
         const player = {
             x: side === 'left' ? 150 : this.canvas.width - 150,
             y: this.physics.groundY - 30,
@@ -103,7 +108,7 @@ export class MenuBackground {
             moveRight: false,
             jump: false,
             color: bug.color,
-            emoji: bug.emoji
+            bugName: bug.name
         };
         this.players.push(player);
         
@@ -113,6 +118,10 @@ export class MenuBackground {
     
     setupPlayer1b(side, bugType) {
         const bug = getBugById(bugType);
+        if (!bug) {
+            console.error('Bug not found:', bugType);
+            return;
+        }
         const player = {
             x: side === 'left' ? 200 : this.canvas.width - 200,
             y: this.physics.groundY - 30,
@@ -125,7 +134,7 @@ export class MenuBackground {
             moveRight: false,
             jump: false,
             color: bug.color,
-            emoji: bug.emoji
+            bugName: bug.name
         };
         this.players.push(player);
         
@@ -135,6 +144,10 @@ export class MenuBackground {
     
     setupPlayer2(side, bugType) {
         const bug = getBugById(bugType);
+        if (!bug) {
+            console.error('Bug not found:', bugType);
+            return;
+        }
         const player = {
             x: side === 'right' ? this.canvas.width - 150 : 150,
             y: this.physics.groundY - 30,
@@ -147,7 +160,7 @@ export class MenuBackground {
             moveRight: false,
             jump: false,
             color: bug.color,
-            emoji: bug.emoji
+            bugName: bug.name
         };
         this.players.push(player);
         
@@ -163,6 +176,10 @@ export class MenuBackground {
     
     setupPlayer3(side, bugType) {
         const bug = getBugById(bugType);
+        if (!bug) {
+            console.error('Bug not found:', bugType);
+            return;
+        }
         const player = {
             x: side === 'right' ? this.canvas.width - 200 : 200,
             y: this.physics.groundY - 30,
@@ -175,7 +192,7 @@ export class MenuBackground {
             moveRight: false,
             jump: false,
             color: bug.color,
-            emoji: bug.emoji
+            bugName: bug.name
         };
         this.players.push(player);
         
@@ -303,10 +320,40 @@ export class MenuBackground {
     
     drawPlayer(player) {
         this.ctx.save();
-        this.ctx.font = `${player.height}px Arial`;
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'bottom';
-        this.ctx.fillText(player.emoji, player.x, player.y);
+        
+        // Draw as a colored circle with darker outline
+        this.ctx.fillStyle = player.color;
+        this.ctx.strokeStyle = this.darkenColor(player.color);
+        this.ctx.lineWidth = 3;
+        
+        // Draw body
+        this.ctx.beginPath();
+        this.ctx.arc(player.x, player.y - player.height / 2, player.width / 2, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.stroke();
+        
+        // Draw simple eyes
+        this.ctx.fillStyle = 'white';
+        this.ctx.beginPath();
+        this.ctx.arc(player.x - 8, player.y - player.height / 2 - 5, 4, 0, Math.PI * 2);
+        this.ctx.arc(player.x + 8, player.y - player.height / 2 - 5, 4, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        this.ctx.fillStyle = 'black';
+        this.ctx.beginPath();
+        this.ctx.arc(player.x - 8, player.y - player.height / 2 - 5, 2, 0, Math.PI * 2);
+        this.ctx.arc(player.x + 8, player.y - player.height / 2 - 5, 2, 0, Math.PI * 2);
+        this.ctx.fill();
+        
         this.ctx.restore();
+    }
+    
+    darkenColor(color) {
+        // Simple color darkening
+        const hex = color.replace('#', '');
+        const r = Math.max(0, parseInt(hex.substr(0, 2), 16) - 50);
+        const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - 50);
+        const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - 50);
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
 }
