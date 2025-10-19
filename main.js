@@ -19,10 +19,10 @@ class Game {
         this.difficulty = 'medium';
         this.towerLevel = 1;
         
-        // Match settings
-        this.matchTime = 120; // 2 minutes
-        this.timeRemaining = this.matchTime;
-        this.timeStarted = null;
+        // Match settings - Simple Timer
+        this.matchDuration = 120; // 2 minutes in seconds
+        this.matchTimer = 120; // Current time remaining
+        this.timerPaused = true; // Timer starts paused during countdown
         this.countdownValue = 5; // Countdown before match starts
         this.countdownStartTime = 0;
         
@@ -347,8 +347,6 @@ class Game {
     }
     
     startMatch() {
-        console.log('[startMatch] ENTRY - timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining);
-        
         this.ui.showScreen('gameScreen');
         
         if (this.ui.isMobile) {
@@ -434,14 +432,11 @@ class Game {
         this.score1 = 0;
         this.score2 = 0;
         
-        // Complete timer reset for new match
-        console.log('[BEFORE RESET] timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining, 'matchTime:', this.matchTime);
-        
-        this.timeStarted = null;
-        this.timeRemaining = this.matchTime;
-        
-        // Verify timer reset
-        console.log('[AFTER RESET] timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining);
+        // Reset scores and timer for new match
+        this.score1 = 0;
+        this.score2 = 0;
+        this.matchTimer = this.matchDuration;
+        this.timerPaused = true;
         
         this.updateScoreDisplay();
         this.updateTimerDisplay();
@@ -449,7 +444,7 @@ class Game {
         // Start with countdown
         this.gameState = 'countdown';
         this.countdownValue = 5;
-        this.initialCountdownValue = 5; // Track the starting value
+        this.initialCountdownValue = 5;
         this.countdownStartTime = Date.now();
         this.gameLoop();
     }
@@ -477,16 +472,7 @@ class Game {
         // Start/resume match when countdown finishes
         if (this.countdownValue <= 0) {
             this.gameState = 'playing';
-            // Only set timeStarted if this is the initial countdown (5 seconds)
-            if (this.timeStarted === null) {
-                this.timeStarted = Date.now();
-                console.log('[Countdown Complete] Timer Started - timeStarted:', this.timeStarted);
-            } else {
-                // Resume timer after goal (3 second countdown)
-                const pausedTime = Date.now() - this.countdownStartTime;
-                this.timeStarted += pausedTime;
-                console.log('[Goal Resume] Timer Resumed - timeStarted adjusted by:', pausedTime);
-            }
+            this.timerPaused = false; // Start/resume the timer
         }
     }
     
@@ -543,14 +529,14 @@ class Game {
     }
     
     update() {
-        // Update timer (only if match has started)
-        if (this.timeStarted !== null) {
-            const elapsed = (Date.now() - this.timeStarted) / 1000;
-            this.timeRemaining = Math.max(0, this.matchTime - elapsed);
+        // Simple timer - counts down 1 second per 60 frames (assuming 60 FPS)
+        if (!this.timerPaused) {
+            this.matchTimer -= 1/60; // Decrease by 1/60th of a second each frame
             this.updateTimerDisplay();
             
-            // Check time up
-            if (this.timeRemaining <= 0) {
+            // Check if time is up
+            if (this.matchTimer <= 0) {
+                this.matchTimer = 0;
                 this.endMatch();
                 return;
             }
@@ -768,10 +754,11 @@ class Game {
         if (this.score1 >= 5 || this.score2 >= 5) {
             this.endMatch();
         } else {
-            // Brief countdown after goal (3 seconds)
+            // Pause timer and start countdown after goal
+            this.timerPaused = true;
             this.gameState = 'countdown';
             this.countdownValue = 3;
-            this.initialCountdownValue = 3; // Track the starting value
+            this.initialCountdownValue = 3;
             this.countdownStartTime = Date.now();
         }
     }
@@ -782,8 +769,8 @@ class Game {
     }
     
     updateTimerDisplay() {
-        const minutes = Math.floor(this.timeRemaining / 60);
-        const seconds = Math.floor(this.timeRemaining % 60);
+        const minutes = Math.floor(this.matchTimer / 60);
+        const seconds = Math.floor(this.matchTimer % 60);
         document.getElementById('timerDisplay').textContent = 
             `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
@@ -874,9 +861,7 @@ class Game {
     }
     
     rematch() {
-        console.log('[Rematch] Called - Current timeStarted:', this.timeStarted, 'timeRemaining:', this.timeRemaining);
-        
-        // Force stop any running animation frames
+        // Stop any running animation frames
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
@@ -889,6 +874,7 @@ class Game {
     pauseGame() {
         if (this.gameState === 'playing') {
             this.gameState = 'paused';
+            this.timerPaused = true;
             cancelAnimationFrame(this.animationId);
             this.ui.showOverlay('pauseMenu');
         }
@@ -897,7 +883,7 @@ class Game {
     resumeGame() {
         if (this.gameState === 'paused') {
             this.gameState = 'playing';
-            this.timeStarted = Date.now() - (this.matchTime - this.timeRemaining) * 1000;
+            this.timerPaused = false;
             this.ui.hideOverlay('pauseMenu');
             this.gameLoop();
         }
