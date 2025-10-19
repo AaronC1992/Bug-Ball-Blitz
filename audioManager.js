@@ -339,6 +339,11 @@ export class AudioManager {
         return this.hapticEnabled;
     }
     
+    setHapticEnabled(enabled) {
+        this.hapticEnabled = enabled;
+        this.savePreferences();
+    }
+    
     // Haptic feedback for mobile
     vibrate(pattern = 50) {
         if (!this.hapticEnabled) return;

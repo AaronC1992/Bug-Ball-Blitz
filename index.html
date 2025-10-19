@@ -161,22 +161,59 @@
 
         <!-- Settings Menu -->
         <div id="settingsMenu" class="overlay-menu">
-            <div class="menu-panel">
-                <h2>Settings</h2>
+            <div class="menu-panel settings-panel">
+                <h2>⚙️ Settings</h2>
                 <div class="settings-options">
-                    <div class="setting-item">
-                        <label for="touchControlsToggle">
-                            <span>Touch Controls</span>
-                            <small>Enable on-screen touch controls</small>
-                        </label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="touchControlsToggle">
-                            <span class="toggle-slider"></span>
-                        </label>
+                    <!-- Volume Controls -->
+                    <div class="setting-section">
+                        <h3>🔊 Audio</h3>
+                        
+                        <div class="setting-item slider-item">
+                            <label for="soundVolumeSlider">
+                                <span>Sound Effects</span>
+                                <span class="volume-value" id="soundVolumeValue">70%</span>
+                            </label>
+                            <input type="range" id="soundVolumeSlider" min="0" max="100" value="70" class="volume-slider">
+                        </div>
+                        
+                        <div class="setting-item slider-item">
+                            <label for="musicVolumeSlider">
+                                <span>Music</span>
+                                <span class="volume-value" id="musicVolumeValue">50%</span>
+                            </label>
+                            <input type="range" id="musicVolumeSlider" min="0" max="100" value="50" class="volume-slider">
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label for="hapticToggle">
+                                <span>Haptic Feedback</span>
+                                <small>Vibration on mobile devices</small>
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="hapticToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Controls -->
+                    <div class="setting-section">
+                        <h3>🎮 Controls</h3>
+                        
+                        <div class="setting-item">
+                            <label for="touchControlsToggle">
+                                <span>Touch Controls</span>
+                                <small>Enable on-screen touch controls</small>
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="touchControlsToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="menu-buttons">
-                    <button class="menu-btn" id="closeSettingsBtn">✓ Done</button>
+                    <button class="menu-btn primary-btn" id="closeSettingsBtn">✓ Done</button>
                 </div>
             </div>
         </div>

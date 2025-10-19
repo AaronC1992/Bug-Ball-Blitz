@@ -338,6 +338,23 @@ class Game {
             this.closeSettings();
         });
         
+        // Audio settings
+        document.getElementById('soundVolumeSlider').addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            this.audio.setSoundVolume(volume);
+            document.getElementById('soundVolumeValue').textContent = e.target.value + '%';
+        });
+        
+        document.getElementById('musicVolumeSlider').addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            this.audio.setMusicVolume(volume);
+            document.getElementById('musicVolumeValue').textContent = e.target.value + '%';
+        });
+        
+        document.getElementById('hapticToggle').addEventListener('change', (e) => {
+            this.audio.setHapticEnabled(e.target.checked);
+        });
+        
         document.getElementById('touchControlsToggle').addEventListener('change', (e) => {
             e.stopPropagation(); // Prevent event bubbling
             this.setTouchControlsPreference(e.target.checked);
@@ -1496,12 +1513,25 @@ class Game {
         // Hide pause menu while showing settings
         this.ui.hideOverlay('pauseMenu');
         
+        // Load and display current audio settings
+        const soundVolume = Math.round(this.audio.soundVolume * 100);
+        const musicVolume = Math.round(this.audio.musicVolume * 100);
+        
+        document.getElementById('soundVolumeSlider').value = soundVolume;
+        document.getElementById('soundVolumeValue').textContent = soundVolume + '%';
+        
+        document.getElementById('musicVolumeSlider').value = musicVolume;
+        document.getElementById('musicVolumeValue').textContent = musicVolume + '%';
+        
+        document.getElementById('hapticToggle').checked = this.audio.hapticEnabled;
+        
         // Update toggle to reflect current preference
         // If null (auto mode), check if auto-detected device would show controls
         const shouldBeChecked = this.touchControlsEnabled !== null 
             ? this.touchControlsEnabled 
             : (this.ui.isMobile || this.ui.isTablet);
         document.getElementById('touchControlsToggle').checked = shouldBeChecked;
+        
         this.ui.showOverlay('settingsMenu');
     }
     

@@ -869,9 +869,27 @@ input[type="text"]:focus {
 }
 
 /* Settings Menu */
+.settings-panel {
+    max-width: 600px;
+}
+
 .settings-options {
     margin: 30px 0;
     text-align: left;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.setting-section {
+    margin-bottom: 30px;
+}
+
+.setting-section h3 {
+    color: #7ed321;
+    font-size: 20px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(126, 211, 33, 0.3);
 }
 
 .setting-item {
@@ -882,6 +900,19 @@ input[type="text"]:focus {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     margin-bottom: 15px;
+}
+
+.slider-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.slider-item label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .setting-item label {
@@ -937,6 +968,58 @@ input[type="text"]:focus {
     background-color: white;
     transition: 0.3s;
     border-radius: 50%;
+}
+
+/* Volume Sliders */
+.volume-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7ed321 0%, #5fa919 100%);
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(126, 211, 33, 0.6);
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7ed321 0%, #5fa919 100%);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+}
+
+.volume-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(126, 211, 33, 0.6);
+}
+
+.volume-value {
+    color: #7ed321;
+    font-weight: bold;
+    font-size: 16px;
+    min-width: 45px;
+    text-align: right;
 }
 
 .toggle-switch input:checked + .toggle-slider {
