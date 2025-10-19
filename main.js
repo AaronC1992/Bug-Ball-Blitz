@@ -845,17 +845,28 @@ class Game {
         // Immediately change state to prevent multiple detections
         this.gameState = 'goal_scored';
         
-        // Trigger celebration animation
+        // Determine who scored and trigger their celebration
         const profile = this.ui.currentProfile;
-        this.celebrationActive = true;
-        this.celebrationFrame = 0;
-        this.celebrationSide = goal;
-        this.celebrationType = (profile && profile.selectedCelebration) ? profile.selectedCelebration : 'classic';
+        let scoringPlayer;
         
         if (goal === 'left') {
+            // Ball went in left goal, so player 2 (right side) scored
             this.score2++;
+            scoringPlayer = 'player2';
         } else {
+            // Ball went in right goal, so player 1 (left side) scored
             this.score1++;
+            scoringPlayer = 'player1';
+        }
+        
+        // Only show celebration if the human player scored (player 1)
+        if (scoringPlayer === 'player1') {
+            this.celebrationActive = true;
+            this.celebrationFrame = 0;
+            this.celebrationSide = goal;
+            this.celebrationType = (profile && profile.selectedCelebration) ? profile.selectedCelebration : 'classic';
+        } else {
+            this.celebrationActive = false;
         }
         
         this.updateScoreDisplay();
