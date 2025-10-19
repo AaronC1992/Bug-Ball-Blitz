@@ -1,0 +1,565 @@
+/* Bug Ball Blitz - Stylesheet */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameContainer {
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
+    max-height: 800px;
+    background: #2a2a2a;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Title Screen */
+#titleScreen {
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+}
+
+.logo-container {
+    margin-bottom: 60px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.game-logo {
+    width: 100%;
+    max-width: 500px;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+/* Menu Buttons */
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.menu-btn {
+    padding: 18px 30px;
+    font-size: 20px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #7ed321 0%, #5fb304 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.menu-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, #8fe632 0%, #6fc415 100%);
+}
+
+.menu-btn:active {
+    transform: translateY(0px);
+}
+
+/* Profile Screens */
+#profileCreateScreen, #profileLoadScreen, #mainMenu, #statsScreen,
+#bugSelectScreen, #difficultyScreen, #arenaSelectScreen {
+    background: linear-gradient(135deg, #3a3a3a 0%, #1e1e1e 100%);
+    color: white;
+}
+
+h2 {
+    font-size: 36px;
+    margin-bottom: 30px;
+    color: #7ed321;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+input[type="text"] {
+    padding: 15px;
+    font-size: 18px;
+    border: 3px solid #7ed321;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 400px;
+    background: #2a2a2a;
+    color: white;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #8fe632;
+    box-shadow: 0 0 10px rgba(126, 211, 33, 0.5);
+}
+
+/* Profile List */
+#profileList {
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 20px;
+}
+
+.profile-item {
+    background: #2a2a2a;
+    padding: 20px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.profile-item:hover {
+    border-color: #7ed321;
+    transform: translateX(5px);
+}
+
+.profile-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #7ed321;
+}
+
+.profile-stats {
+    font-size: 14px;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+/* Profile Info Display */
+.profile-info {
+    background: #2a2a2a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.profile-info h3 {
+    color: #7ed321;
+    margin-bottom: 10px;
+}
+
+/* Stats Display */
+#statsDisplay {
+    background: #2a2a2a;
+    padding: 30px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #444;
+}
+
+.stat-label {
+    color: #aaa;
+}
+
+.stat-value {
+    color: #7ed321;
+    font-weight: bold;
+}
+
+/* Bug Selection Grid */
+.bug-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 20px;
+}
+
+.bug-card {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+    text-align: center;
+}
+
+.bug-card:hover {
+    border-color: #7ed321;
+    transform: scale(1.05);
+}
+
+.bug-card.selected {
+    border-color: #7ed321;
+    background: #3a3a3a;
+}
+
+.bug-sprite {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 10px;
+}
+
+.bug-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #7ed321;
+    margin-bottom: 10px;
+}
+
+.bug-stats {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.stat-bar-container {
+    margin: 5px 0;
+    text-align: left;
+}
+
+.stat-bar {
+    background: #444;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 3px;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7ed321 0%, #5fb304 100%);
+    transition: width 0.3s ease;
+}
+
+/* Arena Selection Grid */
+.arena-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 20px;
+}
+
+.arena-card {
+    background: #2a2a2a;
+    padding: 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+    text-align: center;
+    min-height: 150px;
+}
+
+.arena-card:hover {
+    border-color: #7ed321;
+    transform: scale(1.05);
+}
+
+.arena-preview {
+    width: 100%;
+    height: 100px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.arena-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #7ed321;
+}
+
+/* Game Screen */
+#gameScreen {
+    padding: 0;
+    background: #000;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* HUD */
+.hud {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    z-index: 10;
+}
+
+.score-display {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 36px;
+    font-weight: bold;
+    color: #7ed321;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.timer-display {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 24px;
+    color: white;
+}
+
+.pause-btn {
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pause-btn:hover {
+    background: rgba(126, 211, 33, 0.8);
+}
+
+/* Mobile Controls */
+.mobile-controls {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    z-index: 10;
+}
+
+.joystick-container {
+    position: absolute;
+    left: 40px;
+    bottom: 40px;
+}
+
+.joystick {
+    width: 120px;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 3px solid rgba(126, 211, 33, 0.8);
+    border-radius: 50%;
+    position: relative;
+}
+
+.joystick-stick {
+    width: 50px;
+    height: 50px;
+    background: rgba(126, 211, 33, 0.9);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.1s ease;
+}
+
+.action-buttons {
+    position: absolute;
+    right: 40px;
+    bottom: 40px;
+    display: flex;
+    gap: 15px;
+}
+
+.action-btn {
+    width: 80px;
+    height: 80px;
+    background: rgba(126, 211, 33, 0.9);
+    border: 3px solid rgba(95, 179, 4, 1);
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+/* Overlay Menus */
+.overlay-menu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay-menu.active {
+    display: flex;
+}
+
+.menu-panel {
+    background: linear-gradient(135deg, #3a3a3a 0%, #1e1e1e 100%);
+    padding: 40px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.menu-panel h2 {
+    margin-bottom: 20px;
+}
+
+#matchStats, #towerVictoryStats {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.victory-text {
+    font-size: 18px;
+    color: #7ed321;
+    margin-bottom: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #gameContainer {
+        border-radius: 0;
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .screen {
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 28px;
+    }
+
+    .menu-btn {
+        font-size: 18px;
+        padding: 15px 25px;
+    }
+
+    .game-logo {
+        max-width: 350px;
+    }
+
+    .bug-grid, .arena-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hud {
+        top: 10px;
+        gap: 10px;
+    }
+
+    .score-display {
+        font-size: 24px;
+        padding: 10px 20px;
+    }
+
+    .timer-display {
+        font-size: 18px;
+        padding: 8px 15px;
+    }
+
+    .mobile-controls.active {
+        display: block;
+    }
+
+    #localMultiplayerBtn.hidden {
+        display: none;
+    }
+}
+
+/* Player 2 Mobile Controls (mirrored on right side) */
+.mobile-controls-p2 {
+    display: none;
+}
+
+.mobile-controls-p2 .joystick-container {
+    left: auto;
+    right: 180px;
+}
+
+.mobile-controls-p2 .action-buttons {
+    right: auto;
+    left: 40px;
+}
+
+.mobile-controls-p2.active {
+    display: block;
+}
+
+/* Hidden class */
+.hidden {
+    display: none !important;
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}

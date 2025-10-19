@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bug Ball Blitz - Insect Soccer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- Title Screen -->
+        <div id="titleScreen" class="screen active">
+            <div class="logo-container">
+                <svg viewBox="0 0 400 100" class="game-logo">
+                    <defs>
+                        <linearGradient id="titleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#7ed321;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#417505;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <text x="200" y="50" font-family="Arial Black, sans-serif" font-size="48" 
+                          fill="url(#titleGradient)" text-anchor="middle" dominant-baseline="middle" 
+                          stroke="#2d5016" stroke-width="3">BUG BALL</text>
+                    <text x="200" y="85" font-family="Arial Black, sans-serif" font-size="32" 
+                          fill="url(#titleGradient)" text-anchor="middle" dominant-baseline="middle" 
+                          stroke="#2d5016" stroke-width="2">BLITZ</text>
+                </svg>
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="createProfileBtn">🐛 Create Profile</button>
+                <button class="menu-btn" id="loadProfileBtn">📂 Load Profile</button>
+                <button class="menu-btn" id="exitBtn">🚪 Exit</button>
+            </div>
+        </div>
+
+        <!-- Profile Creation Screen -->
+        <div id="profileCreateScreen" class="screen">
+            <h2>Create New Profile</h2>
+            <input type="text" id="profileNameInput" placeholder="Enter your name" maxlength="15">
+            <div class="menu-buttons">
+                <button class="menu-btn" id="confirmProfileBtn">✓ Create</button>
+                <button class="menu-btn" id="cancelProfileBtn">✗ Cancel</button>
+            </div>
+        </div>
+
+        <!-- Profile Load Screen -->
+        <div id="profileLoadScreen" class="screen">
+            <h2>Load Profile</h2>
+            <div id="profileList"></div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="backToTitleBtn">← Back</button>
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="mainMenu" class="screen">
+            <h2>Main Menu</h2>
+            <div id="profileInfo" class="profile-info"></div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="towerCampaignBtn">🏆 Tower Campaign</button>
+                <button class="menu-btn" id="quickPlayBtn">⚡ Quick Play</button>
+                <button class="menu-btn" id="localMultiplayerBtn">🎮 Local Multiplayer</button>
+                <button class="menu-btn" id="viewStatsBtn">📊 View Stats</button>
+                <button class="menu-btn" id="logoutBtn">🔙 Logout</button>
+            </div>
+        </div>
+
+        <!-- Stats Screen -->
+        <div id="statsScreen" class="screen">
+            <h2>Player Stats</h2>
+            <div id="statsDisplay"></div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="backToMainBtn">← Back</button>
+            </div>
+        </div>
+
+        <!-- Bug Selection Screen -->
+        <div id="bugSelectScreen" class="screen">
+            <h2>Select Your Bug</h2>
+            <div id="bugGrid" class="bug-grid"></div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="cancelBugSelectBtn">← Back</button>
+            </div>
+        </div>
+
+        <!-- Difficulty Selection (Quick Play) -->
+        <div id="difficultyScreen" class="screen">
+            <h2>Select Difficulty</h2>
+            <div class="menu-buttons">
+                <button class="menu-btn difficulty-btn" data-difficulty="easy">😊 Easy</button>
+                <button class="menu-btn difficulty-btn" data-difficulty="medium">😐 Medium</button>
+                <button class="menu-btn difficulty-btn" data-difficulty="hard">😠 Hard</button>
+                <button class="menu-btn difficulty-btn" data-difficulty="pro">😈 Pro</button>
+                <button class="menu-btn" id="cancelDifficultyBtn">← Back</button>
+            </div>
+        </div>
+
+        <!-- Arena Selection -->
+        <div id="arenaSelectScreen" class="screen">
+            <h2>Select Arena</h2>
+            <div id="arenaGrid" class="arena-grid"></div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="cancelArenaSelectBtn">← Back</button>
+            </div>
+        </div>
+
+        <!-- Game Canvas -->
+        <div id="gameScreen" class="screen">
+            <canvas id="gameCanvas"></canvas>
+            <div id="gameHUD" class="hud">
+                <div class="score-display">
+                    <span id="player1Score">0</span> - <span id="player2Score">0</span>
+                </div>
+                <div class="timer-display" id="timerDisplay">0:00</div>
+                <button class="pause-btn" id="pauseBtn">⏸</button>
+            </div>
+            <!-- Mobile Controls -->
+            <div id="mobileControls" class="mobile-controls">
+                <div class="joystick-container">
+                    <div class="joystick" id="joystick">
+                        <div class="joystick-stick"></div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn" id="jumpBtn">JUMP</button>
+                </div>
+            </div>
+            <!-- Player 2 Mobile Controls (Tablets Only) -->
+            <div id="mobileControlsP2" class="mobile-controls mobile-controls-p2">
+                <div class="joystick-container">
+                    <div class="joystick" id="joystickP2">
+                        <div class="joystick-stick"></div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn" id="jumpBtnP2">JUMP</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pause Menu -->
+        <div id="pauseMenu" class="overlay-menu">
+            <div class="menu-panel">
+                <h2>Paused</h2>
+                <div class="menu-buttons">
+                    <button class="menu-btn" id="resumeBtn">▶ Resume</button>
+                    <button class="menu-btn" id="quitToMenuBtn">🏠 Main Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Match End Screen -->
+        <div id="matchEndScreen" class="overlay-menu">
+            <div class="menu-panel">
+                <h2 id="matchResultTitle">Victory!</h2>
+                <div id="matchStats"></div>
+                <div class="menu-buttons">
+                    <button class="menu-btn" id="continueBtn">Continue</button>
+                    <button class="menu-btn" id="rematchBtn">Rematch</button>
+                    <button class="menu-btn" id="endToMenuBtn">Main Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tower Victory Screen -->
+        <div id="towerVictoryScreen" class="overlay-menu">
+            <div class="menu-panel">
+                <h2>🏆 TOWER COMPLETE! 🏆</h2>
+                <p class="victory-text">You've conquered all challenges!</p>
+                <div id="towerVictoryStats"></div>
+                <div class="menu-buttons">
+                    <button class="menu-btn" id="towerDoneBtn">Main Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>
