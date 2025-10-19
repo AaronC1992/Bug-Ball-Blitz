@@ -431,6 +431,48 @@ input[type="text"]:focus {
     transform: scale(0.95);
 }
 
+/* Mobile Landscape Mode - Smaller Controls */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .mobile-controls {
+        height: 140px;
+    }
+    
+    .joystick-container {
+        left: 20px;
+        bottom: 20px;
+    }
+    
+    .joystick {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .joystick-stick {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .action-buttons {
+        right: 20px;
+        bottom: 20px;
+        gap: 10px;
+    }
+    
+    .action-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 11px;
+    }
+    
+    .mobile-controls-p2 .joystick-container {
+        right: 140px;
+    }
+    
+    .mobile-controls-p2 .action-buttons {
+        left: 20px;
+    }
+}
+
 /* Overlay Menus */
 .overlay-menu {
     display: none;

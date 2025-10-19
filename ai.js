@@ -85,6 +85,22 @@ export class AI {
             return;
         }
         
+        // Check if ball is directly above AI (being bounced)
+        const distanceX = Math.abs(ballX - playerX);
+        const ballAbove = ballY < playerY - 50;
+        
+        // If ball is above AI, move sideways to let it drop, then attack
+        if (ballAbove && distanceX < 40) {
+            // Move toward opponent's goal to prepare for attack
+            if (this.side === 'right') {
+                this.targetX = playerX - 60; // Move left toward opponent goal
+            } else {
+                this.targetX = playerX + 60; // Move right toward opponent goal
+            }
+            this.shouldJump = false; // Don't keep bouncing it
+            return;
+        }
+        
         // Predict ball position
         const prediction = this.predictBallPosition();
         
@@ -103,14 +119,24 @@ export class AI {
                 this.targetX = ballX;
             }
         } else {
-            // Ball is stationary or slow
+            // Ball is stationary or slow - ATTACK MODE
             // Position to kick ball toward opponent's goal
-            if (this.side === 'right') {
-                // AI on right, attack left goal - position to right of ball
-                this.targetX = ballX + 30;
+            const distanceToOpponentGoal = Math.abs(ballX - opponentGoalX);
+            
+            if (distanceToOpponentGoal < 300) {
+                // Close to opponent goal - position for direct shot
+                if (this.side === 'right') {
+                    this.targetX = ballX + 40; // Get behind ball
+                } else {
+                    this.targetX = ballX - 40;
+                }
             } else {
-                // AI on left, attack right goal - position to left of ball
-                this.targetX = ballX - 30;
+                // Far from goal - position for powerful kick
+                if (this.side === 'right') {
+                    this.targetX = ballX + 30;
+                } else {
+                    this.targetX = ballX - 30;
+                }
             }
         }
         

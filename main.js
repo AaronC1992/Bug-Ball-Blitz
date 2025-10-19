@@ -357,6 +357,10 @@ class Game {
             }
         }
         
+        // Reset timer completely
+        this.timeStarted = null;
+        this.timeRemaining = this.matchTime;
+        
         this.resizeCanvas();
         this.physics = new Physics(this.canvas.width, this.canvas.height);
         
@@ -467,7 +471,7 @@ class Game {
         if (this.countdownValue <= 0) {
             this.gameState = 'playing';
             // Only set timeStarted if this is the initial countdown
-            if (!this.timeStarted) {
+            if (this.timeStarted === null) {
                 this.timeStarted = Date.now();
             } else {
                 // Resume timer after goal
