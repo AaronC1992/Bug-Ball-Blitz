@@ -598,6 +598,17 @@ class Game {
             this.physics.checkBallPlayerCollision(this.ball, this.player3, this.selectedBug3);
         }
         
+        // CRITICAL FIX: After all collisions, ensure ball is never stuck underground
+        // This handles the case where ball is caught between two overlapping players
+        const minBallY = this.physics.groundY - this.ball.radius;
+        if (this.ball.y > minBallY) {
+            this.ball.y = minBallY;
+            // Push ball upward forcefully when stuck
+            if (this.ball.vy > -2) {
+                this.ball.vy = -8; // Strong upward push to free the ball
+            }
+        }
+        
         // Check goals
         const goal = this.physics.checkGoal(this.ball);
         if (goal) {

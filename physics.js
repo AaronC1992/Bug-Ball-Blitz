@@ -26,16 +26,26 @@ export class Physics {
         const goalHeight = 120;
         const goalY = this.groundY - goalHeight;
         
-        // Ground collision
+        // CRITICAL: Prevent ball from going underground (fixes player collision bug)
+        // This happens when ball gets caught between two players
         if (ball.y + ball.radius > this.groundY) {
             ball.y = this.groundY - ball.radius;
-            ball.vy *= -this.bounceDamping;
+            // If ball was pushed down hard, bounce it up
+            if (ball.vy > 0) {
+                ball.vy *= -this.bounceDamping;
+            }
             ball.vx *= 0.98;
             
             // Stop small bounces
             if (Math.abs(ball.vy) < 1) {
                 ball.vy = 0;
             }
+        }
+        
+        // Extra safety: If ball somehow gets stuck below ground, push it up immediately
+        if (ball.y > this.groundY) {
+            ball.y = this.groundY - ball.radius;
+            ball.vy = Math.min(ball.vy, -5); // Push upward
         }
         
         // Left wall collision - simple bounce
@@ -207,6 +217,15 @@ export class Physics {
             // Push ball out of player
             ball.x = closestX + normalX * ball.radius;
             ball.y = closestY + normalY * ball.radius;
+            
+            // CRITICAL FIX: Ensure ball never goes below ground when pushed
+            // This prevents ball from getting stuck under players during collisions
+            const minBallY = this.groundY - ball.radius;
+            if (ball.y > minBallY) {
+                ball.y = minBallY;
+                // If ball was underground, push it up with force
+                normalY = Math.min(normalY, -0.5); // Ensure upward component
+            }
             
             // Calculate kick force based on bug stats and player movement
             const kickPower = stats.power * 10;
