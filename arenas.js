@@ -7,7 +7,8 @@ export const ARENAS = {
         groundColor: '#4a7c2c',
         skyColors: ['#87CEEB', '#4A90E2'],
         grassBlades: true,
-        description: 'Classic grassy soccer field'
+        description: 'Classic grassy soccer field',
+        weather: 'clear'
     },
     
     dirtPatch: {
@@ -16,7 +17,8 @@ export const ARENAS = {
         groundColor: '#8B6914',
         skyColors: ['#CD853F', '#8B6914'],
         grassBlades: false,
-        description: 'Dusty dirt arena'
+        description: 'Dusty dirt arena',
+        weather: 'dusty'
     },
     
     leafArena: {
@@ -25,7 +27,138 @@ export const ARENAS = {
         groundColor: '#6B8E23',
         skyColors: ['#90EE90', '#228B22'],
         grassBlades: true,
-        description: 'Arena on a giant leaf'
+        description: 'Arena on a giant leaf',
+        weather: 'clear'
+    },
+    
+    desertOasis: {
+        id: 'desertOasis',
+        name: 'Desert Oasis',
+        groundColor: '#EDC9AF',
+        skyColors: ['#FFE4B5', '#DEB887'],
+        grassBlades: false,
+        description: 'Hot sandy desert arena',
+        weather: 'hot'
+    },
+    
+    snowyPark: {
+        id: 'snowyPark',
+        name: 'Snowy Park',
+        groundColor: '#E6F2FF',
+        skyColors: ['#B0C4DE', '#778899'],
+        grassBlades: false,
+        description: 'Winter wonderland field',
+        weather: 'snowy'
+    },
+    
+    volcanicRock: {
+        id: 'volcanicRock',
+        name: 'Volcanic Rock',
+        groundColor: '#3d2817',
+        skyColors: ['#FF4500', '#8B0000'],
+        grassBlades: false,
+        description: 'Dangerous volcanic terrain',
+        weather: 'hot'
+    },
+    
+    mushroomForest: {
+        id: 'mushroomForest',
+        name: 'Mushroom Forest',
+        groundColor: '#8B4513',
+        skyColors: ['#DDA0DD', '#BA55D3'],
+        grassBlades: true,
+        description: 'Magical mushroom grove',
+        weather: 'foggy'
+    },
+    
+    beachSand: {
+        id: 'beachSand',
+        name: 'Beach Sand',
+        groundColor: '#F4A460',
+        skyColors: ['#87CEEB', '#00BFFF'],
+        grassBlades: false,
+        description: 'Tropical beach paradise',
+        weather: 'sunny'
+    },
+    
+    moonCrater: {
+        id: 'moonCrater',
+        name: 'Moon Crater',
+        groundColor: '#696969',
+        skyColors: ['#000000', '#1a1a2e'],
+        grassBlades: false,
+        description: 'Low gravity lunar surface',
+        weather: 'space'
+    },
+    
+    autumnLeaves: {
+        id: 'autumnLeaves',
+        name: 'Autumn Leaves',
+        groundColor: '#8B4513',
+        skyColors: ['#FF8C00', '#FF6347'],
+        grassBlades: true,
+        description: 'Colorful fall foliage',
+        weather: 'windy'
+    },
+    
+    iceCave: {
+        id: 'iceCave',
+        name: 'Ice Cave',
+        groundColor: '#B0E0E6',
+        skyColors: ['#4682B4', '#5F9EA0'],
+        grassBlades: false,
+        description: 'Slippery frozen cavern',
+        weather: 'icy'
+    },
+    
+    gardenPond: {
+        id: 'gardenPond',
+        name: 'Garden Pond',
+        groundColor: '#2E8B57',
+        skyColors: ['#98FB98', '#3CB371'],
+        grassBlades: true,
+        description: 'Peaceful garden setting',
+        weather: 'clear'
+    },
+    
+    neonCity: {
+        id: 'neonCity',
+        name: 'Neon City',
+        groundColor: '#2F4F4F',
+        skyColors: ['#FF00FF', '#00FFFF'],
+        grassBlades: false,
+        description: 'Futuristic cyberpunk arena',
+        weather: 'neon'
+    },
+    
+    candyLand: {
+        id: 'candyLand',
+        name: 'Candy Land',
+        groundColor: '#FFB6C1',
+        skyColors: ['#FFE4E1', '#FFC0CB'],
+        grassBlades: false,
+        description: 'Sweet sugary wonderland',
+        weather: 'sweet'
+    },
+    
+    jungleVines: {
+        id: 'jungleVines',
+        name: 'Jungle Vines',
+        groundColor: '#2F4F2F',
+        skyColors: ['#9ACD32', '#556B2F'],
+        grassBlades: true,
+        description: 'Dense tropical jungle',
+        weather: 'humid'
+    },
+    
+    crystalCavern: {
+        id: 'crystalCavern',
+        name: 'Crystal Cavern',
+        groundColor: '#663399',
+        skyColors: ['#9370DB', '#8A2BE2'],
+        grassBlades: false,
+        description: 'Glittering gem-filled cave',
+        weather: 'sparkly'
     }
 };
 
@@ -45,6 +178,17 @@ export function drawArenaBackground(ctx, arena, width, height) {
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, width, height);
     
+    // Special weather effects in background
+    if (arena.weather === 'snowy') {
+        drawSnowfall(ctx, width, height);
+    } else if (arena.weather === 'space') {
+        drawStars(ctx, width, height);
+    } else if (arena.weather === 'neon') {
+        drawNeonGrid(ctx, width, height);
+    } else if (arena.weather === 'sparkly') {
+        drawSparkles(ctx, width, height);
+    }
+    
     // Ground
     const groundHeight = height * 0.3;
     const groundGradient = ctx.createLinearGradient(0, height - groundHeight, 0, height);
@@ -61,9 +205,15 @@ export function drawArenaBackground(ctx, arena, width, height) {
     ctx.lineTo(width, height - groundHeight);
     ctx.stroke();
     
-    // Subtle texture only for dirt patches
+    // Special ground textures
     if (!arena.grassBlades) {
-        drawDirtTexture(ctx, width, height, groundHeight);
+        if (arena.weather === 'dusty' || arena.weather === 'hot') {
+            drawDirtTexture(ctx, width, height, groundHeight);
+        } else if (arena.weather === 'icy') {
+            drawIceTexture(ctx, width, height, groundHeight);
+        } else if (arena.weather === 'sweet') {
+            drawCandyTexture(ctx, width, height, groundHeight);
+        }
     }
     
     // Center line
@@ -86,6 +236,105 @@ function drawDirtTexture(ctx, width, height, groundHeight) {
         const size = 1 + Math.random() * 3;
         
         ctx.fillRect(x, y, size, size);
+    }
+}
+
+function drawIceTexture(ctx, width, height, groundHeight) {
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    
+    // Draw ice cracks
+    for (let i = 0; i < 15; i++) {
+        const startX = Math.random() * width;
+        const startY = height - groundHeight + Math.random() * groundHeight;
+        
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(startX + (Math.random() - 0.5) * 100, startY + (Math.random() - 0.5) * 50);
+        ctx.stroke();
+    }
+}
+
+function drawCandyTexture(ctx, width, height, groundHeight) {
+    // Draw colorful candy dots
+    const colors = ['#FF69B4', '#FFB6C1', '#FF1493', '#FFC0CB'];
+    
+    for (let i = 0; i < 50; i++) {
+        ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+        const x = Math.random() * width;
+        const y = height - groundHeight + Math.random() * groundHeight;
+        const size = 3 + Math.random() * 5;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawSnowfall(ctx, width, height) {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    
+    const time = Date.now() / 1000;
+    for (let i = 0; i < 50; i++) {
+        const x = (i * 37 + time * 20) % width;
+        const y = (i * 53 + time * 30) % height;
+        const size = 2 + (i % 3);
+        
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawStars(ctx, width, height) {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    
+    // Fixed star positions (pseudo-random but consistent)
+    for (let i = 0; i < 100; i++) {
+        const x = (i * 73) % width;
+        const y = (i * 127) % (height * 0.7);
+        const size = 1 + (i % 3);
+        
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawNeonGrid(ctx, width, height) {
+    ctx.strokeStyle = 'rgba(255, 0, 255, 0.3)';
+    ctx.lineWidth = 1;
+    
+    // Vertical lines
+    for (let x = 0; x < width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height * 0.7);
+        ctx.stroke();
+    }
+    
+    // Horizontal lines
+    for (let y = 0; y < height * 0.7; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+    }
+}
+
+function drawSparkles(ctx, width, height) {
+    const time = Date.now() / 500;
+    const colors = ['rgba(255, 215, 0, 0.6)', 'rgba(255, 105, 180, 0.6)', 'rgba(138, 43, 226, 0.6)'];
+    
+    for (let i = 0; i < 30; i++) {
+        const x = (i * 67 + Math.sin(time + i) * 20) % width;
+        const y = (i * 43 + Math.cos(time + i) * 20) % (height * 0.7);
+        const size = 2 + Math.sin(time * 2 + i) * 2;
+        
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.beginPath();
+        ctx.arc(x, y, Math.abs(size), 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
