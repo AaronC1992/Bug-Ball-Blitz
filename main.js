@@ -604,8 +604,13 @@ class Game {
     }
     
     updatePlayer1Input() {
-        if (this.ui.isMobile) {
-            // Mobile controls
+        // Check if touch controls are enabled (either auto-detected or manually enabled)
+        const useTouchControls = this.touchControlsEnabled !== null 
+            ? this.touchControlsEnabled 
+            : this.ui.isMobile;
+            
+        if (useTouchControls) {
+            // Mobile/Touch controls
             this.player1.moveLeft = this.mobileControls.joystickX < -0.3;
             this.player1.moveRight = this.mobileControls.joystickX > 0.3;
             this.player1.jump = this.mobileControls.jumpPressed;
@@ -618,8 +623,13 @@ class Game {
     }
     
     updatePlayer2Input() {
-        if (this.ui.isTablet && this.gameMode === 'multiplayer') {
-            // Touch controls for player 2 on tablets
+        // Check if touch controls are enabled for player 2
+        const useTouchControls = this.touchControlsEnabled !== null 
+            ? (this.touchControlsEnabled && this.gameMode === 'multiplayer')
+            : (this.ui.isTablet && this.gameMode === 'multiplayer');
+            
+        if (useTouchControls) {
+            // Touch controls for player 2
             this.player2.moveLeft = this.mobileControlsP2.joystickX < -0.3;
             this.player2.moveRight = this.mobileControlsP2.joystickX > 0.3;
             this.player2.jump = this.mobileControlsP2.jumpPressed;
