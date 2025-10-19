@@ -436,6 +436,28 @@ export class MenuBackground {
     }
     
     drawBall() {
+        // Dynamic shadow that scales with ball height
+        const groundY = this.physics.groundY;
+        const ballHeight = groundY - this.ball.y;
+        const maxHeight = 200;
+        const heightRatio = Math.min(ballHeight / maxHeight, 1);
+        const shadowScale = 1 - (heightRatio * 0.6);
+        const shadowOpacity = 0.4 * (1 - heightRatio * 0.7);
+        
+        this.ctx.save();
+        this.ctx.fillStyle = `rgba(0, 0, 0, ${shadowOpacity})`;
+        this.ctx.beginPath();
+        this.ctx.ellipse(
+            this.ball.x, 
+            groundY + 5, 
+            this.ball.radius * 0.8 * shadowScale, 
+            this.ball.radius * 0.3 * shadowScale, 
+            0, 0, Math.PI * 2
+        );
+        this.ctx.fill();
+        this.ctx.restore();
+        
+        // Draw ball
         this.ctx.save();
         this.ctx.globalAlpha = 1.0; // Force full opacity
         

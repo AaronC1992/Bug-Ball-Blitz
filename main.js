@@ -8,12 +8,14 @@ import { Physics } from './physics.js';
 import { AI, MultiAI } from './ai.js';
 import { getCelebrationArray, getCelebrationById, checkCelebrationUnlock, drawCelebration } from './celebrations.js';
 import { MenuBackground } from './menuBackground.js';
+import { AudioManager } from './audioManager.js';
 
 class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.ui = new UIManager(this);
+        this.audio = new AudioManager();
         
         // Menu backgrounds
         this.menuBackgroundCanvas = document.getElementById('menuBackgroundCanvas');
@@ -289,26 +291,31 @@ class Game {
         
         // Menu buttons
         document.getElementById('towerCampaignBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
             this.startTowerCampaign();
         });
         
         document.getElementById('quickPlayBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
             this.showDifficultySelection();
         });
         
         document.getElementById('localMultiplayerBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
             this.startMultiplayer();
         });
         
         // Difficulty selection
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
+                this.audio.playSound('ui_click');
                 this.difficulty = btn.dataset.difficulty;
                 this.startQuickPlay();
             });
         });
         
         document.getElementById('cancelDifficultyBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
             this.ui.showScreen('mainMenu');
         });
         
@@ -688,6 +695,9 @@ class Game {
         this.initialCountdownValue = 5;
         this.countdownStartTime = Date.now();
         
+        // Play whistle sound for match start
+        this.audio.playSound('whistle');
+        
         // Show touch controls based on user preference or auto-detection (after state is set)
         this.updateTouchControlsVisibility();
         
@@ -848,12 +858,21 @@ class Game {
             this.ball.rotation += rotationSpeed;
         }
         
-        // Check collisions
-        this.physics.checkBallPlayerCollision(this.ball, this.player1, this.selectedBug1);
-        this.physics.checkBallPlayerCollision(this.ball, this.player2, this.selectedBug2);
+        // Check collisions and play kick sounds with haptic feedback
+        const ballVelocity = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
+        
+        if (this.physics.checkBallPlayerCollision(this.ball, this.player1, this.selectedBug1)) {
+            const hapticStrength = Math.min(Math.floor(ballVelocity * 3), 50);
+            this.audio.playSoundWithHaptic('kick', hapticStrength, ballVelocity);
+        }
+        if (this.physics.checkBallPlayerCollision(this.ball, this.player2, this.selectedBug2)) {
+            this.audio.playSound('kick', ballVelocity);
+        }
         
         if (this.player3) {
-            this.physics.checkBallPlayerCollision(this.ball, this.player3, this.selectedBug3);
+            if (this.physics.checkBallPlayerCollision(this.ball, this.player3, this.selectedBug3)) {
+                this.audio.playSound('kick', ballVelocity);
+            }
         }
         
         // CRITICAL FIX: After all collisions, ensure ball is never stuck underground
@@ -999,10 +1018,25 @@ class Game {
         
         this.ctx.restore();
         
-        // Shadow (drawn separately, not rotated)
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        // Dynamic shadow that scales with ball height
+        const groundY = this.physics.groundY;
+        const ballHeight = groundY - this.ball.y;
+        const maxHeight = 200; // Maximum expected ball height
+        
+        // Scale shadow based on height (smaller and lighter when higher)
+        const heightRatio = Math.min(ballHeight / maxHeight, 1);
+        const shadowScale = 1 - (heightRatio * 0.6); // Shadow shrinks up to 60% when at max height
+        const shadowOpacity = 0.4 * (1 - heightRatio * 0.7); // Shadow fades when ball is high
+        
+        this.ctx.fillStyle = `rgba(0, 0, 0, ${shadowOpacity})`;
         this.ctx.beginPath();
-        this.ctx.ellipse(this.ball.x, this.physics.groundY + 5, this.ball.radius * 0.8, this.ball.radius * 0.3, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(
+            this.ball.x, 
+            groundY + 5, 
+            this.ball.radius * 0.8 * shadowScale, 
+            this.ball.radius * 0.3 * shadowScale, 
+            0, 0, Math.PI * 2
+        );
         this.ctx.fill();
     }
     
@@ -1049,6 +1083,9 @@ class Game {
             return;
         }
         
+        // Play goal sound with strong haptic feedback
+        this.audio.playSoundWithHaptic('goal', [100, 50, 100]);
+        
         // Immediately change state to prevent multiple detections
         this.gameState = 'goal_scored';
         
@@ -1072,6 +1109,8 @@ class Game {
             this.celebrationFrame = 0;
             this.celebrationSide = goal;
             this.celebrationType = (profile && profile.selectedCelebration) ? profile.selectedCelebration : 'classic';
+            // Play celebration sound
+            this.audio.playSound('celebration');
         } else {
             this.celebrationActive = false;
         }
