@@ -16,6 +16,7 @@ export class MenuBackground {
         this.arena = null;
         this.animationId = null;
         this.isRunning = false;
+        this.frameCount = 0;
         
         console.log('MenuBackground constructor - canvas dimensions:', canvas.width, 'x', canvas.height);
         
@@ -204,6 +205,11 @@ export class MenuBackground {
     animate() {
         if (!this.isRunning) return;
         
+        this.frameCount++;
+        if (this.frameCount % 60 === 0) {
+            console.log('Menu background animating - frame:', this.frameCount);
+        }
+        
         this.update();
         this.render();
         
@@ -244,8 +250,13 @@ export class MenuBackground {
     }
     
     render() {
+        // Clear canvas first
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
         // Draw arena background
-        drawArenaBackground(this.ctx, this.arena, this.canvas.width, this.canvas.height);
+        if (this.arena) {
+            drawArenaBackground(this.ctx, this.arena, this.canvas.width, this.canvas.height);
+        }
         
         // Draw goals with transparency
         this.ctx.globalAlpha = 0.5;
