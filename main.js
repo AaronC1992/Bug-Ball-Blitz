@@ -56,13 +56,6 @@ class Game {
         this.introCountdownDuration = 3000; // 3 seconds for 3-2-1 countdown
         this.introGoDuration = 800; // 0.8 seconds for GO
         
-        // Crowd reactions
-        this.lastNearMissTime = 0; // Prevent spam
-        this.crowdMembers = [];
-        this.crowdReaction = 'neutral'; // 'neutral', 'cheer', 'boo', 'ooh'
-        this.crowdReactionTime = 0;
-        this.crowdReactionDuration = 120; // 2 seconds at 60fps
-        
         // Players
         this.player1 = null;
         this.player2 = null;
@@ -670,9 +663,6 @@ class Game {
         this.resizeCanvas();
         this.physics = new Physics(this.canvas.width, this.canvas.height);
         
-        // Initialize crowd (only for grassField arena)
-        this.initializeCrowd();
-        
         // Initialize ball
         this.ball = {
             x: this.canvas.width / 2,
@@ -773,150 +763,6 @@ class Game {
         this.updateTouchControlsVisibility();
         
         this.gameLoop();
-    }
-    
-    initializeCrowd() {
-        this.crowdMembers = [];
-        
-        // Only add crowd to grassField arena
-        if (!this.selectedArena || this.selectedArena.id !== 'grassField') {
-            return;
-        }
-        
-        // Skip crowd on low quality
-        if (this.quality && !this.quality.getSetting('crowdAnimations')) {
-            return;
-        }
-        
-        // Create crowd members on left and right sides
-        const groundY = this.physics.groundY;
-        const crowdY = groundY * 0.4; // Position in upper part of field
-        const crowdCount = 15; // Number of people per side
-        
-        // Left side crowd
-        for (let i = 0; i < crowdCount; i++) {
-            this.crowdMembers.push({
-                x: 50 + i * 25,
-                y: crowdY + Math.random() * 40,
-                size: 20 + Math.random() * 10,
-                bounceOffset: Math.random() * Math.PI * 2,
-                bounceSpeed: 0.05 + Math.random() * 0.05,
-                color: this.getRandomCrowdColor(),
-                armAngle: Math.random() * Math.PI * 2
-            });
-        }
-        
-        // Right side crowd
-        for (let i = 0; i < crowdCount; i++) {
-            this.crowdMembers.push({
-                x: this.canvas.width - 50 - i * 25,
-                y: crowdY + Math.random() * 40,
-                size: 20 + Math.random() * 10,
-                bounceOffset: Math.random() * Math.PI * 2,
-                bounceSpeed: 0.05 + Math.random() * 0.05,
-                color: this.getRandomCrowdColor(),
-                armAngle: Math.random() * Math.PI * 2
-            });
-        }
-    }
-    
-    getRandomCrowdColor() {
-        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe', '#fd79a8'];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }
-    
-    updateCrowd() {
-        if (this.crowdMembers.length === 0) return;
-        
-        // Update crowd reaction timer
-        if (this.crowdReactionTime > 0) {
-            this.crowdReactionTime--;
-            if (this.crowdReactionTime === 0) {
-                this.crowdReaction = 'neutral';
-            }
-        }
-        
-        // Animate crowd members
-        this.crowdMembers.forEach(member => {
-            member.bounceOffset += member.bounceSpeed;
-            member.armAngle += member.bounceSpeed * 2;
-        });
-    }
-    
-    drawCrowd() {
-        if (this.crowdMembers.length === 0) return;
-        
-        this.crowdMembers.forEach(member => {
-            this.ctx.save();
-            this.ctx.translate(member.x, member.y);
-            
-            // Determine animation based on crowd reaction
-            let bounce = 0;
-            let armWave = 0;
-            
-            if (this.crowdReaction === 'cheer') {
-                bounce = Math.sin(member.bounceOffset) * 8;
-                armWave = Math.sin(member.armAngle) * 0.8;
-            } else if (this.crowdReaction === 'boo') {
-                bounce = Math.sin(member.bounceOffset) * 3;
-                armWave = -0.5;
-            } else if (this.crowdReaction === 'ooh') {
-                bounce = Math.sin(member.bounceOffset) * 5;
-                armWave = Math.sin(member.armAngle) * 0.5;
-            } else {
-                bounce = Math.sin(member.bounceOffset) * 2;
-                armWave = Math.sin(member.armAngle) * 0.3;
-            }
-            
-            this.ctx.translate(0, bounce);
-            
-            // Draw simple stick figure
-            const headSize = member.size * 0.3;
-            const bodyHeight = member.size * 0.5;
-            
-            // Head
-            this.ctx.fillStyle = member.color;
-            this.ctx.beginPath();
-            this.ctx.arc(0, -bodyHeight - headSize, headSize, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            // Body
-            this.ctx.strokeStyle = member.color;
-            this.ctx.lineWidth = 3;
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, -bodyHeight);
-            this.ctx.lineTo(0, 0);
-            this.ctx.stroke();
-            
-            // Arms (wave based on reaction)
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, -bodyHeight * 0.7);
-            this.ctx.lineTo(-headSize * 1.5, -bodyHeight * 0.7 + Math.sin(armWave) * headSize);
-            this.ctx.stroke();
-            
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, -bodyHeight * 0.7);
-            this.ctx.lineTo(headSize * 1.5, -bodyHeight * 0.7 + Math.sin(armWave + Math.PI) * headSize);
-            this.ctx.stroke();
-            
-            // Legs
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, 0);
-            this.ctx.lineTo(-headSize * 0.8, bodyHeight * 0.5);
-            this.ctx.stroke();
-            
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, 0);
-            this.ctx.lineTo(headSize * 0.8, bodyHeight * 0.5);
-            this.ctx.stroke();
-            
-            this.ctx.restore();
-        });
-    }
-    
-    triggerCrowdReaction(reaction) {
-        this.crowdReaction = reaction;
-        this.crowdReactionTime = this.crowdReactionDuration;
     }
     
     gameLoop() {
@@ -1188,9 +1034,6 @@ class Game {
         // Update achievement notifications
         this.achievements.updateNotifications();
         
-        // Update crowd animations
-        this.updateCrowd();
-        
         // Create ball trail for fast-moving ball
         if (this.ball) {
             this.particles.createBallTrail(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy);
@@ -1306,8 +1149,6 @@ class Game {
                 this.ball.y > goalTop - nearMissDistance && 
                 this.ball.y < goalBottom + nearMissDistance &&
                 Math.abs(this.ball.vx) > 5) {
-                this.audio.playSound('crowd_ooh');
-                this.triggerCrowdReaction('ooh');
                 this.lastNearMissTime = now;
             }
             // Check right goal area
@@ -1316,8 +1157,6 @@ class Game {
                      this.ball.y > goalTop - nearMissDistance && 
                      this.ball.y < goalBottom + nearMissDistance &&
                      Math.abs(this.ball.vx) > 5) {
-                this.audio.playSound('crowd_ooh');
-                this.triggerCrowdReaction('ooh');
                 this.lastNearMissTime = now;
             }
         }
@@ -1373,9 +1212,6 @@ class Game {
         
         // Draw arena background
         drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality);
-        
-        // Draw crowd (in background, after arena but before goals)
-        this.drawCrowd();
         
         // Draw goals
         this.drawGoals();
@@ -1576,9 +1412,7 @@ class Game {
         
         // Crowd reaction based on who scored
         if (scoringPlayer === 'player1') {
-            // Player 1 scored - crowd cheers
-            this.audio.playSound('crowd_cheer');
-            this.triggerCrowdReaction('cheer');
+            // Player 1 scored
             this.celebrationActive = true;
             this.celebrationFrame = 0;
             this.celebrationSide = goal;
@@ -1586,9 +1420,7 @@ class Game {
             // Play celebration sound
             this.audio.playSound('celebration');
         } else {
-            // Player 2/AI scored - crowd boos
-            this.audio.playSound('crowd_boo');
-            this.triggerCrowdReaction('boo');
+            // Player 2/AI scored
             this.celebrationActive = false;
         }
         
