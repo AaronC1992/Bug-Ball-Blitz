@@ -184,6 +184,18 @@ export class AchievementManager {
                 stat: 'allBugsUnlocked',
                 unlocked: false,
                 category: 'collection'
+            },
+
+            // Arena collection achievement
+            arenaExplorer: {
+                id: 'arenaExplorer',
+                name: 'Arena Explorer',
+                description: 'Unlock all arenas',
+                icon: '🗺️',
+                requirement: 1,
+                stat: 'allArenasUnlocked',
+                unlocked: false,
+                category: 'collection'
             }
         };
     }
@@ -303,6 +315,21 @@ export class AchievementManager {
             if (!this.stats.allBugsUnlocked) {
                 this.stats.allBugsUnlocked = 1;
                 this.checkAchievements('allBugsUnlocked');
+            }
+        }
+    }
+
+    // Check if all arenas are unlocked
+    checkArenaCollection(arenaModule) {
+        if (!arenaModule || !arenaModule.getUnlockedArenas || !arenaModule.getArenaArray) return;
+        
+        const unlockedArenas = arenaModule.getUnlockedArenas(this);
+        const totalArenas = arenaModule.getArenaArray();
+        
+        if (unlockedArenas.length >= totalArenas.length) {
+            if (!this.stats.allArenasUnlocked) {
+                this.stats.allArenasUnlocked = 1;
+                this.checkAchievements('allArenasUnlocked');
             }
         }
     }

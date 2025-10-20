@@ -3,7 +3,7 @@
 import { UIManager } from './ui.js';
 import { SaveSystem } from './saveSystem.js';
 import { getBugById, getBugArray, getUnlockedBugs } from './bugs.js';
-import { getArenaById, drawArenaBackground } from './arenas.js';
+import { getArenaById, drawArenaBackground, getArenaArray, getUnlockedArenas } from './arenas.js';
 import { Physics } from './physics.js';
 import { AI, MultiAI } from './ai.js';
 import { getCelebrationArray, getCelebrationById, checkCelebrationUnlock, drawCelebration } from './celebrations.js';
@@ -1501,6 +1501,12 @@ class Game {
         this.achievements.checkBugCollection({
             getUnlockedBugs,
             getBugArray
+        });
+        
+        // Check arena collection achievement
+        this.achievements.checkArenaCollection({
+            getUnlockedArenas,
+            getArenaArray
         });
         
         // Update profile stats

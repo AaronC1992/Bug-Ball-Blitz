@@ -1,7 +1,7 @@
 // ui.js - UI rendering and menu management
 
 import { getBugArray, isBugUnlocked } from './bugs.js';
-import { getArenaArray } from './arenas.js';
+import { getArenaArray, isArenaUnlocked } from './arenas.js';
 import { SaveSystem } from './saveSystem.js';
 
 export class UIManager {
@@ -381,12 +381,15 @@ export class UIManager {
         arenaGrid.innerHTML = '';
         
         const arenas = getArenaArray();
+        const achievementManager = this.game ? this.game.achievements : null;
+        
         arenas.forEach(arena => {
+            const isUnlocked = isArenaUnlocked(arena.id, achievementManager);
             const arenaCard = document.createElement('div');
-            arenaCard.className = 'arena-card';
+            arenaCard.className = `arena-card ${isUnlocked ? '' : 'locked'}`;
             
             const previewCanvas = document.createElement('canvas');
-            previewCanvas.className = 'arena-preview';
+            previewCanvas.className = `arena-preview ${isUnlocked ? '' : 'locked-preview'}`;
             previewCanvas.width = 250;
             previewCanvas.height = 100;
             
@@ -400,10 +403,20 @@ export class UIManager {
             arenaName.textContent = arena.name;
             arenaCard.appendChild(arenaName);
             
-            arenaCard.addEventListener('click', () => {
-                SaveSystem.updatePreferences(this.currentProfile, { selectedArena: arena.id });
-                callback(arena.id);
-            });
+            // Show unlock requirement for locked arenas
+            if (!isUnlocked) {
+                const unlockReq = document.createElement('div');
+                unlockReq.className = 'arena-unlock-requirement';
+                unlockReq.textContent = `🔒 ${arena.unlockRequirement}`;
+                arenaCard.appendChild(unlockReq);
+            }
+            
+            if (isUnlocked) {
+                arenaCard.addEventListener('click', () => {
+                    SaveSystem.updatePreferences(this.currentProfile, { selectedArena: arena.id });
+                    callback(arena.id);
+                });
+            }
             
             arenaGrid.appendChild(arenaCard);
         });

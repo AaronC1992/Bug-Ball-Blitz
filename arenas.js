@@ -8,7 +8,9 @@ export const ARENAS = {
         skyColors: ['#87CEEB', '#4A90E2'],
         grassBlades: true,
         description: 'Classic grassy soccer field',
-        weather: 'clear'
+        weather: 'clear',
+        unlocked: true,
+        unlockRequirement: 'Starter Arena'
     },
     
     dirtPatch: {
@@ -18,7 +20,9 @@ export const ARENAS = {
         skyColors: ['#CD853F', '#8B6914'],
         grassBlades: false,
         description: 'Dusty dirt arena',
-        weather: 'dusty'
+        weather: 'dusty',
+        unlocked: true,
+        unlockRequirement: 'Starter Arena'
     },
     
     leafArena: {
@@ -28,7 +32,9 @@ export const ARENAS = {
         skyColors: ['#90EE90', '#228B22'],
         grassBlades: true,
         description: 'Arena on a giant leaf',
-        weather: 'clear'
+        weather: 'clear',
+        unlocked: true,
+        unlockRequirement: 'Starter Arena'
     },
     
     desertOasis: {
@@ -38,7 +44,10 @@ export const ARENAS = {
         skyColors: ['#FFE4B5', '#DEB887'],
         grassBlades: false,
         description: 'Hot sandy desert arena',
-        weather: 'hot'
+        weather: 'hot',
+        unlocked: false,
+        unlockRequirement: 'Win your first match',
+        unlockAchievement: 'firstVictory'
     },
     
     snowyPark: {
@@ -48,7 +57,10 @@ export const ARENAS = {
         skyColors: ['#B0C4DE', '#778899'],
         grassBlades: false,
         description: 'Winter wonderland field',
-        weather: 'snowy'
+        weather: 'snowy',
+        unlocked: false,
+        unlockRequirement: 'Score 50 goals',
+        unlockAchievement: 'goalMachine'
     },
     
     volcanicRock: {
@@ -58,7 +70,10 @@ export const ARENAS = {
         skyColors: ['#FF4500', '#8B0000'],
         grassBlades: false,
         description: 'Dangerous volcanic terrain',
-        weather: 'hot'
+        weather: 'hot',
+        unlocked: false,
+        unlockRequirement: 'Win 10 matches',
+        unlockAchievement: 'champion'
     },
     
     mushroomForest: {
@@ -68,7 +83,10 @@ export const ARENAS = {
         skyColors: ['#DDA0DD', '#BA55D3'],
         grassBlades: true,
         description: 'Magical mushroom grove',
-        weather: 'foggy'
+        weather: 'foggy',
+        unlocked: false,
+        unlockRequirement: 'Win without conceding',
+        unlockAchievement: 'perfectGame'
     },
     
     beachSand: {
@@ -78,7 +96,10 @@ export const ARENAS = {
         skyColors: ['#87CEEB', '#00BFFF'],
         grassBlades: false,
         description: 'Tropical beach paradise',
-        weather: 'sunny'
+        weather: 'sunny',
+        unlocked: false,
+        unlockRequirement: 'Score 3 goals in one match',
+        unlockAchievement: 'hatTrick'
     },
     
     moonCrater: {
@@ -88,7 +109,10 @@ export const ARENAS = {
         skyColors: ['#000000', '#1a1a2e'],
         grassBlades: false,
         description: 'Low gravity lunar surface',
-        weather: 'space'
+        weather: 'space',
+        unlocked: false,
+        unlockRequirement: 'Score 100 goals',
+        unlockAchievement: 'centurion'
     },
     
     autumnLeaves: {
@@ -98,7 +122,10 @@ export const ARENAS = {
         skyColors: ['#FF8C00', '#FF6347'],
         grassBlades: true,
         description: 'Colorful fall foliage',
-        weather: 'windy'
+        weather: 'windy',
+        unlocked: false,
+        unlockRequirement: 'Win by 5+ goals',
+        unlockAchievement: 'blowout'
     },
     
     iceCave: {
@@ -108,7 +135,10 @@ export const ARENAS = {
         skyColors: ['#4682B4', '#5F9EA0'],
         grassBlades: false,
         description: 'Slippery frozen cavern',
-        weather: 'icy'
+        weather: 'icy',
+        unlocked: false,
+        unlockRequirement: 'Win after being 2+ down',
+        unlockAchievement: 'comeback'
     },
     
     gardenPond: {
@@ -118,7 +148,10 @@ export const ARENAS = {
         skyColors: ['#98FB98', '#3CB371'],
         grassBlades: true,
         description: 'Peaceful garden setting',
-        weather: 'clear'
+        weather: 'clear',
+        unlocked: false,
+        unlockRequirement: 'Win 50 matches',
+        unlockAchievement: 'unbeatable'
     },
     
     neonCity: {
@@ -128,7 +161,10 @@ export const ARENAS = {
         skyColors: ['#FF00FF', '#00FFFF'],
         grassBlades: false,
         description: 'Futuristic cyberpunk arena',
-        weather: 'neon'
+        weather: 'neon',
+        unlocked: false,
+        unlockRequirement: 'Play 100 matches',
+        unlockAchievement: 'marathonMan'
     },
     
     candyLand: {
@@ -138,7 +174,10 @@ export const ARENAS = {
         skyColors: ['#FFE4E1', '#FFC0CB'],
         grassBlades: false,
         description: 'Sweet sugary wonderland',
-        weather: 'sweet'
+        weather: 'sweet',
+        unlocked: false,
+        unlockRequirement: 'Score in first 10 seconds',
+        unlockAchievement: 'quickDraw'
     },
     
     jungleVines: {
@@ -148,7 +187,10 @@ export const ARENAS = {
         skyColors: ['#9ACD32', '#556B2F'],
         grassBlades: true,
         description: 'Dense tropical jungle',
-        weather: 'humid'
+        weather: 'humid',
+        unlocked: false,
+        unlockRequirement: 'Win 10 perfect games',
+        unlockAchievement: 'shutoutKing'
     },
     
     crystalCavern: {
@@ -349,4 +391,28 @@ function shadeColor(color, percent) {
         (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
         (B < 255 ? B < 1 ? 0 : B : 255))
         .toString(16).slice(1);
+}
+
+export function isArenaUnlocked(arenaId, achievementManager) {
+    const arena = ARENAS[arenaId];
+    if (!arena) return false;
+    
+    // Always unlocked arenas (starters)
+    if (arena.unlocked === true) return true;
+    
+    // Check if linked achievement is unlocked
+    if (arena.unlockAchievement && achievementManager) {
+        const achievement = achievementManager.achievements[arena.unlockAchievement];
+        return achievement ? achievement.unlocked : false;
+    }
+    
+    return false;
+}
+
+export function getUnlockedArenas(achievementManager) {
+    return getArenaArray().filter(arena => isArenaUnlocked(arena.id, achievementManager));
+}
+
+export function getLockedArenas(achievementManager) {
+    return getArenaArray().filter(arena => !isArenaUnlocked(arena.id, achievementManager));
 }
