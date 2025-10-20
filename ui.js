@@ -411,12 +411,10 @@ export class UIManager {
                 arenaCard.appendChild(unlockReq);
             }
             
-            if (isUnlocked) {
-                arenaCard.addEventListener('click', () => {
-                    SaveSystem.updatePreferences(this.currentProfile, { selectedArena: arena.id });
-                    callback(arena.id);
-                });
-            }
+            // Show preview modal on click (both locked and unlocked)
+            arenaCard.addEventListener('click', () => {
+                this.showArenaPreviewModal(arena, isUnlocked, callback);
+            });
             
             arenaGrid.appendChild(arenaCard);
         });
@@ -443,5 +441,163 @@ export class UIManager {
         // Ground
         ctx.fillStyle = arena.groundColor;
         ctx.fillRect(0, height * 0.6, width, height * 0.4);
+    }
+    
+    showArenaPreviewModal(arena, isUnlocked, callback) {
+        const modal = document.getElementById('arenaPreviewModal');
+        const title = document.getElementById('arenaPreviewTitle');
+        const canvas = document.getElementById('arenaPreviewCanvas');
+        const description = document.getElementById('arenaPreviewDescription');
+        const selectBtn = document.getElementById('selectArenaPreviewBtn');
+        const cancelBtn = document.getElementById('cancelArenaPreviewBtn');
+        const closeBtn = document.getElementById('closeArenaPreview');
+        
+        // Set title and description
+        title.textContent = arena.name;
+        if (isUnlocked) {
+            description.textContent = arena.description;
+        } else {
+            description.innerHTML = `
+                <div style="color: #e74c3c; font-weight: bold;">🔒 Locked</div>
+                <div style="margin-top: 10px;">${arena.unlockRequirement}</div>
+            `;
+        }
+        
+        // Draw detailed preview
+        const ctx = canvas.getContext('2d');
+        this.drawDetailedArenaPreview(ctx, arena, canvas.width, canvas.height);
+        
+        // Handle select button
+        const newSelectBtn = selectBtn.cloneNode(true);
+        selectBtn.parentNode.replaceChild(newSelectBtn, selectBtn);
+        
+        if (isUnlocked) {
+            newSelectBtn.style.display = 'block';
+            newSelectBtn.addEventListener('click', () => {
+                SaveSystem.updatePreferences(this.currentProfile, { selectedArena: arena.id });
+                modal.style.display = 'none';
+                callback(arena.id);
+            });
+        } else {
+            newSelectBtn.style.display = 'none';
+        }
+        
+        // Handle cancel button
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        newCancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Handle close button
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        newCloseBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Close on outside click
+        window.onclick = (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+        
+        // Show modal
+        modal.style.display = 'block';
+    }
+    
+    drawDetailedArenaPreview(ctx, arena, width, height) {
+        // Sky with gradient
+        const skyGradient = ctx.createLinearGradient(0, 0, 0, height * 0.6);
+        skyGradient.addColorStop(0, arena.skyColors[0]);
+        skyGradient.addColorStop(1, arena.skyColors[1]);
+        ctx.fillStyle = skyGradient;
+        ctx.fillRect(0, 0, width, height);
+        
+        // Ground with gradient
+        const groundGradient = ctx.createLinearGradient(0, height * 0.6, 0, height);
+        const baseColor = arena.groundColor;
+        groundGradient.addColorStop(0, baseColor);
+        groundGradient.addColorStop(1, this.darkenColor(baseColor, 0.3));
+        ctx.fillStyle = groundGradient;
+        ctx.fillRect(0, height * 0.6, width, height * 0.4);
+        
+        // Draw field markings
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 3;
+        
+        // Center line
+        ctx.beginPath();
+        ctx.moveTo(width / 2, height * 0.6);
+        ctx.lineTo(width / 2, height);
+        ctx.stroke();
+        
+        // Center circle
+        ctx.beginPath();
+        ctx.arc(width / 2, height * 0.8, 40, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Goal areas
+        const goalWidth = 80;
+        const goalHeight = 60;
+        
+        // Left goal
+        ctx.strokeRect(10, height * 0.7, goalWidth, goalHeight);
+        
+        // Right goal
+        ctx.strokeRect(width - 10 - goalWidth, height * 0.7, goalWidth, goalHeight);
+        
+        // Add grass blades if applicable
+        if (arena.grassBlades) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * width;
+                const y = height * 0.6 + Math.random() * height * 0.4;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + Math.random() * 4 - 2, y - 5);
+                ctx.stroke();
+            }
+        }
+        
+        // Weather effects
+        if (arena.weather === 'snowy') {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            for (let i = 0; i < 30; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 3 + 1;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else if (arena.weather === 'dusty') {
+            ctx.fillStyle = 'rgba(139, 105, 20, 0.2)';
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 5 + 2;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+    
+    darkenColor(color, amount) {
+        // Convert hex to RGB
+        let r = parseInt(color.substr(1, 2), 16);
+        let g = parseInt(color.substr(3, 2), 16);
+        let b = parseInt(color.substr(5, 2), 16);
+        
+        // Darken
+        r = Math.floor(r * (1 - amount));
+        g = Math.floor(g * (1 - amount));
+        b = Math.floor(b * (1 - amount));
+        
+        // Convert back to hex
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
 }
