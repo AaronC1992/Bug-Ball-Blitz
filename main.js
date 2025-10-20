@@ -1371,10 +1371,6 @@ class Game {
         if (scoringPlayer === 'player1') {
             // Player 1 scored - crowd cheers
             this.audio.playSound('crowd_cheer');
-            // Create goal explosion particles
-            const goalX = goal === 'left' ? this.canvas.width * 0.1 : this.canvas.width * 0.9;
-            const goalY = this.canvas.height * 0.5;
-            this.particles.createGoalExplosion(goalX, goalY, '#7ed321');
             this.celebrationActive = true;
             this.celebrationFrame = 0;
             this.celebrationSide = goal;
@@ -1384,10 +1380,6 @@ class Game {
         } else {
             // Player 2/AI scored - crowd boos
             this.audio.playSound('crowd_boo');
-            // Create goal explosion particles (red for opponent)
-            const goalX = goal === 'left' ? this.canvas.width * 0.1 : this.canvas.width * 0.9;
-            const goalY = this.canvas.height * 0.5;
-            this.particles.createGoalExplosion(goalX, goalY, '#ff3b30');
             this.celebrationActive = false;
         }
         
