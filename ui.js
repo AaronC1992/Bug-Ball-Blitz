@@ -113,17 +113,21 @@ export class UIManager {
     
     initializeEventListeners() {
         // Title screen
-        document.getElementById('createProfileBtn').addEventListener('click', () => {
+        const createBtn = document.getElementById('createProfileBtn');
+        const loadBtn = document.getElementById('loadProfileBtn');
+        const exitBtn = document.getElementById('exitBtn');
+        
+        createBtn.addEventListener('click', () => {
             this.showScreen('profileCreateScreen');
         });
         
-        document.getElementById('loadProfileBtn').addEventListener('click', () => {
+        loadBtn.addEventListener('click', () => {
             this.showProfileList();
             this.showScreen('profileLoadScreen');
         });
         
         // Exit button (just closes window/does nothing on web)
-        document.getElementById('exitBtn').addEventListener('click', () => {
+        exitBtn.addEventListener('click', () => {
             window.close(); // Only works if window was opened by script
         });
         

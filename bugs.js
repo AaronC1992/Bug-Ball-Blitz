@@ -13,7 +13,7 @@ export const BUGS = {
         color: '#8B4513',
         unlocked: true, // Always unlocked (starter bug)
         unlockRequirement: 'Starter Bug',
-        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">`
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="50" cy="60" rx="25" ry="35" fill="#5d2e0f" opacity="0.3"/>
             <ellipse cx="50" cy="50" rx="20" ry="30" fill="#8B4513"/>
             <ellipse cx="50" cy="35" rx="15" ry="15" fill="#6b3410"/>
@@ -44,7 +44,7 @@ export const BUGS = {
         color: '#7ed321',
         unlocked: true, // Always unlocked (starter bug)
         unlockRequirement: 'Starter Bug',
-        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">`
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="50" cy="65" rx="20" ry="25" fill="#5fb304" opacity="0.3"/>
             <ellipse cx="50" cy="55" rx="15" ry="25" fill="#7ed321"/>
             <ellipse cx="50" cy="35" rx="10" ry="12" fill="#6fc415"/>
@@ -72,7 +72,7 @@ export const BUGS = {
         color: '#ff4444',
         unlocked: true, // Always unlocked (starter bug)
         unlockRequirement: 'Starter Bug',
-        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">`
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="50" cy="60" rx="22" ry="28" fill="#cc0000" opacity="0.3"/>
             <ellipse cx="50" cy="50" rx="18" ry="25" fill="#ff4444"/>
             <ellipse cx="50" cy="35" rx="12" ry="12" fill="#2d2d2d"/>
@@ -103,7 +103,7 @@ export const BUGS = {
         unlocked: false,
         unlockRequirement: 'Score 50 goals',
         unlockAchievement: 'goalMachine', // Links to achievement ID
-        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">`
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="50" cy="65" rx="15" ry="18" fill="#1a1a1a" opacity="0.3"/>
             <circle cx="50" cy="55" r="12" fill="#2d2d2d"/>
             <circle cx="50" cy="40" r="9" fill="#3a3a3a"/>
@@ -134,7 +134,7 @@ export const BUGS = {
         unlocked: false,
         unlockRequirement: 'Win 10 matches',
         unlockAchievement: 'champion', // Links to achievement ID
-        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">`
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="50" cy="62" rx="20" ry="22" fill="#2e1a3a" opacity="0.3"/>
             <ellipse cx="50" cy="52" rx="16" ry="20" fill="#4a235a"/>
             <circle cx="50" cy="35" r="12" fill="#5b2d6f"/>
