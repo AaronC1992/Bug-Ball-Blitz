@@ -163,6 +163,12 @@ class Game {
         window.addEventListener('resize', handleResize);
         window.addEventListener('orientationchange', handleResize);
         
+        // Fullscreen change listener
+        document.addEventListener('fullscreenchange', () => this.updateFullscreenButton());
+        document.addEventListener('webkitfullscreenchange', () => this.updateFullscreenButton());
+        document.addEventListener('mozfullscreenchange', () => this.updateFullscreenButton());
+        document.addEventListener('msfullscreenchange', () => this.updateFullscreenButton());
+        
         // Detect when app loses/gains focus (rotation can trigger this)
         document.addEventListener('visibilitychange', () => {
             if (document.hidden && this.gameState === 'playing') {
@@ -367,6 +373,10 @@ class Game {
         // Pause menu
         document.getElementById('pauseBtn').addEventListener('click', () => {
             this.pauseGame();
+        });
+        
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            this.toggleFullscreen();
         });
         
         document.getElementById('resumeBtn').addEventListener('click', () => {
@@ -1767,6 +1777,53 @@ class Game {
             this.mainMenuBackground.setupMatch();
             this.mainMenuBackground.start();
         }
+    }
+    
+    toggleFullscreen() {
+        const elem = document.documentElement;
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+            !document.mozFullScreenElement && !document.msFullscreenElement) {
+            // Enter fullscreen
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { // Safari
+                elem.webkitRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) { // Firefox
+                elem.mozRequestFullScreen();
+            } else if (elem.msRequestFullscreen) { // IE/Edge
+                elem.msRequestFullscreen();
+            }
+            fullscreenBtn.textContent = '⛶'; // Exit fullscreen icon
+        } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+            fullscreenBtn.textContent = '⛶'; // Fullscreen icon
+        }
+        
+        // Play sound
+        this.audio.playSound('ui_click');
+    }
+    
+    updateFullscreenButton() {
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        if (!fullscreenBtn) return;
+        
+        const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || 
+                           document.mozFullScreenElement || document.msFullscreenElement;
+        
+        // Update button icon based on state
+        fullscreenBtn.textContent = isFullscreen ? '⛶' : '⛶';
+        fullscreenBtn.title = isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen';
     }
     
     showStylesMenu() {

@@ -656,7 +656,7 @@ input[type="text"]:focus {
     content: '🏆 ';
 }
 
-.settings-btn, .pause-btn {
+.settings-btn, .pause-btn, .fullscreen-btn {
     background: rgba(0, 0, 0, 0.8);
     border: none;
     padding: 10px 15px;
@@ -666,12 +666,16 @@ input[type="text"]:focus {
     transition: all 0.3s ease;
 }
 
-.settings-btn:hover, .pause-btn:hover {
+.settings-btn:hover, .pause-btn:hover, .fullscreen-btn:hover {
     background: rgba(126, 211, 33, 0.8);
 }
 
 .settings-btn {
     margin-right: 10px;
+}
+
+.fullscreen-btn {
+    margin-left: 10px;
 }
 
 /* Achievements */
