@@ -2,6 +2,12 @@
 
 A modern remake of "Slime Soccer" featuring insect athletes competing in physics-based soccer matches!
 
+## 🎮 Play Now!
+
+**[🕹️ Play Bug Ball Blitz](https://aaronc1992.github.io/Bug-Ball-Blitz/)**
+
+Click the link above to play the latest version directly in your browser!
+
 ## 🎮 Game Overview
 
 **Bug Ball Blitz** is a 2D physics-based soccer game where bugs compete in intense matches across natural arenas. Features a progressive Tower Campaign, Quick Play mode, and local multiplayer.
