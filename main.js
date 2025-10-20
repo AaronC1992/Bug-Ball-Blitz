@@ -739,6 +739,9 @@ class Game {
         this.lastFrameTime = null;
         this.maxGoalDeficit = 0; // Track for comeback achievement
         
+        // Reset match-specific achievement stats for new match
+        this.achievements.resetMatchStats();
+        
         this.updateScoreDisplay();
         this.updateTimerDisplay();
         

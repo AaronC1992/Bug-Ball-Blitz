@@ -131,6 +131,28 @@ export class UIManager {
             window.close(); // Only works if window was opened by script
         });
         
+        // Developer button - Clear all cached data
+        document.getElementById('devClearDataBtn').addEventListener('click', () => {
+            if (confirm('⚠️ DEVELOPER MODE ⚠️\n\nThis will erase ALL cached data including:\n• All profiles\n• All achievements\n• All unlocked content\n• All settings\n\nThis action cannot be undone!\n\nContinue?')) {
+                // Clear localStorage
+                localStorage.clear();
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                
+                // Clear cookies
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                
+                // Show confirmation
+                alert('✅ All cached data has been cleared!\n\nThe page will now reload to show fresh content.');
+                
+                // Force reload from server (bypass cache)
+                window.location.reload(true);
+            }
+        });
+        
         // Profile creation
         document.getElementById('confirmProfileBtn').addEventListener('click', () => {
             this.createProfile();
