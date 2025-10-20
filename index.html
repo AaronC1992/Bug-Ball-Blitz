@@ -69,6 +69,7 @@
                     <button class="menu-btn" id="quickPlayBtn">⚡ Quick Play</button>
                     <button class="menu-btn" id="localMultiplayerBtn">🎮 Local Multiplayer</button>
                     <button class="menu-btn" id="stylesBtn">✨ Styles</button>
+                    <button class="menu-btn" id="achievementsBtn">🏅 Achievements</button>
                     <button class="menu-btn" id="viewStatsBtn">📊 View Stats</button>
                     <button class="menu-btn" id="logoutBtn">🔙 Logout</button>
                 </div>
@@ -91,6 +92,31 @@
             <div id="statsDisplay"></div>
             <div class="menu-buttons">
                 <button class="menu-btn" id="backToMainBtn">← Back</button>
+            </div>
+        </div>
+
+        <!-- Achievements Screen -->
+        <div id="achievementsScreen" class="screen">
+            <h2>🏅 Achievements</h2>
+            <div class="achievement-progress">
+                <div class="progress-text">
+                    <span id="achievementCount">0/17</span> Unlocked
+                    <span class="progress-percentage" id="achievementPercentage">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="achievementProgressBar"></div>
+                </div>
+            </div>
+            <div class="achievement-filters">
+                <button class="filter-btn active" data-category="all">All</button>
+                <button class="filter-btn" data-category="goals">Goals</button>
+                <button class="filter-btn" data-category="wins">Wins</button>
+                <button class="filter-btn" data-category="perfect">Perfect</button>
+                <button class="filter-btn" data-category="special">Special</button>
+            </div>
+            <div id="achievementGrid" class="achievement-grid"></div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="backToMainFromAchievementsBtn">← Back</button>
             </div>
         </div>
 

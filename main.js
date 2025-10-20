@@ -10,6 +10,7 @@ import { getCelebrationArray, getCelebrationById, checkCelebrationUnlock, drawCe
 import { MenuBackground } from './menuBackground.js';
 import { AudioManager } from './audioManager.js';
 import { ParticleSystem } from './particles.js';
+import { AchievementManager } from './achievementManager.js';
 
 class Game {
     constructor() {
@@ -18,6 +19,7 @@ class Game {
         this.ui = new UIManager(this);
         this.audio = new AudioManager();
         this.particles = new ParticleSystem();
+        this.achievements = new AchievementManager();
         
         // Menu backgrounds
         this.menuBackgroundCanvas = document.getElementById('menuBackgroundCanvas');
@@ -408,6 +410,14 @@ class Game {
         document.getElementById('backToMainFromStylesBtn').addEventListener('click', () => {
             this.ui.showScreen('mainMenu');
         });
+        
+        document.getElementById('achievementsBtn').addEventListener('click', () => {
+            this.showAchievementsMenu();
+        });
+        
+        document.getElementById('backToMainFromAchievementsBtn').addEventListener('click', () => {
+            this.ui.showScreen('mainMenu');
+        });
     }
     
     setupMobileControls() {
@@ -711,6 +721,7 @@ class Game {
         this.score2 = 0;
         this.matchTimeElapsed = 0;
         this.lastFrameTime = null;
+        this.maxGoalDeficit = 0; // Track for comeback achievement
         
         this.updateScoreDisplay();
         this.updateTimerDisplay();
@@ -995,11 +1006,17 @@ class Game {
             this.ctx.fillText(topText, this.canvas.width / 2, this.canvas.height / 2 - 100);
             this.ctx.restore();
         }
+        
+        // Draw achievement notifications (on top of everything)
+        this.achievements.drawNotification(this.ctx, this.canvas);
     }
     
     update() {
         // Update particles
         this.particles.update();
+        
+        // Update achievement notifications
+        this.achievements.updateNotifications();
         
         // Create ball trail for fast-moving ball
         if (this.ball) {
@@ -1365,6 +1382,15 @@ class Game {
             // Ball went in right goal, so player 1 (left side) scored
             this.score1++;
             scoringPlayer = 'player1';
+            
+            // Track goal achievement (only for player 1)
+            this.achievements.updateStat('totalGoals', 1);
+            this.achievements.updateStat('goalsInMatch', 1);
+            
+            // Check for quick goal (within first 10 seconds)
+            if (this.matchTimeElapsed <= 10) {
+                this.achievements.updateStat('quickGoals', 1);
+            }
         }
         
         // Crowd reaction based on who scored
@@ -1381,6 +1407,12 @@ class Game {
             // Player 2/AI scored - crowd boos
             this.audio.playSound('crowd_boo');
             this.celebrationActive = false;
+        }
+        
+        // Track goal deficit for comeback achievement
+        const deficit = this.score2 - this.score1;
+        if (deficit > this.maxGoalDeficit) {
+            this.maxGoalDeficit = deficit;
         }
         
         this.updateScoreDisplay();
@@ -1432,6 +1464,38 @@ class Game {
         
         const playerWon = this.score1 > this.score2;
         const isDraw = this.score1 === this.score2;
+        
+        // Track match achievements
+        this.achievements.updateStat('totalMatches', 1);
+        
+        if (playerWon) {
+            // Track wins
+            this.achievements.updateStat('totalWins', 1);
+            
+            // Track perfect game (win without conceding)
+            if (this.score2 === 0) {
+                this.achievements.updateStat('perfectGames', 1);
+            }
+            
+            // Track comeback (win after being 2+ goals down)
+            if (this.maxGoalDeficit >= 2) {
+                this.achievements.updateStat('comebacks', 1);
+            }
+            
+            // Track blowout (win by 5+ goals)
+            const goalDifference = this.score1 - this.score2;
+            if (goalDifference >= 5) {
+                this.achievements.updateStat('blowouts', 1);
+            }
+        }
+        
+        // Track arena visited
+        if (this.selectedArena) {
+            this.achievements.updateStat('visitedArenas', this.selectedArena.id);
+        }
+        
+        // Reset match-specific stats
+        this.achievements.resetMatchStats();
         
         // Update profile stats
         const matchResult = {
@@ -1736,6 +1800,72 @@ class Game {
         });
         
         this.ui.showScreen('stylesScreen');
+    }
+    
+    showAchievementsMenu() {
+        const grid = document.getElementById('achievementGrid');
+        const countEl = document.getElementById('achievementCount');
+        const percentageEl = document.getElementById('achievementPercentage');
+        const progressBarEl = document.getElementById('achievementProgressBar');
+        
+        grid.innerHTML = '';
+        
+        // Update progress display
+        const percentage = this.achievements.getUnlockPercentage();
+        const total = Object.keys(this.achievements.achievements).length;
+        const unlocked = Object.values(this.achievements.achievements).filter(a => a.unlocked).length;
+        
+        countEl.textContent = `${unlocked}/${total}`;
+        percentageEl.textContent = `${percentage}%`;
+        progressBarEl.style.width = `${percentage}%`;
+        
+        // Display all achievements
+        let currentFilter = 'all';
+        const displayAchievements = (filter) => {
+            grid.innerHTML = '';
+            const achievements = filter === 'all' 
+                ? Object.values(this.achievements.achievements)
+                : this.achievements.getAchievementsByCategory(filter);
+            
+            achievements.forEach(achievement => {
+                const card = document.createElement('div');
+                card.className = `achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+                
+                // Calculate progress
+                const progress = this.achievements.getProgress(achievement.id);
+                const current = this.achievements.stats[achievement.stat] || 0;
+                const required = achievement.requirement;
+                
+                card.innerHTML = `
+                    <div class="achievement-header">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">${achievement.name}</div>
+                            <div class="achievement-description">${achievement.description}</div>
+                        </div>
+                    </div>
+                    ${!achievement.unlocked ? `<div class="achievement-progress-text">${current} / ${required}</div>` : ''}
+                `;
+                
+                grid.appendChild(card);
+            });
+        };
+        
+        // Setup filters
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const category = btn.getAttribute('data-category');
+                displayAchievements(category);
+            });
+        });
+        
+        // Display all achievements initially
+        displayAchievements('all');
+        
+        this.ui.showScreen('achievementsScreen');
     }
     
     handleDeviceModeChange(isMobile, isTablet) {
