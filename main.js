@@ -9,6 +9,7 @@ import { AI, MultiAI } from './ai.js';
 import { getCelebrationArray, getCelebrationById, checkCelebrationUnlock, drawCelebration } from './celebrations.js';
 import { MenuBackground } from './menuBackground.js';
 import { AudioManager } from './audioManager.js';
+import { ParticleSystem } from './particles.js';
 
 class Game {
     constructor() {
@@ -16,6 +17,7 @@ class Game {
         this.ctx = this.canvas.getContext('2d');
         this.ui = new UIManager(this);
         this.audio = new AudioManager();
+        this.particles = new ParticleSystem();
         
         // Menu backgrounds
         this.menuBackgroundCanvas = document.getElementById('menuBackgroundCanvas');
@@ -806,6 +808,9 @@ class Game {
         // Draw goals
         this.drawGoals();
         
+        // Draw particles
+        this.particles.render(this.ctx);
+        
         // Draw ball
         this.drawBall();
         
@@ -935,6 +940,9 @@ class Game {
         // Draw goals
         this.drawGoals();
         
+        // Draw particles
+        this.particles.render(this.ctx);
+        
         // Draw ball
         this.drawBall();
         
@@ -990,6 +998,14 @@ class Game {
     }
     
     update() {
+        // Update particles
+        this.particles.update();
+        
+        // Create ball trail for fast-moving ball
+        if (this.ball) {
+            this.particles.createBallTrail(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy);
+        }
+        
         // Update timer
         if (this.lastFrameTime !== null) {
             const currentTime = performance.now();
@@ -1046,14 +1062,29 @@ class Game {
         if (this.physics.checkBallPlayerCollision(this.ball, this.player1, this.selectedBug1)) {
             const hapticStrength = Math.min(Math.floor(ballVelocity * 3), 50);
             this.audio.playSoundWithHaptic('kick', hapticStrength, ballVelocity);
+            // Create kick dust particles
+            this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx);
+            if (ballVelocity > 15) {
+                this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20);
+            }
         }
         if (this.physics.checkBallPlayerCollision(this.ball, this.player2, this.selectedBug2)) {
             this.audio.playSound('kick', ballVelocity);
+            // Create kick dust particles
+            this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx);
+            if (ballVelocity > 15) {
+                this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20);
+            }
         }
         
         if (this.player3) {
             if (this.physics.checkBallPlayerCollision(this.ball, this.player3, this.selectedBug3)) {
                 this.audio.playSound('kick', ballVelocity);
+                // Create kick dust particles
+                this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx);
+                if (ballVelocity > 15) {
+                    this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20);
+                }
             }
         }
         
@@ -1150,6 +1181,9 @@ class Game {
         
         // Draw goals
         this.drawGoals();
+        
+        // Draw particles (behind players and ball)
+        this.particles.render(this.ctx);
         
         // Draw ball
         this.drawBall();
@@ -1337,6 +1371,10 @@ class Game {
         if (scoringPlayer === 'player1') {
             // Player 1 scored - crowd cheers
             this.audio.playSound('crowd_cheer');
+            // Create goal explosion particles
+            const goalX = goal === 'left' ? this.canvas.width * 0.1 : this.canvas.width * 0.9;
+            const goalY = this.canvas.height * 0.5;
+            this.particles.createGoalExplosion(goalX, goalY, '#7ed321');
             this.celebrationActive = true;
             this.celebrationFrame = 0;
             this.celebrationSide = goal;
@@ -1346,6 +1384,10 @@ class Game {
         } else {
             // Player 2/AI scored - crowd boos
             this.audio.playSound('crowd_boo');
+            // Create goal explosion particles (red for opponent)
+            const goalX = goal === 'left' ? this.canvas.width * 0.1 : this.canvas.width * 0.9;
+            const goalY = this.canvas.height * 0.5;
+            this.particles.createGoalExplosion(goalX, goalY, '#ff3b30');
             this.celebrationActive = false;
         }
         
