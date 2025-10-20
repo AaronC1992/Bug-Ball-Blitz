@@ -133,11 +133,38 @@
         <!-- Difficulty Selection (Quick Play) -->
         <div id="difficultyScreen" class="screen">
             <h2>Select Difficulty</h2>
+            <p class="difficulty-subtitle">Choose your challenge level</p>
+            <div class="difficulty-grid">
+                <div class="difficulty-card">
+                    <button class="menu-btn difficulty-btn" data-difficulty="easy">
+                        <span class="diff-icon">😊</span>
+                        <span class="diff-name">Easy</span>
+                    </button>
+                    <p class="diff-description">Relaxed opponent, perfect for beginners</p>
+                </div>
+                <div class="difficulty-card">
+                    <button class="menu-btn difficulty-btn" data-difficulty="medium">
+                        <span class="diff-icon">😐</span>
+                        <span class="diff-name">Medium</span>
+                    </button>
+                    <p class="diff-description">Balanced challenge, good reflexes needed</p>
+                </div>
+                <div class="difficulty-card">
+                    <button class="menu-btn difficulty-btn" data-difficulty="hard">
+                        <span class="diff-icon">😠</span>
+                        <span class="diff-name">Hard</span>
+                    </button>
+                    <p class="diff-description">Aggressive opponent, requires skill</p>
+                </div>
+                <div class="difficulty-card">
+                    <button class="menu-btn difficulty-btn" data-difficulty="pro">
+                        <span class="diff-icon">😈</span>
+                        <span class="diff-name">Pro</span>
+                    </button>
+                    <p class="diff-description">Master-level AI, ultimate challenge!</p>
+                </div>
+            </div>
             <div class="menu-buttons">
-                <button class="menu-btn difficulty-btn" data-difficulty="easy">😊 Easy</button>
-                <button class="menu-btn difficulty-btn" data-difficulty="medium">😐 Medium</button>
-                <button class="menu-btn difficulty-btn" data-difficulty="hard">😠 Hard</button>
-                <button class="menu-btn difficulty-btn" data-difficulty="pro">😈 Pro</button>
                 <button class="menu-btn" id="cancelDifficultyBtn">← Back</button>
             </div>
         </div>
