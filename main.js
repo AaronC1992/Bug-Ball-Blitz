@@ -11,6 +11,7 @@ import { MenuBackground } from './menuBackground.js';
 import { AudioManager } from './audioManager.js';
 import { ParticleSystem } from './particles.js';
 import { AchievementManager } from './achievementManager.js';
+import { QualityManager } from './qualitySettings.js';
 
 class Game {
     constructor() {
@@ -20,6 +21,7 @@ class Game {
         this.audio = new AudioManager();
         this.particles = new ParticleSystem();
         this.achievements = new AchievementManager();
+        this.quality = new QualityManager();
         
         // Menu backgrounds
         this.menuBackgroundCanvas = document.getElementById('menuBackgroundCanvas');
@@ -368,6 +370,13 @@ class Game {
         document.getElementById('touchControlsToggle').addEventListener('change', (e) => {
             e.stopPropagation(); // Prevent event bubbling
             this.setTouchControlsPreference(e.target.checked);
+        });
+        
+        document.getElementById('qualitySelect').addEventListener('change', (e) => {
+            const quality = e.target.value;
+            this.quality.setQuality(quality);
+            SaveSystem.updatePreferences(this.ui.currentProfile, { graphicsQuality: quality });
+            this.audio.playSound('ui_click');
         });
         
         // Pause menu
@@ -824,7 +833,7 @@ class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw arena background
-        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height);
+        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality);
         
         // Draw goals
         this.drawGoals();
@@ -956,7 +965,7 @@ class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw arena background
-        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height);
+        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality);
         
         // Draw goals
         this.drawGoals();
@@ -1090,17 +1099,19 @@ class Game {
             const hapticStrength = Math.min(Math.floor(ballVelocity * 3), 50);
             this.audio.playSoundWithHaptic('kick', hapticStrength, ballVelocity);
             // Create kick dust particles
-            this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx);
+            const maxParticles = this.quality.getSetting('particleCount');
+            this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx, maxParticles);
             if (ballVelocity > 15) {
-                this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20);
+                this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20, maxParticles);
             }
         }
         if (this.physics.checkBallPlayerCollision(this.ball, this.player2, this.selectedBug2)) {
             this.audio.playSound('kick', ballVelocity);
             // Create kick dust particles
-            this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx);
+            const maxParticles = this.quality.getSetting('particleCount');
+            this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx, maxParticles);
             if (ballVelocity > 15) {
-                this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20);
+                this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20, maxParticles);
             }
         }
         
@@ -1108,9 +1119,10 @@ class Game {
             if (this.physics.checkBallPlayerCollision(this.ball, this.player3, this.selectedBug3)) {
                 this.audio.playSound('kick', ballVelocity);
                 // Create kick dust particles
-                this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx);
+                const maxParticles = this.quality.getSetting('particleCount');
+                this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx, maxParticles);
                 if (ballVelocity > 15) {
-                    this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20);
+                    this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20, maxParticles);
                 }
             }
         }
@@ -1204,7 +1216,7 @@ class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw arena background
-        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height);
+        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality);
         
         // Draw goals
         this.drawGoals();
@@ -1644,6 +1656,12 @@ class Game {
         document.getElementById('musicVolumeValue').textContent = musicVolume + '%';
         
         document.getElementById('hapticToggle').checked = this.audio.hapticEnabled;
+        
+        // Load quality setting
+        const prefs = SaveSystem.getPreferences(this.ui.currentProfile);
+        const quality = prefs.graphicsQuality || 'medium';
+        this.quality.setQuality(quality);
+        document.getElementById('qualitySelect').value = quality;
         
         // Update toggle to reflect current preference
         // If null (auto mode), check if auto-detected device would show controls

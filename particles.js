@@ -6,8 +6,8 @@ export class ParticleSystem {
     }
     
     // Create kick dust cloud
-    createKickDust(x, y, velocityX) {
-        const numParticles = 8;
+    createKickDust(x, y, velocityX, maxParticles = 8) {
+        const numParticles = Math.min(maxParticles, 8);
         const direction = velocityX > 0 ? -1 : 1; // Dust flies opposite to kick direction
         
         for (let i = 0; i < numParticles; i++) {
@@ -26,8 +26,8 @@ export class ParticleSystem {
     }
     
     // Create goal explosion
-    createGoalExplosion(x, y, color = '#7ed321') {
-        const numParticles = 30;
+    createGoalExplosion(x, y, color = '#7ed321', maxParticles = 30) {
+        const numParticles = Math.min(maxParticles, 30);
         
         for (let i = 0; i < numParticles; i++) {
             const angle = (Math.PI * 2 * i) / numParticles;
@@ -48,8 +48,8 @@ export class ParticleSystem {
     }
     
     // Create impact sparks
-    createImpactSparks(x, y, intensity = 1) {
-        const numParticles = Math.floor(5 * intensity);
+    createImpactSparks(x, y, intensity = 1, maxParticles = 10) {
+        const numParticles = Math.min(Math.floor(5 * intensity), maxParticles);
         
         for (let i = 0; i < numParticles; i++) {
             const angle = Math.random() * Math.PI * 2;

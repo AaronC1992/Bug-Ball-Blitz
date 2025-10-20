@@ -212,7 +212,7 @@ export function getArenaById(id) {
     return ARENAS[id];
 }
 
-export function drawArenaBackground(ctx, arena, width, height) {
+export function drawArenaBackground(ctx, arena, width, height, qualitySettings = null) {
     // Sky gradient
     const skyGradient = ctx.createLinearGradient(0, 0, 0, height);
     skyGradient.addColorStop(0, arena.skyColors[0]);
@@ -220,15 +220,18 @@ export function drawArenaBackground(ctx, arena, width, height) {
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, width, height);
     
-    // Special weather effects in background
-    if (arena.weather === 'snowy') {
-        drawSnowfall(ctx, width, height);
-    } else if (arena.weather === 'space') {
-        drawStars(ctx, width, height);
-    } else if (arena.weather === 'neon') {
-        drawNeonGrid(ctx, width, height);
-    } else if (arena.weather === 'sparkly') {
-        drawSparkles(ctx, width, height);
+    // Special weather effects in background (skip on low quality)
+    const showWeatherEffects = !qualitySettings || qualitySettings.getSetting('grassBlades') !== false;
+    if (showWeatherEffects) {
+        if (arena.weather === 'snowy') {
+            drawSnowfall(ctx, width, height);
+        } else if (arena.weather === 'space') {
+            drawStars(ctx, width, height);
+        } else if (arena.weather === 'neon') {
+            drawNeonGrid(ctx, width, height);
+        } else if (arena.weather === 'sparkly') {
+            drawSparkles(ctx, width, height);
+        }
     }
     
     // Ground

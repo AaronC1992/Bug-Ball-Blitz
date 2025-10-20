@@ -1248,6 +1248,37 @@ input[type="text"]:focus {
     transform: translateX(30px);
 }
 
+/* Quality Select */
+.quality-select {
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    color: #ecf0f1;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-family: 'Comic Sans MS', cursive;
+    cursor: pointer;
+    outline: none;
+    min-width: 120px;
+    transition: all 0.3s ease;
+}
+
+.quality-select:hover {
+    border-color: #5dade2;
+    background: linear-gradient(135deg, #3d566e 0%, #34495e 100%);
+}
+
+.quality-select:focus {
+    border-color: #2ecc71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+
+.quality-select option {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 10px;
+}
+
 #matchStats, #towerVictoryStats {
     background: #2a2a2a;
     padding: 20px;
