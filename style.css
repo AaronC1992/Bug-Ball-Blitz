@@ -35,15 +35,17 @@ body {
     display: none;
     width: 100%;
     height: 100%;
-    padding: 40px;
+    padding: 20px 20px 60px 20px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .screen.active {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-top: 40px;
 }
 
 /* Title Screen */
@@ -51,6 +53,12 @@ body {
     background: linear-gradient(180deg, #1a0033 0%, #2d004d 50%, #1a0033 100%);
     position: relative;
     overflow: hidden;
+    justify-content: center !important;
+    padding-top: 20px !important;
+}
+
+#titleScreen.active {
+    justify-content: center;
 }
 
 /* Main Menu and other screens */
@@ -190,6 +198,7 @@ body {
     z-index: 10;
     position: relative;
     pointer-events: auto; /* Ensure buttons are clickable */
+    margin-bottom: 20px;
 }
 
 .menu-btn {
@@ -319,6 +328,7 @@ body {
 
 h2 {
     font-size: 48px;
+    margin-top: 20px;
     margin-bottom: 40px;
     background: linear-gradient(90deg, #ff00ff 0%, #00ffff 50%, #ffff00 100%);
     -webkit-background-clip: text;
@@ -1607,11 +1617,21 @@ body {
     }
     
     .screen {
-        padding: 20px;
-        padding-top: max(20px, env(safe-area-inset-top, 0px));
-        padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
-        padding-left: max(20px, env(safe-area-inset-left, 0px));
-        padding-right: max(20px, env(safe-area-inset-right, 0px));
+        padding: 15px 15px 40px 15px;
+        padding-top: max(15px, env(safe-area-inset-top, 0px));
+        padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+        padding-left: max(15px, env(safe-area-inset-left, 0px));
+        padding-right: max(15px, env(safe-area-inset-right, 0px));
+    }
+    
+    .screen.active {
+        padding-top: max(25px, env(safe-area-inset-top, 0px));
+    }
+    
+    h2 {
+        font-size: 36px;
+        margin-top: 10px;
+        margin-bottom: 25px;
     }
     
     .game-title {
@@ -1647,7 +1667,17 @@ body {
 /* Landscape mobile optimization */
 @media screen and (max-height: 600px) and (orientation: landscape) {
     .screen {
-        padding: 10px;
+        padding: 10px 10px 30px 10px;
+    }
+    
+    .screen.active {
+        padding-top: 15px;
+    }
+    
+    h2 {
+        font-size: 28px;
+        margin-top: 5px;
+        margin-bottom: 15px;
     }
     
     .game-title {
