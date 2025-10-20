@@ -2,7 +2,7 @@
 
 import { UIManager } from './ui.js';
 import { SaveSystem } from './saveSystem.js';
-import { getBugById } from './bugs.js';
+import { getBugById, getBugArray, getUnlockedBugs } from './bugs.js';
 import { getArenaById, drawArenaBackground } from './arenas.js';
 import { Physics } from './physics.js';
 import { AI, MultiAI } from './ai.js';
@@ -1496,6 +1496,12 @@ class Game {
         
         // Reset match-specific stats
         this.achievements.resetMatchStats();
+        
+        // Check bug collection achievement
+        this.achievements.checkBugCollection({
+            getUnlockedBugs,
+            getBugArray
+        });
         
         // Update profile stats
         const matchResult = {

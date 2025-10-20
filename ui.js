@@ -1,6 +1,6 @@
 // ui.js - UI rendering and menu management
 
-import { getBugArray } from './bugs.js';
+import { getBugArray, isBugUnlocked } from './bugs.js';
 import { getArenaArray } from './arenas.js';
 import { SaveSystem } from './saveSystem.js';
 
@@ -318,17 +318,21 @@ export class UIManager {
         bugGrid.innerHTML = '';
         
         const bugs = getBugArray();
+        const achievementManager = this.game ? this.game.achievements : null;
+        
         bugs.forEach(bug => {
+            const isUnlocked = isBugUnlocked(bug.id, achievementManager);
             const bugCard = document.createElement('div');
-            bugCard.className = 'bug-card';
+            bugCard.className = `bug-card ${isUnlocked ? '' : 'locked'}`;
             
             if (bug.id === this.currentProfile.preferences.selectedBug) {
                 bugCard.classList.add('selected');
             }
             
             bugCard.innerHTML = `
-                <div class="bug-sprite">${bug.svg}</div>
+                <div class="bug-sprite ${isUnlocked ? '' : 'locked-sprite'}">${bug.svg}</div>
                 <div class="bug-name">${bug.name}</div>
+                ${!isUnlocked ? `<div class="unlock-requirement">🔒 ${bug.unlockRequirement}</div>` : ''}
                 <div class="bug-stats">
                     <div class="stat-bar-container">
                         <small>Speed</small>
@@ -351,10 +355,12 @@ export class UIManager {
                 </div>
             `;
             
-            bugCard.addEventListener('click', () => {
-                SaveSystem.updatePreferences(this.currentProfile, { selectedBug: bug.id });
-                callback(bug.id);
-            });
+            if (isUnlocked) {
+                bugCard.addEventListener('click', () => {
+                    SaveSystem.updatePreferences(this.currentProfile, { selectedBug: bug.id });
+                    callback(bug.id);
+                });
+            }
             
             bugGrid.appendChild(bugCard);
         });

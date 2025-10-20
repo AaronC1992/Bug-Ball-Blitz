@@ -172,6 +172,18 @@ export class AchievementManager {
                 stat: 'allArenas',
                 unlocked: false,
                 category: 'exploration'
+            },
+
+            // Bug collection achievements
+            bugCollector: {
+                id: 'bugCollector',
+                name: 'Bug Collector',
+                description: 'Unlock all bugs',
+                icon: '🐛',
+                requirement: 1,
+                stat: 'allBugsUnlocked',
+                unlocked: false,
+                category: 'collection'
             }
         };
     }
@@ -278,6 +290,21 @@ export class AchievementManager {
         }
 
         return newlyUnlocked;
+    }
+
+    // Check if all bugs are unlocked (call this from main.js)
+    checkBugCollection(bugModule) {
+        if (!bugModule || !bugModule.getUnlockedBugs || !bugModule.getBugArray) return;
+        
+        const unlockedBugs = bugModule.getUnlockedBugs(this);
+        const totalBugs = bugModule.getBugArray();
+        
+        if (unlockedBugs.length >= totalBugs.length) {
+            if (!this.stats.allBugsUnlocked) {
+                this.stats.allBugsUnlocked = 1;
+                this.checkAchievements('allBugsUnlocked');
+            }
+        }
     }
 
     // Show achievement notification
