@@ -1969,6 +1969,11 @@ class Game {
 
 // Initialize game when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Clean up old global achievement data (migration from older version)
+    if (localStorage.getItem('achievementProgress')) {
+        localStorage.removeItem('achievementProgress');
+    }
+    
     const game = new Game();
     // Make game accessible globally for mode change detection
     window.game = game;

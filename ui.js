@@ -175,6 +175,12 @@ export class UIManager {
         if (result.success) {
             this.currentProfile = result.profile;
             input.value = '';
+            
+            // Update achievement manager with this new profile
+            if (this.game && this.game.achievements) {
+                this.game.achievements.setProfile(this.currentProfile);
+            }
+            
             this.showMainMenu();
             
             // Stop title menu background, start main menu background
@@ -250,6 +256,12 @@ export class UIManager {
         const profile = SaveSystem.loadProfile(name);
         if (profile) {
             this.currentProfile = profile;
+            
+            // Update achievement manager with this profile
+            if (this.game && this.game.achievements) {
+                this.game.achievements.setProfile(this.currentProfile);
+            }
+            
             this.showMainMenu();
             
             // Stop title menu background, start main menu background

@@ -1,12 +1,20 @@
 // Achievement Manager
 // Tracks player achievements and unlocks
 
+import { SaveSystem } from './saveSystem.js';
+
 export class AchievementManager {
-    constructor() {
+    constructor(profile = null) {
         this.achievements = this.defineAchievements();
+        this.currentProfile = profile;
         this.loadProgress();
         this.notificationQueue = [];
         this.currentNotification = null;
+    }
+    
+    setProfile(profile) {
+        this.currentProfile = profile;
+        this.loadProgress();
     }
 
     defineAchievements() {
@@ -201,19 +209,21 @@ export class AchievementManager {
     }
 
     loadProgress() {
-        // Load player stats
-        const saved = localStorage.getItem('achievementProgress');
-        if (saved) {
-            const data = JSON.parse(saved);
-            this.stats = data.stats;
+        // Load from current profile if available
+        if (this.currentProfile && this.currentProfile.achievementProgress) {
+            const data = this.currentProfile.achievementProgress;
+            this.stats = {
+                ...data.stats,
+                visitedArenas: new Set(data.stats.visitedArenas || [])
+            };
             // Update unlocked status
-            Object.keys(data.achievements).forEach(id => {
+            Object.keys(data.achievements || {}).forEach(id => {
                 if (this.achievements[id]) {
                     this.achievements[id].unlocked = data.achievements[id].unlocked;
                 }
             });
         } else {
-            // Initialize stats
+            // Initialize fresh stats
             this.stats = {
                 totalGoals: 0,
                 totalWins: 0,
@@ -229,6 +239,10 @@ export class AchievementManager {
     }
 
     saveProgress() {
+        if (!this.currentProfile) {
+            return; // Can't save without a profile
+        }
+        
         const data = {
             stats: {
                 ...this.stats,
@@ -243,7 +257,11 @@ export class AchievementManager {
             };
         });
 
-        localStorage.setItem('achievementProgress', JSON.stringify(data));
+        // Save to profile's achievementProgress
+        this.currentProfile.achievementProgress = data;
+        
+        // Save the profile using SaveSystem
+        SaveSystem.saveProfile(this.currentProfile);
     }
 
     // Update stats and check achievements

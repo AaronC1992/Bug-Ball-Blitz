@@ -34,7 +34,22 @@ export class SaveSystem {
                 selectedBug: 'ladybug',
                 selectedArena: 'grassField'
             },
-            selectedCelebration: 'classic'
+            selectedCelebration: 'classic',
+            // Achievement progress (starts fresh for each profile)
+            achievementProgress: {
+                stats: {
+                    totalGoals: 0,
+                    totalWins: 0,
+                    totalMatches: 0,
+                    perfectGames: 0,
+                    quickGoals: 0,
+                    comebacks: 0,
+                    blowouts: 0,
+                    goalsInMatch: 0,
+                    visitedArenas: []
+                },
+                achievements: {}
+            }
         };
         
         localStorage.setItem(profileKey, JSON.stringify(profile));
@@ -57,6 +72,23 @@ export class SaveSystem {
         }
         if (!profile.tower.highestLevel) {
             profile.tower.highestLevel = profile.tower.levelsCompleted || 0;
+        }
+        // Add achievement progress if missing (for old profiles)
+        if (!profile.achievementProgress) {
+            profile.achievementProgress = {
+                stats: {
+                    totalGoals: 0,
+                    totalWins: 0,
+                    totalMatches: 0,
+                    perfectGames: 0,
+                    quickGoals: 0,
+                    comebacks: 0,
+                    blowouts: 0,
+                    goalsInMatch: 0,
+                    visitedArenas: []
+                },
+                achievements: {}
+            };
         }
         
         return profile;
