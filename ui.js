@@ -208,19 +208,42 @@ export class UIManager {
             const profileItem = document.createElement('div');
             profileItem.className = 'profile-item';
             profileItem.innerHTML = `
-                <div class="profile-name">${profile.name}</div>
-                <div class="profile-stats">
-                    Wins: ${profile.stats.wins} | Losses: ${profile.stats.losses} | 
-                    Tower Level: ${profile.tower.currentLevel}
+                <div class="profile-content">
+                    <div class="profile-name">${profile.name}</div>
+                    <div class="profile-stats">
+                        Wins: ${profile.stats.wins} | Losses: ${profile.stats.losses} | 
+                        Tower Level: ${profile.tower.currentLevel}
+                    </div>
                 </div>
+                <button class="delete-profile-btn" title="Delete Profile">🗑️</button>
             `;
             
-            profileItem.addEventListener('click', () => {
+            // Click on profile content to load
+            const profileContent = profileItem.querySelector('.profile-content');
+            profileContent.addEventListener('click', () => {
                 this.loadProfile(profile.name);
+            });
+            
+            // Click on delete button to delete
+            const deleteBtn = profileItem.querySelector('.delete-profile-btn');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent loading profile when clicking delete
+                this.deleteProfile(profile.name);
             });
             
             listContainer.appendChild(profileItem);
         });
+    }
+    
+    deleteProfile(name) {
+        // Confirm deletion
+        if (confirm(`Are you sure you want to delete the profile "${name}"?\n\nThis action cannot be undone.`)) {
+            SaveSystem.deleteProfile(name);
+            this.showProfileList(); // Refresh the list
+            
+            // Show a brief notification
+            this.showNotification(`Profile "${name}" deleted`, 'info');
+        }
     }
     
     loadProfile(name) {
