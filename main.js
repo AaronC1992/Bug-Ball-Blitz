@@ -355,9 +355,21 @@ class Game {
             this.openSettings();
         });
         
+        // Add touchstart for mobile
+        document.getElementById('pauseSettingsBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.openSettings();
+        }, { passive: false });
+        
         document.getElementById('closeSettingsBtn').addEventListener('click', () => {
             this.closeSettings();
         });
+        
+        // Add touchstart for mobile
+        document.getElementById('closeSettingsBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.closeSettings();
+        }, { passive: false });
         
         // Audio settings
         document.getElementById('soundVolumeSlider').addEventListener('input', (e) => {
@@ -414,28 +426,64 @@ class Game {
             this.resumeGame();
         });
         
+        // Add touchstart for mobile
+        document.getElementById('resumeBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.audio.playSound('ui_click');
+            this.resumeGame();
+        }, { passive: false });
+        
         document.getElementById('restartMatchBtn').addEventListener('click', () => {
             this.audio.playSound('ui_click');
             this.restartMatch();
         });
+        
+        // Add touchstart for mobile
+        document.getElementById('restartMatchBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.audio.playSound('ui_click');
+            this.restartMatch();
+        }, { passive: false });
         
         document.getElementById('quitToMenuBtn').addEventListener('click', () => {
             this.audio.playSound('ui_click');
             this.quitToMenu();
         });
         
+        // Add touchstart for mobile
+        document.getElementById('quitToMenuBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.audio.playSound('ui_click');
+            this.quitToMenu();
+        }, { passive: false });
+        
         // Match end
         document.getElementById('continueBtn').addEventListener('click', () => {
             this.handleMatchContinue();
         });
         
+        document.getElementById('continueBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.handleMatchContinue();
+        }, { passive: false });
+        
         document.getElementById('rematchBtn').addEventListener('click', () => {
             this.rematch();
         });
         
+        document.getElementById('rematchBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.rematch();
+        }, { passive: false });
+        
         document.getElementById('endToMenuBtn').addEventListener('click', () => {
             this.quitToMenu();
         });
+        
+        document.getElementById('endToMenuBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.quitToMenu();
+        }, { passive: false });
         
         // Tower victory
         document.getElementById('towerDoneBtn').addEventListener('click', () => {
