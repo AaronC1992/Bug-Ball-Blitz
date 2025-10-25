@@ -1033,7 +1033,13 @@ class Game {
                 // 1v1 mode - Player 2 AI is on the right side, defends right goal
                 this.player2AI = new AI(this.difficulty, this.player2, this.ball, this.physics, 'right');
                 this.player2AI_2 = null; // No multi-AI in 1v1 mode
+                this.player3 = null; // No third player in 1v1 mode
             }
+        } else {
+            // Multiplayer mode - clear AI
+            this.player2AI = null;
+            this.player2AI_2 = null;
+            this.player3 = null;
         }
         
         // Reset scores and timer for new match
