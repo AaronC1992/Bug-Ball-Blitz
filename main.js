@@ -35,6 +35,7 @@ class Game {
         // Game state
         this.gameMode = null; // 'tower', 'quickplay', 'multiplayer'
         this.gameState = 'menu'; // 'menu', 'countdown', 'playing', 'paused', 'ended'
+        this.pausedFromState = null; // Track which state we paused from
         this.difficulty = 'medium';
         this.towerLevel = 1;
         
@@ -2034,8 +2035,10 @@ class Game {
     }
     
     pauseGame() {
-        if (this.gameState === 'playing') {
+        if (this.gameState === 'playing' || this.gameState === 'intro') {
+            const previousState = this.gameState;
             this.gameState = 'paused';
+            this.pausedFromState = previousState; // Remember what state we paused from
             this.lastFrameTime = null; // Pause timer
             cancelAnimationFrame(this.animationId);
             
@@ -2054,7 +2057,8 @@ class Game {
     
     resumeGame() {
         if (this.gameState === 'paused') {
-            this.gameState = 'playing';
+            // Resume to the previous state (either 'playing' or 'intro')
+            this.gameState = this.pausedFromState || 'playing';
             this.lastFrameTime = performance.now(); // Resume timer
             this.ui.hideOverlay('pauseMenu');
             this.gameLoop();
