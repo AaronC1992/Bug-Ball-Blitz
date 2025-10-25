@@ -1847,8 +1847,10 @@ class Game {
     }
     
     openSettings() {
+        console.log('openSettings called');
         // Hide pause menu while showing settings
         this.ui.hideOverlay('pauseMenu');
+        console.log('Pause menu hidden');
         
         // Load and display current audio settings
         const soundVolume = Math.round(this.audio.soundVolume * 100);
@@ -1875,7 +1877,9 @@ class Game {
             : (this.ui.isMobile || this.ui.isTablet);
         document.getElementById('touchControlsToggle').checked = shouldBeChecked;
         
+        console.log('About to show settings menu');
         this.ui.showOverlay('settingsMenu');
+        console.log('Settings menu shown');
     }
     
     closeSettings() {
