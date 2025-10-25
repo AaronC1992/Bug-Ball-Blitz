@@ -3,7 +3,7 @@
 export const BUGS = {
     stagBeetle: {
         id: 'stagBeetle',
-        name: 'Stag Beetle',
+        name: 'Beetle',
         stats: {
             speed: 0.6,
             jump: 0.7,

@@ -37,7 +37,7 @@ Each bug has unique stats affecting gameplay:
 
 | Bug | Speed | Jump | Power | Size | Playstyle |
 |-----|-------|------|-------|------|-----------|
-| **Stag Beetle** | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Large | Strong kicks, slower movement |
+| **Beetle** | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Large | Strong kicks, slower movement |
 | **Grasshopper** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Medium | Maximum jump height, very fast |
 | **Ladybug** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Small | Balanced all-around stats |
 | **Ant** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | Tiny | Lightning fast, weaker kicks |

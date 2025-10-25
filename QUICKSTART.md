@@ -35,7 +35,7 @@ Then open: http://localhost:8000
 
 ### Step 3: Select Bug
 Pick your favorite:
-- **Stag Beetle** - Strong but slow
+- **Beetle** - Strong but slow
 - **Grasshopper** - BEST JUMPER ⭐
 - **Ladybug** - Balanced (good for beginners)
 - **Ant** - Fast and tiny
@@ -98,7 +98,7 @@ Victory: Tower Complete!  🏆🏆🏆
 ### Bug Selection Tips
 - **New players:** Ladybug (balanced)
 - **Aggressive play:** Grasshopper (jump + speed)
-- **Power shots:** Stag Beetle (strongest kicks)
+- **Power shots:** Beetle (strongest kicks)
 - **Speed demons:** Ant (fastest movement)
 - **All-around:** Spider (great control)
 

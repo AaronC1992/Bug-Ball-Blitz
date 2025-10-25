@@ -16,7 +16,7 @@ The game is fully functional and ready to play! Open `index.html` in your browse
 - Local Multiplayer (2-player on same keyboard)
 
 ✅ **Five Unique Bugs**
-- Stag Beetle, Grasshopper, Ladybug, Ant, Spider
+- Beetle, Grasshopper, Ladybug, Ant, Spider
 - Each with unique stats and inline SVG artwork
 - Visual differences affect gameplay
 
@@ -211,7 +211,7 @@ Each bug sprite includes:
 - Unique appendages (antennae, legs, wings)
 
 **Color Schemes:**
-- Stag Beetle: Brown (#8B4513)
+- Beetle: Brown (#8B4513)
 - Grasshopper: Green (#7ed321)
 - Ladybug: Red (#ff4444)
 - Ant: Black (#2d2d2d)
