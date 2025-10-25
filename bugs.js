@@ -1,34 +1,33 @@
 // bugs.js - Bug definitions with SVG art and stats
 
 export const BUGS = {
-    stagBeetle: {
-        id: 'stagBeetle',
-        name: 'Beetle',
+    ladybug: {
+        id: 'ladybug',
+        name: 'Ladybug',
         stats: {
-            speed: 0.6,
-            jump: 0.7,
-            power: 1.0,
-            size: 1.2
+            speed: 0.75,
+            jump: 0.75,
+            power: 0.75,
+            size: 0.8
         },
-        color: '#8B4513',
-        unlocked: false,
-        unlockRequirement: 'champion', // Win 10 matches
+        color: '#ff4444',
+        unlocked: true, // Always unlocked (starter bug)
+        unlockRequirement: 'Starter Bug',
         svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="50" cy="60" rx="25" ry="35" fill="#5d2e0f" opacity="0.3"/>
-            <ellipse cx="50" cy="50" rx="20" ry="30" fill="#8B4513"/>
-            <ellipse cx="50" cy="35" rx="15" ry="15" fill="#6b3410"/>
-            <ellipse cx="45" cy="32" rx="3" ry="3" fill="white"/>
-            <ellipse cx="55" cy="32" rx="3" ry="3" fill="white"/>
-            <ellipse cx="45" cy="32" rx="1.5" ry="1.5" fill="black"/>
-            <ellipse cx="55" cy="32" rx="1.5" ry="1.5" fill="black"/>
-            <path d="M 35 25 Q 30 15, 28 10 Q 26 8, 24 10" stroke="#4a2710" stroke-width="4" fill="none" stroke-linecap="round"/>
-            <path d="M 65 25 Q 70 15, 72 10 Q 74 8, 76 10" stroke="#4a2710" stroke-width="4" fill="none" stroke-linecap="round"/>
-            <ellipse cx="40" cy="65" rx="8" ry="4" fill="#4a2710"/>
-            <ellipse cx="60" cy="65" rx="8" ry="4" fill="#4a2710"/>
-            <path d="M 30 50 L 20 45" stroke="#4a2710" stroke-width="3" stroke-linecap="round"/>
-            <path d="M 70 50 L 80 45" stroke="#4a2710" stroke-width="3" stroke-linecap="round"/>
-            <path d="M 30 55 L 18 58" stroke="#4a2710" stroke-width="3" stroke-linecap="round"/>
-            <path d="M 70 55 L 82 58" stroke="#4a2710" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="50" cy="60" rx="22" ry="28" fill="#cc0000" opacity="0.3"/>
+            <ellipse cx="50" cy="50" rx="18" ry="25" fill="#ff4444"/>
+            <ellipse cx="50" cy="35" rx="12" ry="12" fill="#2d2d2d"/>
+            <ellipse cx="46" cy="32" rx="2" ry="2" fill="white"/>
+            <ellipse cx="54" cy="32" rx="2" ry="2" fill="white"/>
+            <path d="M 50 35 L 50 65" stroke="#2d2d2d" stroke-width="3"/>
+            <circle cx="42" cy="45" r="4" fill="#2d2d2d"/>
+            <circle cx="58" cy="45" r="4" fill="#2d2d2d"/>
+            <circle cx="40" cy="58" r="3" fill="#2d2d2d"/>
+            <circle cx="60" cy="58" r="3" fill="#2d2d2d"/>
+            <path d="M 32 50 L 25 48" stroke="#2d2d2d" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 68 50 L 75 48" stroke="#2d2d2d" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 32 55 L 24 58" stroke="#2d2d2d" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 68 55 L 76 58" stroke="#2d2d2d" stroke-width="2" stroke-linecap="round"/>
         </svg>`
     },
     
@@ -60,33 +59,34 @@ export const BUGS = {
         </svg>`
     },
     
-    ladybug: {
-        id: 'ladybug',
-        name: 'Ladybug',
+    stagBeetle: {
+        id: 'stagBeetle',
+        name: 'Beetle',
         stats: {
-            speed: 0.75,
-            jump: 0.75,
-            power: 0.75,
-            size: 0.8
+            speed: 0.6,
+            jump: 0.7,
+            power: 1.0,
+            size: 1.2
         },
-        color: '#ff4444',
-        unlocked: true, // Always unlocked (starter bug)
-        unlockRequirement: 'Starter Bug',
+        color: '#8B4513',
+        unlocked: false,
+        unlockRequirement: 'champion', // Win 10 matches
         svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="50" cy="60" rx="22" ry="28" fill="#cc0000" opacity="0.3"/>
-            <ellipse cx="50" cy="50" rx="18" ry="25" fill="#ff4444"/>
-            <ellipse cx="50" cy="35" rx="12" ry="12" fill="#2d2d2d"/>
-            <ellipse cx="46" cy="32" rx="2" ry="2" fill="white"/>
-            <ellipse cx="54" cy="32" rx="2" ry="2" fill="white"/>
-            <path d="M 50 35 L 50 65" stroke="#2d2d2d" stroke-width="3"/>
-            <circle cx="42" cy="45" r="4" fill="#2d2d2d"/>
-            <circle cx="58" cy="45" r="4" fill="#2d2d2d"/>
-            <circle cx="40" cy="58" r="3" fill="#2d2d2d"/>
-            <circle cx="60" cy="58" r="3" fill="#2d2d2d"/>
-            <path d="M 32 50 L 25 48" stroke="#2d2d2d" stroke-width="2" stroke-linecap="round"/>
-            <path d="M 68 50 L 75 48" stroke="#2d2d2d" stroke-width="2" stroke-linecap="round"/>
-            <path d="M 32 55 L 24 58" stroke="#2d2d2d" stroke-width="2" stroke-linecap="round"/>
-            <path d="M 68 55 L 76 58" stroke="#2d2d2d" stroke-width="2" stroke-linecap="round"/>
+            <ellipse cx="50" cy="60" rx="25" ry="35" fill="#5d2e0f" opacity="0.3"/>
+            <ellipse cx="50" cy="50" rx="20" ry="30" fill="#8B4513"/>
+            <ellipse cx="50" cy="35" rx="15" ry="15" fill="#6b3410"/>
+            <ellipse cx="45" cy="32" rx="3" ry="3" fill="white"/>
+            <ellipse cx="55" cy="32" rx="3" ry="3" fill="white"/>
+            <ellipse cx="45" cy="32" rx="1.5" ry="1.5" fill="black"/>
+            <ellipse cx="55" cy="32" rx="1.5" ry="1.5" fill="black"/>
+            <path d="M 35 25 Q 30 15, 28 10 Q 26 8, 24 10" stroke="#4a2710" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M 65 25 Q 70 15, 72 10 Q 74 8, 76 10" stroke="#4a2710" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <ellipse cx="40" cy="65" rx="8" ry="4" fill="#4a2710"/>
+            <ellipse cx="60" cy="65" rx="8" ry="4" fill="#4a2710"/>
+            <path d="M 30 50 L 20 45" stroke="#4a2710" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 70 50 L 80 45" stroke="#4a2710" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 30 55 L 18 58" stroke="#4a2710" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 70 55 L 82 58" stroke="#4a2710" stroke-width="3" stroke-linecap="round"/>
         </svg>`
     },
     
