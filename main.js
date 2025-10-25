@@ -580,8 +580,34 @@ class Game {
             this.selectedBug3 = this.getRandomBug();
         }
         
-        // Start match directly
-        this.startMatch();
+        // Show loading screen for tower mode
+        this.showLoadingScreen();
+    }
+    
+    showLoadingScreen() {
+        const levelConfig = this.getTowerLevelConfig(this.towerLevel);
+        
+        // Update loading screen content
+        document.getElementById('loadingLevelNumber').textContent = `Level ${this.towerLevel}`;
+        document.getElementById('loadingLevelName').textContent = levelConfig.name;
+        
+        // Format difficulty with color indicators
+        const difficultyColors = {
+            'easy': '🟢 Easy',
+            'medium': '🟡 Medium',
+            'hard': '🟠 Hard',
+            'pro': '🔴 Pro'
+        };
+        document.getElementById('loadingLevelDifficulty').textContent = 
+            difficultyColors[levelConfig.difficulty] || levelConfig.difficulty.toUpperCase();
+        
+        // Show loading screen
+        this.ui.showScreen('loadingScreen');
+        
+        // Start match after 2 seconds
+        setTimeout(() => {
+            this.startMatch();
+        }, 2000);
     }
     
     getTowerLevelConfig(level) {
@@ -757,16 +783,6 @@ class Game {
         
         this.updateScoreDisplay();
         this.updateTimerDisplay();
-        
-        // Show level info if in tower mode
-        const levelInfoEl = document.getElementById('levelInfo');
-        if (this.gameMode === 'tower') {
-            const config = this.getTowerLevelConfig(this.towerLevel);
-            levelInfoEl.textContent = `Level ${this.towerLevel}: ${config.name}`;
-            levelInfoEl.style.display = 'block';
-        } else {
-            levelInfoEl.style.display = 'none';
-        }
         
         // Start with intro animation
         this.gameState = 'intro';
