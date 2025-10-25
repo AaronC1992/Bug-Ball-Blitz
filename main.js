@@ -585,7 +585,6 @@ class Game {
     }
     
     showLoadingScreen() {
-        console.log('showLoadingScreen called, towerLevel:', this.towerLevel);
         const levelConfig = this.getTowerLevelConfig(this.towerLevel);
         
         // Update level info
@@ -605,21 +604,17 @@ class Game {
         this.generateTowerVisual();
         
         // Show loading screen
-        console.log('Calling ui.showScreen for loadingScreen');
         this.ui.showScreen('loadingScreen');
         
         // Start match after 2.5 seconds
         setTimeout(() => {
-            console.log('Starting match from loading screen');
             this.startMatch();
         }, 2500);
     }
     
     generateTowerVisual() {
-        console.log('generateTowerVisual called');
         const towerContainer = document.getElementById('towerVisual');
         if (!towerContainer) {
-            console.error('Tower container not found!');
             return;
         }
         
@@ -627,8 +622,6 @@ class Game {
         
         const highestLevel = this.ui.currentProfile.tower.highestLevel || 0;
         const totalLevels = 20; // Show first 20 levels
-        
-        console.log('Creating tower with', totalLevels, 'levels. Current:', this.towerLevel);
         
         // Create levels from 1 to 20
         for (let i = 1; i <= totalLevels; i++) {
@@ -674,8 +667,6 @@ class Game {
             levelDiv.appendChild(badgeSpan);
             towerContainer.appendChild(levelDiv);
         }
-        
-        console.log('Tower levels created:', towerContainer.children.length);
         
         // Scroll to current level after a brief delay
         setTimeout(() => {
