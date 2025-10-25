@@ -126,16 +126,16 @@ export class UIManager {
             this.showScreen('profileLoadScreen');
         });
         
-        // Exit button - Close tab or navigate to portfolio
+        // Exit button - Navigate back or to portfolio
         exitBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to exit Bug Ball Blitz?')) {
-                // Try to close the window (works if opened via script)
-                window.close();
-                
-                // If close didn't work, show a message
-                setTimeout(() => {
-                    alert('To exit, please close this browser tab manually.');
-                }, 100);
+                // Try to go back in browser history
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // If no history, go to GitHub repository
+                    window.location.href = 'https://github.com/AaronC1992/Bug-Ball-Blitz';
+                }
             }
         });
         
