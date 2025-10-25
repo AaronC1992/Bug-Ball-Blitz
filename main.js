@@ -1009,10 +1009,7 @@ class Game {
         
         // Initialize AI or third player
         if (this.gameMode !== 'multiplayer') {
-            // Player 2 AI is on the right side, defends right goal
-            this.player2AI = new AI(this.difficulty, this.player2, this.ball, this.physics, 'right');
-            
-            // Check if 2v1 mode (tower levels 5-8)
+            // Check if 2v1 mode (tower levels with 2 AI)
             if (this.selectedBug3) {
                 const p3Size = 40 * this.selectedBug3.stats.size;
                 this.player3 = {
@@ -1031,6 +1028,11 @@ class Game {
                 
                 // Multi-AI for 2v1 mode - they're on the right side
                 this.player2AI_2 = new MultiAI(this.difficulty, [this.player2, this.player3], this.ball, this.physics, 'defender', 'right');
+                this.player2AI = null; // Don't create single AI in 1v2 mode
+            } else {
+                // 1v1 mode - Player 2 AI is on the right side, defends right goal
+                this.player2AI = new AI(this.difficulty, this.player2, this.ball, this.physics, 'right');
+                this.player2AI_2 = null; // No multi-AI in 1v1 mode
             }
         }
         
@@ -1362,7 +1364,7 @@ class Game {
                 // 1v2 mode: Use MultiAI for both AI players
                 this.player2AI_2.update(0); // Update player2
                 this.player2AI_2.update(1); // Update player3
-            } else {
+            } else if (this.player2AI) {
                 // 1v1 mode: Use single AI
                 this.player2AI.update();
             }
