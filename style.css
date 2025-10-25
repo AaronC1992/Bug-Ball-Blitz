@@ -87,7 +87,7 @@ body {
 
 #mainMenu > *, #profileSelection > *, #bugSelection > *, 
 #arenaSelection > *, #difficultySelection > *, #statsScreen > *,
-#stylesScreen > * {
+#stylesScreen > *, #titleScreen > * {
     position: relative;
     z-index: 1;
 }
@@ -1661,19 +1661,11 @@ input[type="text"]:focus {
     }
 
     .screen {
-        padding: 15px 10px 80px 10px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        padding: 20px;
     }
 
     h2 {
         font-size: 28px;
-        margin-top: 10px;
-    }
-    
-    .styles-subtitle {
-        font-size: 14px;
-        margin: -5px 0 15px 0;
     }
     
     .loading-title {
@@ -1717,20 +1709,6 @@ input[type="text"]:focus {
         font-size: 18px;
         padding: 15px 25px;
     }
-    
-    /* Sticky buttons only for scrollable screens, not title screen */
-    #stylesScreen .menu-buttons,
-    #achievementsScreen .menu-buttons,
-    #statsScreen .menu-buttons {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        position: sticky;
-        bottom: 10px;
-        background: rgba(26, 0, 51, 0.95);
-        padding: 15px;
-        border-radius: 10px;
-        z-index: 10;
-    }
 
     .game-logo {
         max-width: 350px;
@@ -1738,29 +1716,6 @@ input[type="text"]:focus {
 
     .bug-grid, .arena-grid {
         grid-template-columns: 1fr;
-    }
-    
-    #celebrationGrid {
-        grid-template-columns: 1fr;
-        padding: 10px;
-        gap: 15px;
-    }
-    
-    .celebration-card {
-        padding: 15px;
-    }
-    
-    .celebration-icon {
-        font-size: 50px;
-    }
-    
-    .celebration-card h3 {
-        font-size: 18px;
-    }
-    
-    .celebration-description {
-        font-size: 13px;
-        min-height: auto;
     }
 
     .hud {
@@ -2048,43 +2003,9 @@ body {
     }
     
     h2 {
-        font-size: 24px;
+        font-size: 28px;
         margin-top: 5px;
-        margin-bottom: 10px;
-    }
-    
-    .styles-subtitle {
-        font-size: 12px;
-        margin: -5px 0 10px 0;
-    }
-    
-    #celebrationGrid {
-        padding: 5px;
-        gap: 10px;
-    }
-    
-    .celebration-card {
-        padding: 10px;
-    }
-    
-    .celebration-icon {
-        font-size: 40px;
-        margin-bottom: 8px;
-    }
-    
-    .celebration-card h3 {
-        font-size: 16px;
-        margin: 5px 0;
-    }
-    
-    .celebration-description {
-        font-size: 11px;
-    }
-    
-    .unlock-condition {
-        font-size: 11px;
-        margin-top: 8px;
-        padding-top: 8px;
+        margin-bottom: 15px;
     }
     
     .game-title {
