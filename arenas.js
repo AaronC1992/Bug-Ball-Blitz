@@ -212,112 +212,6 @@ export function getArenaById(id) {
     return ARENAS[id];
 }
 
-// Draw tower background for Tower Mode
-function drawTowerBackground(ctx, width, height, currentLevel) {
-    const totalLevels = 8;
-    const towerWidth = Math.min(width * 0.15, 120); // Tower width
-    const towerX = width - towerWidth - 30; // Position on right side
-    const levelHeight = height * 0.08; // Height of each level
-    const towerBottom = height * 0.7; // Start from bottom
-    
-    // Draw tower from bottom to top
-    for (let level = 1; level <= totalLevels; level++) {
-        const y = towerBottom - (level * levelHeight);
-        const levelWidth = towerWidth - (level * 3); // Taper as it goes up
-        const x = towerX + ((towerWidth - levelWidth) / 2);
-        
-        // Determine if this level is current, completed, or upcoming
-        const isCurrent = level === currentLevel;
-        const isCompleted = level < currentLevel;
-        const isUpcoming = level > currentLevel;
-        
-        // Set colors based on level status
-        let baseColor, highlightColor;
-        if (isCurrent) {
-            // Current level - bright and glowing
-            baseColor = '#FFD700'; // Gold
-            highlightColor = '#FFA500'; // Orange
-        } else if (isCompleted) {
-            // Completed - green/success
-            baseColor = '#7ED321'; // Green
-            highlightColor = '#5FA319';
-        } else {
-            // Upcoming - gray/locked
-            baseColor = '#888888';
-            highlightColor = '#666666';
-        }
-        
-        // Draw level platform
-        const gradient = ctx.createLinearGradient(x, y, x, y + levelHeight);
-        gradient.addColorStop(0, highlightColor);
-        gradient.addColorStop(1, baseColor);
-        ctx.fillStyle = gradient;
-        
-        // Main platform
-        ctx.fillRect(x, y, levelWidth, levelHeight - 5);
-        
-        // Platform edge highlight
-        ctx.fillStyle = highlightColor;
-        ctx.fillRect(x, y, levelWidth, 3);
-        
-        // Draw level number
-        ctx.fillStyle = isCurrent ? '#000' : '#FFF';
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(level.toString(), x + levelWidth / 2, y + levelHeight / 2);
-        
-        // Add glow effect for current level
-        if (isCurrent) {
-            ctx.shadowColor = '#FFD700';
-            ctx.shadowBlur = 20;
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x - 2, y - 2, levelWidth + 4, levelHeight - 1);
-            ctx.shadowBlur = 0;
-        }
-        
-        // Draw support pillars between levels (except for top)
-        if (level < totalLevels) {
-            ctx.fillStyle = 'rgba(139, 69, 19, 0.6)'; // Brown pillars
-            const pillarWidth = 6;
-            const pillarX1 = x + 10;
-            const pillarX2 = x + levelWidth - 10 - pillarWidth;
-            const pillarHeight = levelHeight;
-            
-            ctx.fillRect(pillarX1, y - pillarHeight, pillarWidth, pillarHeight);
-            ctx.fillRect(pillarX2, y - pillarHeight, pillarWidth, pillarHeight);
-        }
-    }
-    
-    // Draw tower flag at the top
-    const flagY = towerBottom - (totalLevels * levelHeight) - 30;
-    const flagX = towerX + towerWidth / 2;
-    
-    // Flag pole
-    ctx.strokeStyle = '#8B4513';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(flagX, flagY + 30);
-    ctx.lineTo(flagX, flagY);
-    ctx.stroke();
-    
-    // Flag
-    const flagCompleted = currentLevel > totalLevels;
-    ctx.fillStyle = flagCompleted ? '#FFD700' : '#E74C3C';
-    ctx.beginPath();
-    ctx.moveTo(flagX, flagY);
-    ctx.lineTo(flagX + 25, flagY + 8);
-    ctx.lineTo(flagX, flagY + 16);
-    ctx.fill();
-    
-    // Add "TOWER" label at the base
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.font = 'bold 12px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('TOWER', towerX + towerWidth / 2, towerBottom + 20);
-}
-
 export function drawArenaBackground(ctx, arena, width, height, qualitySettings = null, gameMode = null, towerLevel = 1) {
     // Sky gradient
     const skyGradient = ctx.createLinearGradient(0, 0, 0, height);
@@ -326,10 +220,7 @@ export function drawArenaBackground(ctx, arena, width, height, qualitySettings =
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, width, height);
     
-    // Draw tower in background for tower mode
-    if (gameMode === 'tower') {
-        drawTowerBackground(ctx, width, height, towerLevel);
-    }
+    // Tower visualization removed - now only shown in preview screen
     
     // Special weather effects in background (skip on low quality)
     const showWeatherEffects = !qualitySettings || qualitySettings.getSetting('grassBlades') !== false;
