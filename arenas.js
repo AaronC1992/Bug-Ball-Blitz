@@ -306,19 +306,22 @@ function drawIceTexture(ctx, width, height, groundHeight) {
 }
 
 function drawCandyTexture(ctx, width, height, groundHeight) {
-    // Draw colorful candy dots
-    const colors = ['#FF69B4', '#FFB6C1', '#FF1493', '#FFC0CB'];
+    // Draw subtle pastel stripes instead of dots
+    const stripeColors = ['rgba(255, 182, 193, 0.2)', 'rgba(255, 192, 203, 0.2)', 'rgba(255, 228, 225, 0.2)'];
+    const stripeWidth = 40;
     
-    for (let i = 0; i < 50; i++) {
-        ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-        const x = Math.random() * width;
-        const y = height - groundHeight + Math.random() * groundHeight;
-        const size = 3 + Math.random() * 5;
-        
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
+    for (let i = 0; i < width / stripeWidth; i++) {
+        ctx.fillStyle = stripeColors[i % stripeColors.length];
+        ctx.fillRect(i * stripeWidth, height - groundHeight, stripeWidth, groundHeight);
     }
+    
+    // Add a subtle candy cane border at the top
+    ctx.strokeStyle = 'rgba(255, 105, 180, 0.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, height - groundHeight);
+    ctx.lineTo(width, height - groundHeight);
+    ctx.stroke();
 }
 
 function drawSnowfall(ctx, width, height) {
