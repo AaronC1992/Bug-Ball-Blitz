@@ -587,8 +587,7 @@ class Game {
     showLoadingScreen() {
         const levelConfig = this.getTowerLevelConfig(this.towerLevel);
         
-        // Update loading screen content
-        document.getElementById('loadingLevelNumber').textContent = `Level ${this.towerLevel}`;
+        // Update level info
         document.getElementById('loadingLevelName').textContent = levelConfig.name;
         
         // Format difficulty with color indicators
@@ -601,13 +600,77 @@ class Game {
         document.getElementById('loadingLevelDifficulty').textContent = 
             difficultyColors[levelConfig.difficulty] || levelConfig.difficulty.toUpperCase();
         
+        // Generate tower visual
+        this.generateTowerVisual();
+        
         // Show loading screen
         this.ui.showScreen('loadingScreen');
         
-        // Start match after 2 seconds
+        // Start match after 2.5 seconds
         setTimeout(() => {
             this.startMatch();
-        }, 2000);
+        }, 2500);
+    }
+    
+    generateTowerVisual() {
+        const towerContainer = document.getElementById('towerVisual');
+        towerContainer.innerHTML = '';
+        
+        const highestLevel = this.ui.currentProfile.tower.highestLevel || 0;
+        const totalLevels = 20; // Show first 20 levels
+        
+        // Create levels from 1 to 20
+        for (let i = 1; i <= totalLevels; i++) {
+            const config = this.getTowerLevelConfig(i);
+            const levelDiv = document.createElement('div');
+            levelDiv.className = 'tower-level';
+            
+            // Determine level state
+            if (i < this.towerLevel) {
+                levelDiv.classList.add('completed');
+            } else if (i === this.towerLevel) {
+                levelDiv.classList.add('current');
+            } else {
+                levelDiv.classList.add('locked');
+            }
+            
+            // Create level content
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'tower-level-left';
+            
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'tower-level-number';
+            numberSpan.textContent = `Level ${i}`;
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'tower-level-name';
+            nameSpan.textContent = config.name;
+            
+            leftDiv.appendChild(numberSpan);
+            leftDiv.appendChild(nameSpan);
+            
+            const badgeSpan = document.createElement('span');
+            badgeSpan.className = 'tower-level-badge';
+            if (i < this.towerLevel) {
+                badgeSpan.textContent = '✓';
+            } else if (i === this.towerLevel) {
+                badgeSpan.textContent = '►';
+            } else {
+                badgeSpan.textContent = '🔒';
+            }
+            
+            levelDiv.appendChild(leftDiv);
+            levelDiv.appendChild(badgeSpan);
+            towerContainer.appendChild(levelDiv);
+        }
+        
+        // Scroll to current level after a brief delay
+        setTimeout(() => {
+            const currentLevelEl = towerContainer.querySelector('.tower-level.current');
+            if (currentLevelEl) {
+                currentLevelEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
     }
     
     getTowerLevelConfig(level) {
