@@ -13,7 +13,7 @@ export const BUGS = {
         color: '#8B4513',
         unlocked: false,
         unlockRequirement: 'champion', // Win 10 matches
-        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">`
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="50" cy="60" rx="25" ry="35" fill="#5d2e0f" opacity="0.3"/>
             <ellipse cx="50" cy="50" rx="20" ry="30" fill="#8B4513"/>
             <ellipse cx="50" cy="35" rx="15" ry="15" fill="#6b3410"/>
@@ -44,7 +44,7 @@ export const BUGS = {
         color: '#7ed321',
         unlocked: false,
         unlockRequirement: 'firstVictory', // Win your first match
-        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">`
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="50" cy="65" rx="20" ry="25" fill="#5fb304" opacity="0.3"/>
             <ellipse cx="50" cy="55" rx="15" ry="25" fill="#7ed321"/>
             <ellipse cx="50" cy="35" rx="10" ry="12" fill="#6fc415"/>
