@@ -845,7 +845,7 @@ class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw arena background
-        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality);
+        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality, this.gameMode, this.towerLevel);
         
         // Draw goals
         this.drawGoals();
@@ -977,7 +977,7 @@ class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw arena background
-        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality);
+        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality, this.gameMode, this.towerLevel);
         
         // Draw goals
         this.drawGoals();
@@ -1226,7 +1226,7 @@ class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw arena background
-        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality);
+        drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality, this.gameMode, this.towerLevel);
         
         // Draw goals
         this.drawGoals();
