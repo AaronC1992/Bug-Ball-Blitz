@@ -162,11 +162,23 @@ class Game {
         window.addEventListener('resize', handleResize);
         window.addEventListener('orientationchange', handleResize);
         
-        // Fullscreen change listener
-        document.addEventListener('fullscreenchange', () => this.updateFullscreenButton());
-        document.addEventListener('webkitfullscreenchange', () => this.updateFullscreenButton());
-        document.addEventListener('mozfullscreenchange', () => this.updateFullscreenButton());
-        document.addEventListener('msfullscreenchange', () => this.updateFullscreenButton());
+        // Fullscreen change listeners - handle touch controls on mobile
+        const handleFullscreenChange = () => {
+            this.updateFullscreenButton();
+            // Ensure touch controls remain visible after fullscreen transition
+            if (this.gameState === 'playing' || this.gameState === 'intro' || this.gameState === 'countdown' || this.gameState === 'paused') {
+                setTimeout(() => {
+                    this.updateTouchControlsVisibility();
+                    // Force canvas resize to fix mobile fullscreen issues
+                    this.resizeCanvas();
+                }, 100);
+            }
+        };
+        
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('msfullscreenchange', handleFullscreenChange);
         
         // Detect when app loses/gains focus (rotation can trigger this)
         document.addEventListener('visibilitychange', () => {
@@ -1700,13 +1712,18 @@ class Game {
     }
     
     updateTouchControlsVisibility() {
-        // Allow updating during gameplay (playing, countdown, or paused)
-        if (this.gameState !== 'playing' && this.gameState !== 'countdown' && this.gameState !== 'paused') {
+        // Allow updating during gameplay states (playing, intro, countdown, or paused)
+        if (this.gameState !== 'playing' && this.gameState !== 'intro' && 
+            this.gameState !== 'countdown' && this.gameState !== 'paused') {
             return;
         }
         
         const mobileControls = document.getElementById('mobileControls');
         const mobileControlsP2 = document.getElementById('mobileControlsP2');
+        
+        if (!mobileControls || !mobileControlsP2) {
+            return; // Elements not found, exit gracefully
+        }
         
         // If user has explicitly enabled/disabled, use that preference
         // Otherwise, use auto-detection (isMobile/isTablet)
@@ -1718,6 +1735,8 @@ class Game {
             mobileControls.classList.add('active');
             if (this.gameMode === 'multiplayer' && (this.ui.isTablet || this.touchControlsEnabled)) {
                 mobileControlsP2.classList.add('active');
+            } else {
+                mobileControlsP2.classList.remove('active');
             }
         } else {
             mobileControls.classList.remove('active');
@@ -1797,35 +1816,56 @@ class Game {
         const elem = document.documentElement;
         const fullscreenBtn = document.getElementById('fullscreenBtn');
         
-        if (!document.fullscreenElement && !document.webkitFullscreenElement && 
-            !document.mozFullScreenElement && !document.msFullscreenElement) {
-            // Enter fullscreen
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { // Safari
-                elem.webkitRequestFullscreen();
-            } else if (elem.mozRequestFullScreen) { // Firefox
-                elem.mozRequestFullScreen();
-            } else if (elem.msRequestFullscreen) { // IE/Edge
-                elem.msRequestFullscreen();
+        try {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+                !document.mozFullScreenElement && !document.msFullscreenElement) {
+                // Enter fullscreen
+                let fullscreenPromise;
+                
+                if (elem.requestFullscreen) {
+                    fullscreenPromise = elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) { // Safari & Mobile Safari
+                    fullscreenPromise = elem.webkitRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) { // Firefox
+                    fullscreenPromise = elem.mozRequestFullScreen();
+                } else if (elem.msRequestFullscreen) { // IE/Edge
+                    fullscreenPromise = elem.msRequestFullscreen();
+                }
+                
+                // Handle promise if returned (modern browsers)
+                if (fullscreenPromise && fullscreenPromise.then) {
+                    fullscreenPromise.catch(err => {
+                        console.warn('Fullscreen request failed:', err);
+                        // Restore button state on error
+                        fullscreenBtn.textContent = '⛶';
+                        fullscreenBtn.title = 'Enter Fullscreen';
+                    });
+                }
+                
+                fullscreenBtn.textContent = '⛶'; // Exit fullscreen icon
+                fullscreenBtn.title = 'Exit Fullscreen';
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                fullscreenBtn.textContent = '⛶'; // Fullscreen icon
+                fullscreenBtn.title = 'Enter Fullscreen';
             }
-            fullscreenBtn.textContent = '⛶'; // Exit fullscreen icon
-        } else {
-            // Exit fullscreen
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
-            fullscreenBtn.textContent = '⛶'; // Fullscreen icon
+            
+            // Play sound
+            this.audio.playSound('ui_click');
+        } catch (err) {
+            console.error('Fullscreen error:', err);
+            // Ensure button is in correct state
+            this.updateFullscreenButton();
         }
-        
-        // Play sound
-        this.audio.playSound('ui_click');
     }
     
     updateFullscreenButton() {

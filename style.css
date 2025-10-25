@@ -1455,6 +1455,34 @@ input[type="text"]:focus {
     display: block !important;
 }
 
+/* Fullscreen mode - ensure controls remain visible and properly positioned */
+:fullscreen .mobile-controls.active,
+:-webkit-full-screen .mobile-controls.active,
+:-moz-full-screen .mobile-controls.active,
+:-ms-fullscreen .mobile-controls.active {
+    display: block !important;
+    position: fixed !important;
+    z-index: 9999 !important;
+}
+
+:fullscreen .mobile-controls-p2.active,
+:-webkit-full-screen .mobile-controls-p2.active,
+:-moz-full-screen .mobile-controls-p2.active,
+:-ms-fullscreen .mobile-controls-p2.active {
+    display: block !important;
+    position: fixed !important;
+    z-index: 9999 !important;
+}
+
+/* Ensure game controls stay visible in fullscreen */
+:fullscreen #gameControls,
+:-webkit-full-screen #gameControls,
+:-moz-full-screen #gameControls,
+:-ms-fullscreen #gameControls {
+    display: block !important;
+    z-index: 9998 !important;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     #gameContainer {
