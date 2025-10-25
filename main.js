@@ -393,9 +393,21 @@ class Game {
             this.pauseGame();
         });
         
+        // Add touchstart as fallback for mobile devices
+        document.getElementById('pauseBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent double-firing with click
+            this.pauseGame();
+        }, { passive: false });
+        
         document.getElementById('fullscreenBtn').addEventListener('click', () => {
             this.toggleFullscreen();
         });
+        
+        // Add touchstart as fallback for fullscreen button
+        document.getElementById('fullscreenBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.toggleFullscreen();
+        }, { passive: false });
         
         document.getElementById('resumeBtn').addEventListener('click', () => {
             this.audio.playSound('ui_click');
