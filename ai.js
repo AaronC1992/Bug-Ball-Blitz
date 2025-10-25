@@ -367,7 +367,7 @@ export class MultiAI {
         this.side = side; // 'left' or 'right' - which goal to defend
         
         this.params = this.getDifficultyParams(difficulty);
-        this.reactionTimer = 0;
+        this.reactionTimers = [0, 0]; // Separate timer for each player
         this.roleSwapCooldown = 0;
         this.currentAttacker = 0; // Index of current attacker
         this.strategies = [null, null]; // Strategy for each player
@@ -419,18 +419,18 @@ export class MultiAI {
     update(playerIndex) {
         const player = this.players[playerIndex];
         
-        this.reactionTimer++;
+        this.reactionTimers[playerIndex]++;
         this.roleSwapCooldown = Math.max(0, this.roleSwapCooldown - 1);
         
-        // Reassign roles periodically
-        if (this.roleSwapCooldown === 0) {
+        // Reassign roles periodically (only check on player 0 to avoid duplicate checks)
+        if (playerIndex === 0 && this.roleSwapCooldown === 0) {
             this.assignRoles();
             this.roleSwapCooldown = 60; // Re-evaluate every 60 frames
         }
         
         // Execute strategy based on role
-        if (this.reactionTimer >= this.params.reactionTime) {
-            this.reactionTimer = 0;
+        if (this.reactionTimers[playerIndex] >= this.params.reactionTime) {
+            this.reactionTimers[playerIndex] = 0;
             
             if (playerIndex === this.currentAttacker) {
                 this.attackBehavior(player);
