@@ -2035,10 +2035,17 @@ class Game {
     }
     
     pauseGame() {
-        if (this.gameState === 'playing' || this.gameState === 'intro') {
+        // Allow pause during: playing, intro, or when countdown is active after a goal
+        if (this.gameState === 'playing' || this.gameState === 'intro' || 
+            (this.gameState === 'playing' && this.countdownValue > 0)) {
             const previousState = this.gameState;
             this.gameState = 'paused';
             this.pausedFromState = previousState; // Remember what state we paused from
+            
+            // Store countdown state if paused during countdown
+            this.pausedCountdownValue = this.countdownValue;
+            this.pausedCountdownStartTime = this.countdownStartTime;
+            
             this.lastFrameTime = null; // Pause timer
             cancelAnimationFrame(this.animationId);
             
@@ -2059,6 +2066,17 @@ class Game {
         if (this.gameState === 'paused') {
             // Resume to the previous state (either 'playing' or 'intro')
             this.gameState = this.pausedFromState || 'playing';
+            
+            // Restore countdown state if we had one
+            if (this.pausedCountdownValue !== undefined) {
+                this.countdownValue = this.pausedCountdownValue;
+                // Adjust countdown start time to account for pause duration
+                const pauseDuration = Date.now() - this.pausedCountdownStartTime;
+                this.countdownStartTime = Date.now() - (this.initialCountdownValue - this.countdownValue) * 1000;
+                this.pausedCountdownValue = undefined;
+                this.pausedCountdownStartTime = undefined;
+            }
+            
             this.lastFrameTime = performance.now(); // Resume timer
             this.ui.hideOverlay('pauseMenu');
             this.gameLoop();
