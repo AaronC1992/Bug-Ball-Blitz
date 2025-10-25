@@ -875,6 +875,123 @@ input[type="text"]:focus {
     color: #7ed321;
 }
 
+/* Tower Level Select */
+.tower-level-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    width: 100%;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.tower-level-card {
+    background: linear-gradient(145deg, #1b5e20 0%, #2e7d32 100%);
+    padding: 20px 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid #4caf50;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.1);
+    text-align: center;
+    position: relative;
+}
+
+.tower-level-card:hover {
+    border-color: #ffd700;
+    transform: scale(1.05) translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6),
+                0 0 20px rgba(255, 215, 0, 0.4);
+    background: linear-gradient(145deg, #2e7d32 0%, #388e3c 100%);
+}
+
+.tower-level-card.locked {
+    background: linear-gradient(145deg, #424242 0%, #616161 100%);
+    border-color: #757575;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.tower-level-card.locked:hover {
+    border-color: #757575;
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.tower-level-card.current {
+    border-color: #ffd700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+    animation: currentLevelPulse 2s ease-in-out infinite;
+}
+
+@keyframes currentLevelPulse {
+    0%, 100% {
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 35px rgba(255, 215, 0, 0.8);
+    }
+}
+
+.level-number {
+    font-size: 32px;
+    font-weight: 900;
+    color: #ffd700;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.level-name-small {
+    font-size: 12px;
+    color: #fff;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.level-difficulty-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 5px;
+}
+
+.difficulty-easy {
+    background: #4caf50;
+    color: #fff;
+}
+
+.difficulty-medium {
+    background: #ff9800;
+    color: #fff;
+}
+
+.difficulty-hard {
+    background: #f44336;
+    color: #fff;
+}
+
+.difficulty-pro {
+    background: #9c27b0;
+    color: #fff;
+}
+
+.level-type-badge {
+    font-size: 18px;
+    margin-top: 5px;
+}
+
+.tower-level-card.locked .level-number {
+    color: #999;
+}
+
+.tower-level-card.locked .level-name-small {
+    color: #aaa;
+}
+
 /* Game Screen */
 #gameScreen {
     padding: 0;
@@ -1865,6 +1982,29 @@ input[type="text"]:focus {
 
     .bug-grid, .arena-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .tower-level-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        padding: 0 10px;
+    }
+    
+    .tower-level-card {
+        padding: 15px 10px;
+    }
+    
+    .level-number {
+        font-size: 28px;
+    }
+    
+    .level-name-small {
+        font-size: 10px;
+    }
+    
+    .level-difficulty-badge {
+        font-size: 9px;
+        padding: 3px 8px;
     }
     
     /* Styles Screen - Mobile specific */

@@ -324,7 +324,18 @@ class Game {
         // Menu buttons
         document.getElementById('towerCampaignBtn').addEventListener('click', () => {
             this.audio.playSound('ui_click');
+            this.showTowerLevelSelect();
+        });
+        
+        // Tower level select buttons
+        document.getElementById('continueTowerBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
             this.startTowerCampaign();
+        });
+        
+        document.getElementById('cancelTowerSelectBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.ui.showScreen('mainMenu');
         });
         
         document.getElementById('quickPlayBtn').addEventListener('click', () => {
@@ -666,9 +677,77 @@ class Game {
         stick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
     }
     
+    showTowerLevelSelect() {
+        this.ui.showScreen('towerLevelSelectScreen');
+        this.populateTowerLevelGrid();
+    }
+    
+    populateTowerLevelGrid() {
+        const grid = document.getElementById('towerLevelGrid');
+        grid.innerHTML = '';
+        
+        const maxLevel = this.ui.currentProfile.tower.highestLevel || 1;
+        const currentLevel = this.ui.currentProfile.tower.currentLevel;
+        
+        // Create 20 level cards
+        for (let level = 1; level <= 20; level++) {
+            const config = this.getTowerLevelConfig(level);
+            const isUnlocked = level <= maxLevel;
+            const isCurrent = level === currentLevel;
+            
+            const card = document.createElement('div');
+            card.className = `tower-level-card ${!isUnlocked ? 'locked' : ''} ${isCurrent ? 'current' : ''}`;
+            
+            // Level number
+            const levelNum = document.createElement('div');
+            levelNum.className = 'level-number';
+            levelNum.textContent = level;
+            
+            // Level name
+            const levelName = document.createElement('div');
+            levelName.className = 'level-name-small';
+            levelName.textContent = config.name;
+            
+            // Type badge (1v1 or 1v2)
+            const typeBadge = document.createElement('div');
+            typeBadge.className = 'level-type-badge';
+            typeBadge.textContent = config.aiCount === 1 ? '⚔️' : '⚔️⚔️';
+            typeBadge.title = config.aiCount === 1 ? '1v1 Match' : '1v2 Match';
+            
+            // Difficulty badge
+            const diffBadge = document.createElement('div');
+            diffBadge.className = `level-difficulty-badge difficulty-${config.difficulty}`;
+            diffBadge.textContent = config.difficulty.toUpperCase();
+            
+            card.appendChild(levelNum);
+            card.appendChild(levelName);
+            card.appendChild(typeBadge);
+            card.appendChild(diffBadge);
+            
+            if (isUnlocked) {
+                card.addEventListener('click', () => {
+                    this.audio.playSound('ui_click');
+                    this.towerLevel = level;
+                    this.startTowerCampaign();
+                });
+            } else {
+                const lockIcon = document.createElement('div');
+                lockIcon.textContent = '🔒';
+                lockIcon.style.fontSize = '24px';
+                lockIcon.style.marginTop = '10px';
+                card.appendChild(lockIcon);
+            }
+            
+            grid.appendChild(card);
+        }
+    }
+    
     startTowerCampaign() {
         this.gameMode = 'tower';
-        this.towerLevel = this.ui.currentProfile.tower.currentLevel;
+        // towerLevel is now set by either continuing or selecting a specific level
+        if (!this.towerLevel) {
+            this.towerLevel = this.ui.currentProfile.tower.currentLevel;
+        }
         
         // Stop main menu background when entering game
         if (this.mainMenuBackground) {
