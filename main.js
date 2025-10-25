@@ -351,25 +351,35 @@ class Game {
         });
         
         // Settings menu (only accessible from pause menu)
-        document.getElementById('pauseSettingsBtn').addEventListener('click', () => {
+        const pauseSettingsBtn = document.getElementById('pauseSettingsBtn');
+        let settingsBtnHandled = false;
+        
+        pauseSettingsBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            settingsBtnHandled = true;
+            this.openSettings();
+            setTimeout(() => { settingsBtnHandled = false; }, 300);
+        }, { passive: false });
+        
+        pauseSettingsBtn.addEventListener('click', (e) => {
+            if (settingsBtnHandled) return;
             this.openSettings();
         });
         
-        // Add touchstart for mobile
-        document.getElementById('pauseSettingsBtn').addEventListener('touchstart', (e) => {
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        let closeSettingsBtnHandled = false;
+        
+        closeSettingsBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.openSettings();
+            closeSettingsBtnHandled = true;
+            this.closeSettings();
+            setTimeout(() => { closeSettingsBtnHandled = false; }, 300);
         }, { passive: false });
         
-        document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+        closeSettingsBtn.addEventListener('click', (e) => {
+            if (closeSettingsBtnHandled) return;
             this.closeSettings();
         });
-        
-        // Add touchstart for mobile
-        document.getElementById('closeSettingsBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.closeSettings();
-        }, { passive: false });
         
         // Audio settings
         document.getElementById('soundVolumeSlider').addEventListener('input', (e) => {
@@ -401,89 +411,132 @@ class Game {
         });
         
         // Pause menu
-        document.getElementById('pauseBtn').addEventListener('click', () => {
-            this.pauseGame();
-        });
+        const pauseBtn = document.getElementById('pauseBtn');
+        let pauseBtnHandled = false;
         
-        // Add touchstart as fallback for mobile devices
-        document.getElementById('pauseBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Prevent double-firing with click
-            this.pauseGame();
-        }, { passive: false });
-        
-        document.getElementById('fullscreenBtn').addEventListener('click', () => {
-            this.toggleFullscreen();
-        });
-        
-        // Add touchstart as fallback for fullscreen button
-        document.getElementById('fullscreenBtn').addEventListener('touchstart', (e) => {
+        pauseBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.toggleFullscreen();
+            pauseBtnHandled = true;
+            this.pauseGame();
+            setTimeout(() => { pauseBtnHandled = false; }, 300);
         }, { passive: false });
         
-        document.getElementById('resumeBtn').addEventListener('click', () => {
+        pauseBtn.addEventListener('click', () => {
+            if (pauseBtnHandled) return;
+            this.pauseGame();
+        });
+        
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        let fullscreenBtnHandled = false;
+        
+        fullscreenBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            fullscreenBtnHandled = true;
+            this.toggleFullscreen();
+            setTimeout(() => { fullscreenBtnHandled = false; }, 300);
+        }, { passive: false });
+        
+        fullscreenBtn.addEventListener('click', () => {
+            if (fullscreenBtnHandled) return;
+            this.toggleFullscreen();
+        });
+        
+        const resumeBtn = document.getElementById('resumeBtn');
+        let resumeBtnHandled = false;
+        
+        resumeBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            resumeBtnHandled = true;
+            this.audio.playSound('ui_click');
+            this.resumeGame();
+            setTimeout(() => { resumeBtnHandled = false; }, 300);
+        }, { passive: false });
+        
+        resumeBtn.addEventListener('click', () => {
+            if (resumeBtnHandled) return;
             this.audio.playSound('ui_click');
             this.resumeGame();
         });
         
-        // Add touchstart for mobile
-        document.getElementById('resumeBtn').addEventListener('touchstart', (e) => {
+        const restartMatchBtn = document.getElementById('restartMatchBtn');
+        let restartMatchBtnHandled = false;
+        
+        restartMatchBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            restartMatchBtnHandled = true;
             this.audio.playSound('ui_click');
-            this.resumeGame();
+            this.restartMatch();
+            setTimeout(() => { restartMatchBtnHandled = false; }, 300);
         }, { passive: false });
         
-        document.getElementById('restartMatchBtn').addEventListener('click', () => {
+        restartMatchBtn.addEventListener('click', () => {
+            if (restartMatchBtnHandled) return;
             this.audio.playSound('ui_click');
             this.restartMatch();
         });
         
-        // Add touchstart for mobile
-        document.getElementById('restartMatchBtn').addEventListener('touchstart', (e) => {
+        const quitToMenuBtn = document.getElementById('quitToMenuBtn');
+        let quitToMenuBtnHandled = false;
+        
+        quitToMenuBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            quitToMenuBtnHandled = true;
             this.audio.playSound('ui_click');
-            this.restartMatch();
+            this.quitToMenu();
+            setTimeout(() => { quitToMenuBtnHandled = false; }, 300);
         }, { passive: false });
         
-        document.getElementById('quitToMenuBtn').addEventListener('click', () => {
+        quitToMenuBtn.addEventListener('click', () => {
+            if (quitToMenuBtnHandled) return;
             this.audio.playSound('ui_click');
             this.quitToMenu();
         });
-        
-        // Add touchstart for mobile
-        document.getElementById('quitToMenuBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.audio.playSound('ui_click');
-            this.quitToMenu();
-        }, { passive: false });
         
         // Match end
-        document.getElementById('continueBtn').addEventListener('click', () => {
+        const continueBtn = document.getElementById('continueBtn');
+        let continueBtnHandled = false;
+        
+        continueBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            continueBtnHandled = true;
+            this.handleMatchContinue();
+            setTimeout(() => { continueBtnHandled = false; }, 300);
+        }, { passive: false });
+        
+        continueBtn.addEventListener('click', () => {
+            if (continueBtnHandled) return;
             this.handleMatchContinue();
         });
         
-        document.getElementById('continueBtn').addEventListener('touchstart', (e) => {
+        const rematchBtn = document.getElementById('rematchBtn');
+        let rematchBtnHandled = false;
+        
+        rematchBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.handleMatchContinue();
+            rematchBtnHandled = true;
+            this.rematch();
+            setTimeout(() => { rematchBtnHandled = false; }, 300);
         }, { passive: false });
         
-        document.getElementById('rematchBtn').addEventListener('click', () => {
+        rematchBtn.addEventListener('click', () => {
+            if (rematchBtnHandled) return;
             this.rematch();
         });
         
-        document.getElementById('rematchBtn').addEventListener('touchstart', (e) => {
+        const endToMenuBtn = document.getElementById('endToMenuBtn');
+        let endToMenuBtnHandled = false;
+        
+        endToMenuBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.rematch();
+            endToMenuBtnHandled = true;
+            this.quitToMenu();
+            setTimeout(() => { endToMenuBtnHandled = false; }, 300);
         }, { passive: false });
         
-        document.getElementById('endToMenuBtn').addEventListener('click', () => {
+        endToMenuBtn.addEventListener('click', () => {
+            if (endToMenuBtnHandled) return;
             this.quitToMenu();
         });
-        
-        document.getElementById('endToMenuBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.quitToMenu();
-        }, { passive: false });
         
         // Tower victory
         document.getElementById('towerDoneBtn').addEventListener('click', () => {
