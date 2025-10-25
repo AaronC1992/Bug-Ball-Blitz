@@ -1717,6 +1717,43 @@ input[type="text"]:focus {
     .bug-grid, .arena-grid {
         grid-template-columns: 1fr;
     }
+    
+    /* Styles Screen - Mobile specific */
+    #stylesScreen {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #celebrationGrid {
+        grid-template-columns: 1fr;
+        padding: 10px;
+        gap: 15px;
+        max-width: 100%;
+    }
+    
+    .celebration-card {
+        padding: 15px;
+        min-width: 0;
+    }
+    
+    .celebration-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+    }
+    
+    .celebration-card h3 {
+        font-size: 18px;
+    }
+    
+    .celebration-description {
+        font-size: 13px;
+        min-height: auto;
+    }
+    
+    .styles-subtitle {
+        font-size: 14px;
+        margin: -5px 0 15px 0;
+    }
 
     .hud {
         top: 10px;
