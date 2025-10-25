@@ -1279,11 +1279,13 @@ class Game {
             this.updatePlayer2Input();
         } else {
             // AI control
-            this.player2AI.update();
-            
             if (this.selectedBug3 && this.player2AI_2) {
+                // 1v2 mode: Use MultiAI for both AI players
                 this.player2AI_2.update(0); // Update player2
                 this.player2AI_2.update(1); // Update player3
+            } else {
+                // 1v1 mode: Use single AI
+                this.player2AI.update();
             }
         }
         
