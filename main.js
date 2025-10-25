@@ -2210,11 +2210,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Make game accessible globally for mode change detection
     window.game = game;
     
-    // Auto-enter fullscreen on mobile devices after a short delay
-    // This helps with mobile display issues
+    // Auto-enter fullscreen after a short delay
+    // This helps with display issues and provides better immersion
     setTimeout(() => {
-        if (window.innerWidth <= 768) { // Mobile/tablet check
-            game.toggleFullscreen();
-        }
+        game.toggleFullscreen();
     }, 500);
 });
