@@ -417,6 +417,17 @@ export class MultiAI {
     }
     
     update(playerIndex) {
+        // Safety checks
+        if (!this.players || !this.players[playerIndex]) {
+            console.error('MultiAI: Invalid player index', playerIndex);
+            return;
+        }
+        
+        if (!this.ball || !this.physics) {
+            console.error('MultiAI: Missing ball or physics');
+            return;
+        }
+        
         const player = this.players[playerIndex];
         
         this.reactionTimers[playerIndex]++;
@@ -444,6 +455,11 @@ export class MultiAI {
     }
     
     assignRoles() {
+        // Safety check
+        if (!this.players || !this.players[0] || !this.players[1] || !this.ball) {
+            return;
+        }
+        
         // Assign roles based on distance to ball and field position
         const dist0 = Math.abs(this.ball.x - this.players[0].x);
         const dist1 = Math.abs(this.ball.x - this.players[1].x);
@@ -453,9 +469,19 @@ export class MultiAI {
     }
     
     maintainSpacing(player, playerIndex) {
+        // Safety check
+        if (!this.players || playerIndex < 0 || playerIndex > 1) {
+            return;
+        }
+        
         // Prevent both players from clustering
         const otherIndex = playerIndex === 0 ? 1 : 0;
         const otherPlayer = this.players[otherIndex];
+        
+        if (!otherPlayer) {
+            return;
+        }
+        
         const distance = Math.abs(player.x - otherPlayer.x);
         
         if (distance < this.params.spacing && playerIndex !== this.currentAttacker) {
