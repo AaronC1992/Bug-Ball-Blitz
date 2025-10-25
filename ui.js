@@ -99,21 +99,15 @@ export class UIManager {
     
     showOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
-        console.log('showOverlay called for:', overlayId, 'Element found:', !!overlay);
         if (overlay) {
             overlay.classList.add('active');
-            console.log('Added active class. Classes:', overlay.classList.toString());
-        } else {
-            console.error('Overlay not found:', overlayId);
         }
     }
     
     hideOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
-        console.log('hideOverlay called for:', overlayId, 'Element found:', !!overlay);
         if (overlay) {
             overlay.classList.remove('active');
-            console.log('Removed active class. Classes:', overlay.classList.toString());
         }
     }
     

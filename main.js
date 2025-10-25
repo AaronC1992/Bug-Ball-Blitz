@@ -1847,10 +1847,8 @@ class Game {
     }
     
     openSettings() {
-        console.log('openSettings called');
         // Hide pause menu while showing settings
         this.ui.hideOverlay('pauseMenu');
-        console.log('Pause menu hidden');
         
         // Load and display current audio settings
         const soundVolume = Math.round(this.audio.soundVolume * 100);
@@ -1864,9 +1862,8 @@ class Game {
         
         document.getElementById('hapticToggle').checked = this.audio.hapticEnabled;
         
-        // Load quality setting
-        const prefs = SaveSystem.getPreferences(this.ui.currentProfile);
-        const quality = prefs.graphicsQuality || 'medium';
+        // Load quality setting from profile preferences
+        const quality = this.ui.currentProfile?.preferences?.graphicsQuality || 'medium';
         this.quality.setQuality(quality);
         document.getElementById('qualitySelect').value = quality;
         
@@ -1877,9 +1874,7 @@ class Game {
             : (this.ui.isMobile || this.ui.isTablet);
         document.getElementById('touchControlsToggle').checked = shouldBeChecked;
         
-        console.log('About to show settings menu');
         this.ui.showOverlay('settingsMenu');
-        console.log('Settings menu shown');
     }
     
     closeSettings() {
