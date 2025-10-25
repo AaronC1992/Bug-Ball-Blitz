@@ -200,7 +200,10 @@ export const ARENAS = {
         skyColors: ['#9370DB', '#8A2BE2'],
         grassBlades: false,
         description: 'Glittering gem-filled cave',
-        weather: 'sparkly'
+        weather: 'sparkly',
+        unlocked: false,
+        unlockRequirement: 'Score 1000 goals',
+        unlockAchievement: 'legendary'
     }
 };
 

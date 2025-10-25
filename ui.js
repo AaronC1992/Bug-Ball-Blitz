@@ -273,9 +273,8 @@ export class UIManager {
             'firstGoal', 'goalMachine', 'centurion', 'legendary',
             'firstVictory', 'champion', 'unbeatable',
             'perfectGame', 'shutoutKing',
-            'hatTrick', 'quickDraw', 'comeback', 'domination',
-            'explorer', 'marathoner', 'speedRunner', 'allArenas',
-            'stylish', 'celebration'
+            'hatTrick', 'quickDraw', 'comeback', 'blowout',
+            'marathonMan', 'worldTraveler', 'bugCollector', 'arenaExplorer'
         ];
         
         // Create fully unlocked profile
