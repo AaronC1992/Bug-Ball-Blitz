@@ -127,6 +127,11 @@ export class UIManager {
         });
         
         // Exit button - Navigate back or to portfolio
+        // TODO: When converting to mobile app (Cordova/Capacitor/React Native),
+        // replace this with proper app exit functionality:
+        // - Cordova: navigator.app.exitApp()
+        // - Capacitor: App.exitApp()
+        // - React Native: BackHandler.exitApp()
         exitBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to exit Bug Ball Blitz?')) {
                 // Try to go back in browser history
