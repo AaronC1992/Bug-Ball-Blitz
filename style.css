@@ -1604,6 +1604,25 @@ input[type="text"]:focus {
     padding: 10px;
 }
 
+/* Fullscreen button in settings */
+.setting-item .fullscreen-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border: 2px solid #5dade2;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    min-width: 80px;
+}
+
+.setting-item .fullscreen-btn:hover {
+    background: linear-gradient(135deg, #5dade2 0%, #3498db 100%);
+    border-color: #7ed321;
+    transform: scale(1.05);
+}
+
 #matchStats, #towerVictoryStats {
     background: #2a2a2a;
     padding: 20px;
