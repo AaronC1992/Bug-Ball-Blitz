@@ -283,11 +283,11 @@ export class UIManager {
             name: name,
             created: Date.now(),
             stats: {
-                wins: 500,
-                losses: 50,
-                goalsScored: 1500,
-                goalsConceded: 250,
-                matchesPlayed: 550
+                wins: 1000,
+                losses: 100,
+                goalsScored: 5000,
+                goalsConceded: 1000,
+                matchesPlayed: 1100
             },
             tower: {
                 currentLevel: 1, // Start at level 1 but with all content unlocked
@@ -306,14 +306,14 @@ export class UIManager {
             selectedCelebration: 'classic',
             achievementProgress: {
                 stats: {
-                    totalGoals: 1500,
-                    totalWins: 500,
-                    totalMatches: 550,
-                    perfectGames: 100,
-                    quickGoals: 50,
-                    comebacks: 20,
-                    blowouts: 150,
-                    goalsInMatch: 10,
+                    totalGoals: 5000,
+                    totalWins: 1000,
+                    totalMatches: 1100,
+                    perfectGames: 500,
+                    quickGoals: 200,
+                    comebacks: 100,
+                    blowouts: 300,
+                    goalsInMatch: 20,
                     visitedArenas: ['grassField', 'desertDunes', 'snowySlopes', 'volcanoValley', 
                                    'oceanSide', 'spaceStation', 'jungleJungle', 'crystalCave',
                                    'hauntedHollow', 'candyLand', 'cityRooftop', 'underwaterArena',
