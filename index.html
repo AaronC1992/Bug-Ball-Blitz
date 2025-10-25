@@ -427,56 +427,39 @@
                 <div id="arenaPreviewDescription" class="arena-description"></div>
                 
                 <!-- Match Length Selection in Arena Preview -->
-                <div id="arenaMatchLengthSection" class="match-length-section">
-                    <h3>Select Match Duration</h3>
-                    <div class="difficulty-grid">
-                        <button class="difficulty-btn" data-match-length="60">
-                            <span class="difficulty-icon">⚡</span>
-                            <span class="difficulty-name">1 Minute</span>
-                            <span class="difficulty-desc">Quick match</span>
-                        </button>
-                        <button class="difficulty-btn" data-match-length="120">
-                            <span class="difficulty-icon">⏱️</span>
-                            <span class="difficulty-name">2 Minutes</span>
-                            <span class="difficulty-desc">Standard</span>
-                        </button>
-                        <button class="difficulty-btn" data-match-length="180">
-                            <span class="difficulty-icon">⏳</span>
-                            <span class="difficulty-name">3 Minutes</span>
-                            <span class="difficulty-desc">Extended</span>
-                        </button>
-                        <button class="difficulty-btn" data-match-length="300">
-                            <span class="difficulty-icon">🏆</span>
-                            <span class="difficulty-name">5 Minutes</span>
-                            <span class="difficulty-desc">Epic battle</span>
-                        </button>
+                <div id="arenaMatchLengthSection" class="match-settings-section">
+                    <div class="slider-container">
+                        <label for="matchLengthSlider">
+                            <span class="slider-icon">⏱️</span>
+                            <span class="slider-label">Match Duration:</span>
+                            <span class="slider-value" id="matchLengthValue">2 Minutes</span>
+                        </label>
+                        <input type="range" id="matchLengthSlider" min="1" max="5" value="2" step="1" list="matchLengthMarkers">
+                        <datalist id="matchLengthMarkers">
+                            <option value="1" label="1m"></option>
+                            <option value="2" label="2m"></option>
+                            <option value="3" label="3m"></option>
+                            <option value="4" label="4m"></option>
+                            <option value="5" label="5m"></option>
+                        </datalist>
                     </div>
                 </div>
                 
                 <!-- Score to Win Selection in Arena Preview -->
-                <div id="arenaScoreToWinSection" class="match-length-section">
-                    <h3>Score to Win</h3>
-                    <div class="difficulty-grid">
-                        <button class="difficulty-btn" data-score-to-win="3">
-                            <span class="difficulty-icon">🥉</span>
-                            <span class="difficulty-name">3 Goals</span>
-                            <span class="difficulty-desc">Quick victory</span>
-                        </button>
-                        <button class="difficulty-btn" data-score-to-win="5">
-                            <span class="difficulty-icon">🥈</span>
-                            <span class="difficulty-name">5 Goals</span>
-                            <span class="difficulty-desc">Standard</span>
-                        </button>
-                        <button class="difficulty-btn" data-score-to-win="7">
-                            <span class="difficulty-icon">🥇</span>
-                            <span class="difficulty-name">7 Goals</span>
-                            <span class="difficulty-desc">Competitive</span>
-                        </button>
-                        <button class="difficulty-btn" data-score-to-win="10">
-                            <span class="difficulty-icon">👑</span>
-                            <span class="difficulty-name">10 Goals</span>
-                            <span class="difficulty-desc">Epic showdown</span>
-                        </button>
+                <div id="arenaScoreToWinSection" class="match-settings-section">
+                    <div class="slider-container">
+                        <label for="scoreToWinSlider">
+                            <span class="slider-icon">⚽</span>
+                            <span class="slider-label">Score to Win:</span>
+                            <span class="slider-value" id="scoreToWinValue">5 Goals</span>
+                        </label>
+                        <input type="range" id="scoreToWinSlider" min="3" max="10" value="5" step="1" list="scoreToWinMarkers">
+                        <datalist id="scoreToWinMarkers">
+                            <option value="3" label="3"></option>
+                            <option value="5" label="5"></option>
+                            <option value="7" label="7"></option>
+                            <option value="10" label="10"></option>
+                        </datalist>
                     </div>
                 </div>
                 

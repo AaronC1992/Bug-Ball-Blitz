@@ -564,43 +564,49 @@ export class UIManager {
             scoreToWinSection.style.display = isTowerMode ? 'none' : 'block';
         }
         
-        // Handle match length selection
-        const matchLengthBtns = modal.querySelectorAll('[data-match-length]');
-        matchLengthBtns.forEach(btn => {
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-            
-            // Set default (2 minutes) as active
-            if (parseInt(newBtn.dataset.matchLength) === 120) {
-                newBtn.classList.add('active');
-            }
-            
-            newBtn.addEventListener('click', () => {
-                // Remove active state from all match length buttons
-                modal.querySelectorAll('[data-match-length]').forEach(b => b.classList.remove('active'));
-                newBtn.classList.add('active');
-                selectedMatchLength = parseInt(newBtn.dataset.matchLength);
-            });
-        });
+        // Handle match length slider
+        const matchLengthSlider = document.getElementById('matchLengthSlider');
+        const matchLengthValue = document.getElementById('matchLengthValue');
         
-        // Handle score-to-win selection
-        const scoreToWinBtns = modal.querySelectorAll('[data-score-to-win]');
-        scoreToWinBtns.forEach(btn => {
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
+        if (matchLengthSlider && matchLengthValue) {
+            // Set default value
+            matchLengthSlider.value = 2;
             
-            // Set default (5 goals) as active
-            if (parseInt(newBtn.dataset.scoreToWin) === 5) {
-                newBtn.classList.add('active');
-            }
+            // Update display
+            const updateMatchLengthDisplay = (value) => {
+                const minutes = parseInt(value);
+                selectedMatchLength = minutes * 60;
+                matchLengthValue.textContent = `${minutes} Minute${minutes > 1 ? 's' : ''}`;
+            };
             
-            newBtn.addEventListener('click', () => {
-                // Remove active state from all score-to-win buttons
-                modal.querySelectorAll('[data-score-to-win]').forEach(b => b.classList.remove('active'));
-                newBtn.classList.add('active');
-                selectedScoreToWin = parseInt(newBtn.dataset.scoreToWin);
+            updateMatchLengthDisplay(matchLengthSlider.value);
+            
+            matchLengthSlider.addEventListener('input', (e) => {
+                updateMatchLengthDisplay(e.target.value);
             });
-        });
+        }
+        
+        // Handle score-to-win slider
+        const scoreToWinSlider = document.getElementById('scoreToWinSlider');
+        const scoreToWinValue = document.getElementById('scoreToWinValue');
+        
+        if (scoreToWinSlider && scoreToWinValue) {
+            // Set default value
+            scoreToWinSlider.value = 5;
+            
+            // Update display
+            const updateScoreToWinDisplay = (value) => {
+                const goals = parseInt(value);
+                selectedScoreToWin = goals;
+                scoreToWinValue.textContent = `${goals} Goal${goals > 1 ? 's' : ''}`;
+            };
+            
+            updateScoreToWinDisplay(scoreToWinSlider.value);
+            
+            scoreToWinSlider.addEventListener('input', (e) => {
+                updateScoreToWinDisplay(e.target.value);
+            });
+        }
         
         // Handle select button
         const newSelectBtn = selectBtn.cloneNode(true);
