@@ -166,6 +166,13 @@ export class UIManager {
             }
         });
         
+        // Developer button - Create tester profile
+        document.getElementById('devTestProfileBtn').addEventListener('click', () => {
+            if (confirm('👨‍💻 DEVELOPER MODE 👨‍💻\n\nCreate a test profile with:\n• All bugs unlocked\n• All arenas unlocked\n• All celebrations unlocked\n• All achievements completed\n• Max stats and tower progress\n\nProfile name: "DEV-TESTER"\n\nContinue?')) {
+                this.createDevTesterProfile();
+            }
+        });
+        
         // Profile creation
         document.getElementById('confirmProfileBtn').addEventListener('click', () => {
             this.createProfile();
@@ -241,6 +248,112 @@ export class UIManager {
         } else {
             alert(result.error);
         }
+    }
+    
+    createDevTesterProfile() {
+        const name = 'DEV-TESTER';
+        
+        // Check if profile already exists
+        const profileKey = 'bugBall_save_' + name.toLowerCase().replace(/\s+/g, '_');
+        if (localStorage.getItem(profileKey)) {
+            if (!confirm('Profile "DEV-TESTER" already exists.\n\nReplace with fresh tester profile?')) {
+                return;
+            }
+            SaveSystem.deleteProfile(name);
+        }
+        
+        // Get all achievement IDs
+        const allAchievementIds = [
+            'firstGoal', 'goalMachine', 'centurion', 'legendary',
+            'firstVictory', 'champion', 'unbeatable',
+            'perfectGame', 'shutoutKing',
+            'hatTrick', 'quickDraw', 'comeback', 'domination',
+            'explorer', 'marathoner', 'speedRunner', 'allArenas',
+            'stylish', 'celebration'
+        ];
+        
+        // Create fully unlocked profile
+        const profile = {
+            name: name,
+            created: Date.now(),
+            stats: {
+                wins: 500,
+                losses: 50,
+                goalsScored: 1500,
+                goalsConceded: 250,
+                matchesPlayed: 550
+            },
+            tower: {
+                currentLevel: 1, // Start at level 1 but with all content unlocked
+                highestLevel: 20,
+                isComplete: true,
+                levelsCompleted: 20
+            },
+            preferences: {
+                selectedBug: 'ladybug',
+                selectedArena: 'grassField',
+                graphicsQuality: 'high',
+                soundEnabled: true,
+                musicEnabled: true,
+                vibrationEnabled: true
+            },
+            selectedCelebration: 'classic',
+            achievementProgress: {
+                stats: {
+                    totalGoals: 1500,
+                    totalWins: 500,
+                    totalMatches: 550,
+                    perfectGames: 100,
+                    quickGoals: 50,
+                    comebacks: 20,
+                    blowouts: 150,
+                    goalsInMatch: 10,
+                    visitedArenas: ['grassField', 'desertDunes', 'snowySlopes', 'volcanoValley', 
+                                   'oceanSide', 'spaceStation', 'jungleJungle', 'crystalCave',
+                                   'hauntedHollow', 'candyLand', 'cityRooftop', 'underwaterArena',
+                                   'cloudPalace', 'lavaCourt']
+                },
+                achievements: {}
+            }
+        };
+        
+        // Mark all achievements as unlocked
+        allAchievementIds.forEach(id => {
+            profile.achievementProgress.achievements[id] = {
+                unlocked: true,
+                unlockedAt: Date.now()
+            };
+        });
+        
+        // Save profile
+        localStorage.setItem(profileKey, JSON.stringify(profile));
+        
+        // Load the profile
+        this.currentProfile = profile;
+        
+        // Update achievement manager
+        if (this.game && this.game.achievements) {
+            this.game.achievements.setProfile(this.currentProfile);
+        }
+        
+        // Show main menu
+        this.showMainMenu();
+        
+        // Stop title menu background, start main menu background
+        if (this.game && this.game.menuBackground) {
+            this.game.menuBackground.stop();
+        }
+        if (this.game && this.game.mainMenuBackgroundCanvas) {
+            this.game.resizeMainMenuBackgroundCanvas();
+            if (!this.game.mainMenuBackground) {
+                this.game.initializeMainMenuBackground();
+            }
+            this.game.mainMenuBackground.setupMatch();
+            this.game.mainMenuBackground.start();
+        }
+        
+        // Show success message
+        alert('✅ DEV-TESTER profile created!\n\n• All bugs unlocked\n• All arenas unlocked\n• All celebrations unlocked\n• All achievements completed\n• Max tower progress');
     }
     
     showProfileList() {

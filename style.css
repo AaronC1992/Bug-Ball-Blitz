@@ -226,6 +226,17 @@ body {
     transform: scale(0.95);
 }
 
+.dev-test-btn {
+    left: 80px;
+    background: rgba(0, 150, 255, 0.3);
+    border: 2px solid rgba(0, 150, 255, 0.6);
+}
+
+.dev-test-btn:hover {
+    background: rgba(0, 150, 255, 0.5);
+    border-color: rgba(0, 150, 255, 0.9);
+}
+
 .dev-icon {
     display: block;
     filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
