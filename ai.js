@@ -509,6 +509,9 @@ export class MultiAI {
         const playerX = player.x;
         const playerY = player.y;
         
+        // Declare ballAbove at the top of the function
+        const ballAbove = ballY < playerY - 50;
+        
         // Check if ball is between AI and own goal - CRITICAL DANGER!
         const ballBetweenPlayerAndGoal = this.side === 'right' ?
             (ballX > playerX && ballX < ownGoalX) :
@@ -539,9 +542,6 @@ export class MultiAI {
         } else {
             // Position to strike ball toward opponent goal
             const ballDistanceToGoal = Math.abs(ballX - opponentGoalX);
-            
-            // Check if ball is directly overhead (being bounced)
-            const ballAbove = ballY < playerY - 50;
             
             if (ballAbove && distanceX < 35) {
                 // Ball bouncing on head - move sideways to let it drop
