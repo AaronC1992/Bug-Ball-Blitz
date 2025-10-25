@@ -191,6 +191,14 @@ export class UIManager {
             this.showStats();
         });
         
+        document.getElementById('tutorialBtn').addEventListener('click', () => {
+            this.showScreen('tutorialScreen');
+        });
+        
+        document.getElementById('backToMainFromTutorialBtn').addEventListener('click', () => {
+            this.showScreen('mainMenu');
+        });
+        
         document.getElementById('logoutBtn').addEventListener('click', () => {
             this.logout();
         });
@@ -525,6 +533,7 @@ export class UIManager {
         const selectBtn = document.getElementById('selectArenaPreviewBtn');
         const cancelBtn = document.getElementById('cancelArenaPreviewBtn');
         const closeBtn = document.getElementById('closeArenaPreview');
+        const matchLengthSection = document.getElementById('arenaMatchLengthSection');
         
         // Set title and description
         title.textContent = arena.name;
@@ -541,13 +550,48 @@ export class UIManager {
         const ctx = canvas.getContext('2d');
         this.drawDetailedArenaPreview(ctx, arena, canvas.width, canvas.height);
         
+        // Track selected match length (default to 2 minutes)
+        let selectedMatchLength = 120;
+        
+        // Show/hide match length section based on game mode (hide for tower mode)
+        const isTowerMode = window.game && window.game.gameMode === 'tower';
+        if (matchLengthSection) {
+            matchLengthSection.style.display = isTowerMode ? 'none' : 'block';
+        }
+        
+        // Handle match length selection
+        const matchLengthBtns = modal.querySelectorAll('[data-match-length]');
+        matchLengthBtns.forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            // Set default (2 minutes) as active
+            if (parseInt(newBtn.dataset.matchLength) === 120) {
+                newBtn.classList.add('active');
+            }
+            
+            newBtn.addEventListener('click', () => {
+                // Remove active state from all buttons
+                modal.querySelectorAll('[data-match-length]').forEach(b => b.classList.remove('active'));
+                newBtn.classList.add('active');
+                selectedMatchLength = parseInt(newBtn.dataset.matchLength);
+            });
+        });
+        
         // Handle select button
         const newSelectBtn = selectBtn.cloneNode(true);
         selectBtn.parentNode.replaceChild(newSelectBtn, selectBtn);
         
         if (isUnlocked) {
             newSelectBtn.style.display = 'block';
+            newSelectBtn.disabled = false;
+            newSelectBtn.style.opacity = '1';
+            
             newSelectBtn.addEventListener('click', () => {
+                // Set match time limit (default is 120 if not changed)
+                if (window.game && !isTowerMode) {
+                    window.game.matchTimeLimit = selectedMatchLength;
+                }
                 SaveSystem.updatePreferences(this.currentProfile, { selectedArena: arena.id });
                 modal.style.display = 'none';
                 callback(arena.id);

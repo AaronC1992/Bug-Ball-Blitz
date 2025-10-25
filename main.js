@@ -340,8 +340,11 @@ class Game {
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.audio.playSound('ui_click');
-                this.difficulty = btn.dataset.difficulty;
-                this.startQuickPlay();
+                // Only handle difficulty selection here (match length moved to arena preview)
+                if (btn.dataset.difficulty) {
+                    this.difficulty = btn.dataset.difficulty;
+                    this.startQuickPlay();
+                }
             });
         });
         
