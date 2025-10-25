@@ -44,6 +44,7 @@ class Game {
         
         // Match settings
         this.matchTimeLimit = 120; // 2 minutes
+        this.scoreToWin = 5; // Goals needed to win
         this.matchTimeElapsed = 0; // Time elapsed in seconds
         this.lastFrameTime = null; // For delta time calculation
         this.countdownValue = 5; // Countdown before match starts
@@ -1659,7 +1660,7 @@ class Game {
         }, 1000);
         
         // Check if match should end
-        if (this.score1 >= 5 || this.score2 >= 5) {
+        if (this.score1 >= this.scoreToWin || this.score2 >= this.scoreToWin) {
             setTimeout(() => {
                 this.endMatch();
             }, 1000);

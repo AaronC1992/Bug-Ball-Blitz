@@ -534,6 +534,7 @@ export class UIManager {
         const cancelBtn = document.getElementById('cancelArenaPreviewBtn');
         const closeBtn = document.getElementById('closeArenaPreview');
         const matchLengthSection = document.getElementById('arenaMatchLengthSection');
+        const scoreToWinSection = document.getElementById('arenaScoreToWinSection');
         
         // Set title and description
         title.textContent = arena.name;
@@ -550,13 +551,17 @@ export class UIManager {
         const ctx = canvas.getContext('2d');
         this.drawDetailedArenaPreview(ctx, arena, canvas.width, canvas.height);
         
-        // Track selected match length (default to 2 minutes)
+        // Track selected options (defaults: 2 minutes, 5 goals)
         let selectedMatchLength = 120;
+        let selectedScoreToWin = 5;
         
-        // Show/hide match length section based on game mode (hide for tower mode)
+        // Show/hide sections based on game mode (hide for tower mode)
         const isTowerMode = window.game && window.game.gameMode === 'tower';
         if (matchLengthSection) {
             matchLengthSection.style.display = isTowerMode ? 'none' : 'block';
+        }
+        if (scoreToWinSection) {
+            scoreToWinSection.style.display = isTowerMode ? 'none' : 'block';
         }
         
         // Handle match length selection
@@ -571,10 +576,29 @@ export class UIManager {
             }
             
             newBtn.addEventListener('click', () => {
-                // Remove active state from all buttons
+                // Remove active state from all match length buttons
                 modal.querySelectorAll('[data-match-length]').forEach(b => b.classList.remove('active'));
                 newBtn.classList.add('active');
                 selectedMatchLength = parseInt(newBtn.dataset.matchLength);
+            });
+        });
+        
+        // Handle score-to-win selection
+        const scoreToWinBtns = modal.querySelectorAll('[data-score-to-win]');
+        scoreToWinBtns.forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            // Set default (5 goals) as active
+            if (parseInt(newBtn.dataset.scoreToWin) === 5) {
+                newBtn.classList.add('active');
+            }
+            
+            newBtn.addEventListener('click', () => {
+                // Remove active state from all score-to-win buttons
+                modal.querySelectorAll('[data-score-to-win]').forEach(b => b.classList.remove('active'));
+                newBtn.classList.add('active');
+                selectedScoreToWin = parseInt(newBtn.dataset.scoreToWin);
             });
         });
         
@@ -588,9 +612,10 @@ export class UIManager {
             newSelectBtn.style.opacity = '1';
             
             newSelectBtn.addEventListener('click', () => {
-                // Set match time limit (default is 120 if not changed)
+                // Set match settings (defaults if not changed)
                 if (window.game && !isTowerMode) {
                     window.game.matchTimeLimit = selectedMatchLength;
+                    window.game.scoreToWin = selectedScoreToWin;
                 }
                 SaveSystem.updatePreferences(this.currentProfile, { selectedArena: arena.id });
                 modal.style.display = 'none';
