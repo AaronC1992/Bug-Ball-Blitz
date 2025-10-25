@@ -1718,7 +1718,10 @@ input[type="text"]:focus {
         padding: 15px 25px;
     }
     
-    .menu-buttons {
+    /* Sticky buttons only for scrollable screens, not title screen */
+    #stylesScreen .menu-buttons,
+    #achievementsScreen .menu-buttons,
+    #statsScreen .menu-buttons {
         margin-top: 20px;
         margin-bottom: 20px;
         position: sticky;
