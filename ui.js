@@ -167,11 +167,17 @@ export class UIManager {
         });
         
         // Developer button - Create tester profile
-        document.getElementById('devTestProfileBtn').addEventListener('click', () => {
-            if (confirm('👨‍💻 DEVELOPER MODE 👨‍💻\n\nCreate a test profile with:\n• All bugs unlocked\n• All arenas unlocked\n• All celebrations unlocked\n• All achievements completed\n• Max stats and tower progress\n\nProfile name: "DEV-TESTER"\n\nContinue?')) {
-                this.createDevTesterProfile();
-            }
-        });
+        const devTestBtn = document.getElementById('devTestProfileBtn');
+        if (devTestBtn) {
+            devTestBtn.addEventListener('click', () => {
+                console.log('Dev test button clicked');
+                if (confirm('👨‍💻 DEVELOPER MODE 👨‍💻\n\nCreate a test profile with:\n• All bugs unlocked\n• All arenas unlocked\n• All celebrations unlocked\n• All achievements completed\n• Max stats and tower progress\n\nProfile name: "DEV-TESTER"\n\nContinue?')) {
+                    this.createDevTesterProfile();
+                }
+            });
+        } else {
+            console.error('Dev test profile button not found!');
+        }
         
         // Profile creation
         document.getElementById('confirmProfileBtn').addEventListener('click', () => {
