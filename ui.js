@@ -126,9 +126,17 @@ export class UIManager {
             this.showScreen('profileLoadScreen');
         });
         
-        // Exit button (just closes window/does nothing on web)
+        // Exit button - Close tab or navigate to portfolio
         exitBtn.addEventListener('click', () => {
-            window.close(); // Only works if window was opened by script
+            if (confirm('Are you sure you want to exit Bug Ball Blitz?')) {
+                // Try to close the window (works if opened via script)
+                window.close();
+                
+                // If close didn't work, show a message
+                setTimeout(() => {
+                    alert('To exit, please close this browser tab manually.');
+                }, 100);
+            }
         });
         
         // Developer button - Clear all cached data
