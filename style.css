@@ -87,7 +87,7 @@ body {
 
 #mainMenu > *, #profileSelection > *, #bugSelection > *, 
 #arenaSelection > *, #difficultySelection > *, #statsScreen > *,
-#stylesScreen > *, #titleScreen > * {
+#stylesScreen > * {
     position: relative;
     z-index: 1;
 }
