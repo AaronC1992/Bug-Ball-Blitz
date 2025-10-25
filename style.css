@@ -1972,111 +1972,113 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Tower Preview Screen */
-#towerPreviewScreen {
-    position: relative;
-    overflow: hidden;
-}
-
-#towerPreviewCanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
-
-.tower-preview-overlay {
-    position: relative;
-    z-index: 2;
+/* Loading Screen */
+#loadingScreen {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    padding: 40px;
-    text-align: center;
 }
 
-.tower-title {
+.loading-content {
+    text-align: center;
+    padding: 40px;
+}
+
+.loading-title {
     font-size: 48px;
-    color: #FFD700;
+    color: #7ED321;
     text-shadow: 
-        0 0 10px rgba(255, 215, 0, 0.8),
-        0 0 20px rgba(255, 215, 0, 0.6),
+        0 0 10px rgba(126, 211, 33, 0.8),
+        0 0 20px rgba(126, 211, 33, 0.6),
         3px 3px 6px rgba(0, 0, 0, 0.8);
     margin-bottom: 30px;
-    animation: towerPulse 2s ease-in-out infinite;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes towerPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-.level-display {
-    background: rgba(0, 0, 0, 0.8);
+.level-info-box {
+    background: rgba(0, 0, 0, 0.7);
     border: 3px solid #FFD700;
     border-radius: 15px;
     padding: 30px 50px;
-    margin-bottom: 30px;
+    margin: 30px auto;
+    max-width: 400px;
     box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
 }
 
-.level-display h2 {
-    font-size: 42px;
+.level-info-box h2 {
+    font-size: 32px;
     color: #FFD700;
-    margin: 0 0 10px 0;
+    margin: 0 0 15px 0;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-.level-display p {
-    font-size: 24px;
+.level-number {
+    font-size: 36px;
     color: #FFF;
-    margin: 5px 0;
+    font-weight: bold;
+    margin: 10px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.level-name {
+    font-size: 24px;
+    color: #7ED321;
+    margin: 10px 0;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
-#towerLevelName {
-    font-weight: bold;
-    color: #7ED321;
+.loading-spinner {
+    margin: 40px auto;
+    width: 80px;
+    height: 80px;
 }
 
-.tower-instructions {
-    background: rgba(126, 211, 33, 0.2);
-    border: 2px solid rgba(126, 211, 33, 0.6);
-    border-radius: 10px;
-    padding: 15px 30px;
-    margin-bottom: 30px;
+.spinner {
+    width: 100%;
+    height: 100%;
+    border: 8px solid rgba(126, 211, 33, 0.2);
+    border-top: 8px solid #7ED321;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-.tower-instructions p {
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.loading-text {
     font-size: 20px;
     color: #FFF;
-    margin: 0;
+    margin-top: 20px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 @media (max-width: 768px) {
-    .tower-title {
+    .loading-title {
         font-size: 32px;
     }
     
-    .level-display {
+    .level-info-box {
         padding: 20px 30px;
     }
     
-    .level-display h2 {
-        font-size: 32px;
+    .level-info-box h2 {
+        font-size: 24px;
     }
     
-    .level-display p {
+    .level-number {
+        font-size: 28px;
+    }
+    
+    .level-name {
         font-size: 18px;
-    }
-    
-    .tower-instructions p {
-        font-size: 16px;
     }
 }
 

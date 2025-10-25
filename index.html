@@ -180,29 +180,19 @@
             </div>
         </div>
 
-        <!-- Tower Preview Screen -->
-        <div id="towerPreviewScreen" class="screen">
-            <canvas id="towerPreviewCanvas"></canvas>
-            <div class="tower-preview-overlay">
-                <h1 class="tower-title">🏰 TOWER CHALLENGE 🏰</h1>
-                <div class="level-display" id="towerLevelDisplay">
-                    <h2>LEVEL <span id="currentTowerLevel">1</span></h2>
-                    <p id="towerLevelName">Tutorial Match</p>
-                    <p id="towerLevelDesc">Face your first opponent</p>
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="screen">
+            <div class="loading-content">
+                <h1 class="loading-title" id="loadingTitle">LOADING...</h1>
+                <div class="level-info-box" id="levelInfoBox" style="display: none;">
+                    <h2>TOWER MODE</h2>
+                    <p class="level-number">LEVEL <span id="loadingLevelNumber">1</span></p>
+                    <p class="level-name" id="loadingLevelName">Tutorial Match</p>
                 </div>
-                <div class="tower-instructions">
-                    <p>⚡ Defeat all 8 levels to conquer the tower!</p>
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
                 </div>
-                <div class="menu-buttons">
-                    <button class="menu-btn primary-btn" id="startTowerMatchBtn">
-                        <span class="btn-icon">⚔️</span>
-                        <span class="btn-text">START MATCH</span>
-                    </button>
-                    <button class="menu-btn secondary-btn" id="cancelTowerPreviewBtn">
-                        <span class="btn-icon">←</span>
-                        <span class="btn-text">Back</span>
-                    </button>
-                </div>
+                <p class="loading-text">Preparing match...</p>
             </div>
         </div>
 
