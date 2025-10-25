@@ -412,6 +412,17 @@ class Game {
             this.quitToMenu();
         });
         
+        // Tower preview screen
+        document.getElementById('startTowerMatchBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.startMatch();
+        });
+        
+        document.getElementById('cancelTowerPreviewBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.ui.showScreen('mainMenu');
+        });
+        
         // Match end
         document.getElementById('continueBtn').addEventListener('click', () => {
             this.handleMatchContinue();
@@ -580,7 +591,8 @@ class Game {
             this.selectedBug3 = this.getRandomBug();
         }
         
-        this.startMatch();
+        // Show tower preview screen instead of starting match directly
+        this.showTowerPreview();
     }
     
     getTowerLevelConfig(level) {
@@ -617,6 +629,142 @@ class Game {
         // Beyond level 20 - Ultimate challenges repeat
         const cycleLevel = ((level - 21) % 4) + 17;
         return this.getTowerLevelConfig(cycleLevel);
+    }
+    
+    showTowerPreview() {
+        this.ui.showScreen('towerPreviewScreen');
+        
+        // Get level config
+        const levelConfig = this.getTowerLevelConfig(this.towerLevel);
+        
+        // Update level info
+        document.getElementById('currentTowerLevel').textContent = this.towerLevel;
+        document.getElementById('towerLevelName').textContent = levelConfig.name;
+        
+        // Set description based on AI count and difficulty
+        let desc = '';
+        if (levelConfig.aiCount === 1) {
+            desc = `Face a ${levelConfig.difficulty} AI opponent`;
+        } else {
+            desc = `Face TWO ${levelConfig.difficulty} AI opponents!`;
+        }
+        document.getElementById('towerLevelDesc').textContent = desc;
+        
+        // Setup and draw tower canvas
+        this.setupTowerPreviewCanvas();
+    }
+    
+    setupTowerPreviewCanvas() {
+        const canvas = document.getElementById('towerPreviewCanvas');
+        const container = document.getElementById('towerPreviewScreen');
+        
+        // Set canvas size to match container
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Draw background gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw the tower
+        this.drawTowerVisualization(ctx, canvas.width, canvas.height, this.towerLevel);
+    }
+    
+    drawTowerVisualization(ctx, width, height, currentLevel) {
+        const totalLevels = 8;
+        const towerWidth = Math.min(width * 0.3, 200);
+        const towerX = (width - towerWidth) / 2; // Center the tower
+        const levelHeight = height * 0.08;
+        const towerBottom = height * 0.85;
+        
+        // Draw tower from bottom to top
+        for (let level = 1; level <= totalLevels; level++) {
+            const y = towerBottom - (level * levelHeight);
+            const levelWidth = towerWidth - (level * 4);
+            const x = towerX + ((towerWidth - levelWidth) / 2);
+            
+            // Determine level status
+            const isCurrent = level === currentLevel;
+            const isCompleted = level < currentLevel;
+            
+            // Set colors
+            let baseColor, highlightColor, glowColor;
+            if (isCurrent) {
+                baseColor = '#FFD700';
+                highlightColor = '#FFA500';
+                glowColor = 'rgba(255, 215, 0, 0.6)';
+            } else if (isCompleted) {
+                baseColor = '#7ED321';
+                highlightColor = '#5FA319';
+                glowColor = 'rgba(126, 211, 33, 0.4)';
+            } else {
+                baseColor = '#555555';
+                highlightColor = '#333333';
+                glowColor = 'rgba(85, 85, 85, 0.2)';
+            }
+            
+            // Draw platform with gradient
+            const gradient = ctx.createLinearGradient(x, y, x, y + levelHeight);
+            gradient.addColorStop(0, highlightColor);
+            gradient.addColorStop(1, baseColor);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x, y, levelWidth, levelHeight - 5);
+            
+            // Platform edge
+            ctx.fillStyle = highlightColor;
+            ctx.fillRect(x, y, levelWidth, 4);
+            
+            // Glow effect for current level
+            if (isCurrent) {
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = 30;
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x - 3, y - 3, levelWidth + 6, levelHeight);
+                ctx.shadowBlur = 0;
+            }
+            
+            // Level number
+            ctx.fillStyle = isCurrent ? '#000' : '#FFF';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(level.toString(), x + levelWidth / 2, y + (levelHeight - 5) / 2);
+            
+            // Draw pillars
+            if (level < totalLevels) {
+                ctx.fillStyle = 'rgba(139, 69, 19, 0.7)';
+                const pillarWidth = 8;
+                const pillarX1 = x + 15;
+                const pillarX2 = x + levelWidth - 15 - pillarWidth;
+                ctx.fillRect(pillarX1, y - levelHeight, pillarWidth, levelHeight);
+                ctx.fillRect(pillarX2, y - levelHeight, pillarWidth, levelHeight);
+            }
+        }
+        
+        // Draw flag
+        const flagY = towerBottom - (totalLevels * levelHeight) - 40;
+        const flagX = towerX + towerWidth / 2;
+        
+        ctx.strokeStyle = '#8B4513';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(flagX, flagY + 40);
+        ctx.lineTo(flagX, flagY);
+        ctx.stroke();
+        
+        const flagCompleted = currentLevel > totalLevels;
+        ctx.fillStyle = flagCompleted ? '#FFD700' : '#E74C3C';
+        ctx.beginPath();
+        ctx.moveTo(flagX, flagY);
+        ctx.lineTo(flagX + 30, flagY + 10);
+        ctx.lineTo(flagX, flagY + 20);
+        ctx.fill();
     }
     
     showDifficultySelection() {

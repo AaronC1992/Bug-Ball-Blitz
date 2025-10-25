@@ -1972,6 +1972,114 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* Tower Preview Screen */
+#towerPreviewScreen {
+    position: relative;
+    overflow: hidden;
+}
+
+#towerPreviewCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.tower-preview-overlay {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+.tower-title {
+    font-size: 48px;
+    color: #FFD700;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 215, 0, 0.6),
+        3px 3px 6px rgba(0, 0, 0, 0.8);
+    margin-bottom: 30px;
+    animation: towerPulse 2s ease-in-out infinite;
+}
+
+@keyframes towerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.level-display {
+    background: rgba(0, 0, 0, 0.8);
+    border: 3px solid #FFD700;
+    border-radius: 15px;
+    padding: 30px 50px;
+    margin-bottom: 30px;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+.level-display h2 {
+    font-size: 42px;
+    color: #FFD700;
+    margin: 0 0 10px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.level-display p {
+    font-size: 24px;
+    color: #FFF;
+    margin: 5px 0;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+#towerLevelName {
+    font-weight: bold;
+    color: #7ED321;
+}
+
+.tower-instructions {
+    background: rgba(126, 211, 33, 0.2);
+    border: 2px solid rgba(126, 211, 33, 0.6);
+    border-radius: 10px;
+    padding: 15px 30px;
+    margin-bottom: 30px;
+}
+
+.tower-instructions p {
+    font-size: 20px;
+    color: #FFF;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 768px) {
+    .tower-title {
+        font-size: 32px;
+    }
+    
+    .level-display {
+        padding: 20px 30px;
+    }
+    
+    .level-display h2 {
+        font-size: 32px;
+    }
+    
+    .level-display p {
+        font-size: 18px;
+    }
+    
+    .tower-instructions p {
+        font-size: 16px;
+    }
+}
+
 /* Optimize buttons for touch */
 button {
     -webkit-tap-highlight-color: transparent;
