@@ -580,8 +580,8 @@ class Game {
             this.selectedBug3 = this.getRandomBug();
         }
         
-        // Show loading screen with level info
-        this.showLoadingScreen(true, this.towerLevel, levelConfig.name);
+        // Start match directly
+        this.startMatch();
     }
     
     getTowerLevelConfig(level) {
@@ -620,127 +620,6 @@ class Game {
         return this.getTowerLevelConfig(cycleLevel);
     }
     
-    showLoadingScreen(isTowerMode = false, level = null, levelName = '') {
-        this.ui.showScreen('loadingScreen');
-        
-        // Update loading screen based on mode
-        if (isTowerMode && level !== null) {
-            document.getElementById('levelInfoBox').style.display = 'block';
-            document.getElementById('loadingLevelNumber').textContent = level;
-            document.getElementById('loadingLevelName').textContent = levelName;
-            document.getElementById('loadingTitle').textContent = 'TOWER MODE';
-            
-            // Draw tower visualization
-            this.drawLoadingTower(level);
-        } else {
-            document.getElementById('levelInfoBox').style.display = 'none';
-            document.getElementById('loadingTitle').textContent = 'LOADING...';
-        }
-        
-        // Auto-start match after short delay
-        setTimeout(() => {
-            this.startMatch();
-        }, 2000); // 2 second loading screen
-    }
-    
-    drawLoadingTower(currentLevel) {
-        const canvas = document.getElementById('loadingCanvas');
-        const container = document.getElementById('loadingScreen');
-        
-        // Set canvas size
-        canvas.width = container.offsetWidth;
-        canvas.height = container.offsetHeight;
-        
-        const ctx = canvas.getContext('2d');
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw tower
-        const totalLevels = 8;
-        const towerWidth = Math.min(canvas.width * 0.25, 180);
-        const towerX = (canvas.width - towerWidth) / 2;
-        const levelHeight = canvas.height * 0.08;
-        const towerBottom = canvas.height * 0.8;
-        
-        for (let level = 1; level <= totalLevels; level++) {
-            const y = towerBottom - (level * levelHeight);
-            const levelWidth = towerWidth - (level * 4);
-            const x = towerX + ((towerWidth - levelWidth) / 2);
-            
-            const isCurrent = level === currentLevel;
-            const isCompleted = level < currentLevel;
-            
-            let baseColor, highlightColor;
-            if (isCurrent) {
-                baseColor = '#FFD700';
-                highlightColor = '#FFA500';
-            } else if (isCompleted) {
-                baseColor = '#7ED321';
-                highlightColor = '#5FA319';
-            } else {
-                baseColor = '#555555';
-                highlightColor = '#333333';
-            }
-            
-            // Platform gradient
-            const gradient = ctx.createLinearGradient(x, y, x, y + levelHeight);
-            gradient.addColorStop(0, highlightColor);
-            gradient.addColorStop(1, baseColor);
-            ctx.fillStyle = gradient;
-            ctx.fillRect(x, y, levelWidth, levelHeight - 5);
-            
-            // Edge
-            ctx.fillStyle = highlightColor;
-            ctx.fillRect(x, y, levelWidth, 4);
-            
-            // Glow for current
-            if (isCurrent) {
-                ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
-                ctx.shadowBlur = 25;
-                ctx.strokeStyle = '#FFD700';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(x - 2, y - 2, levelWidth + 4, levelHeight - 1);
-                ctx.shadowBlur = 0;
-            }
-            
-            // Level number
-            ctx.fillStyle = isCurrent ? '#000' : '#FFF';
-            ctx.font = 'bold 18px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(level.toString(), x + levelWidth / 2, y + (levelHeight - 5) / 2);
-            
-            // Pillars
-            if (level < totalLevels) {
-                ctx.fillStyle = 'rgba(139, 69, 19, 0.6)';
-                const pillarWidth = 7;
-                const pillarX1 = x + 12;
-                const pillarX2 = x + levelWidth - 12 - pillarWidth;
-                ctx.fillRect(pillarX1, y - levelHeight, pillarWidth, levelHeight);
-                ctx.fillRect(pillarX2, y - levelHeight, pillarWidth, levelHeight);
-            }
-        }
-        
-        // Flag
-        const flagY = towerBottom - (totalLevels * levelHeight) - 35;
-        const flagX = towerX + towerWidth / 2;
-        
-        ctx.strokeStyle = '#8B4513';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(flagX, flagY + 35);
-        ctx.lineTo(flagX, flagY);
-        ctx.stroke();
-        
-        ctx.fillStyle = currentLevel > totalLevels ? '#FFD700' : '#E74C3C';
-        ctx.beginPath();
-        ctx.moveTo(flagX, flagY);
-        ctx.lineTo(flagX + 28, flagY + 9);
-        ctx.lineTo(flagX, flagY + 18);
-        ctx.fill();
-    }
-    
     showDifficultySelection() {
         this.ui.showScreen('difficultyScreen');
     }
@@ -758,7 +637,7 @@ class Game {
             this.selectedBug2 = this.getRandomBug();
             this.ui.showArenaSelection((arenaId) => {
                 this.selectedArena = getArenaById(arenaId);
-                this.showLoadingScreen(false);
+                this.startMatch();
             });
         });
     }
@@ -779,7 +658,7 @@ class Game {
                 this.selectedBug2 = getBugById(bugId2);
                 this.ui.showArenaSelection((arenaId) => {
                     this.selectedArena = getArenaById(arenaId);
-                    this.showLoadingScreen(false);
+                    this.startMatch();
                 });
             });
         });
