@@ -1661,7 +1661,7 @@ input[type="text"]:focus {
     }
 
     .screen {
-        padding: 20px;
+        padding: 15px 15px 80px 15px;
     }
 
     h2 {
@@ -1722,6 +1722,9 @@ input[type="text"]:focus {
     #stylesScreen {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        padding: 15px 15px 100px 15px !important;
+        justify-content: flex-start !important;
+        padding-top: 20px !important;
     }
     
     #celebrationGrid {
@@ -1729,6 +1732,7 @@ input[type="text"]:focus {
         padding: 10px;
         gap: 15px;
         max-width: 100%;
+        margin-bottom: 20px;
     }
     
     .celebration-card {
