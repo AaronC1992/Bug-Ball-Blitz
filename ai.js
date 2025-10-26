@@ -384,14 +384,16 @@ export class AI {
         const playerX = this.player.x;
         const threshold = 18 + (1 - this.params.positioning) * 15; // Better AI has tighter threshold
         
-        // Safety: Never enter own goal
-        const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
-        const tooCloseToGoal = Math.abs(playerX - ownGoalX) < 80;
-        
-        if (tooCloseToGoal && this.currentStrategy !== 'defend') {
-            // Move away from goal
-            this.targetX = this.side === 'right' ? 
-                this.physics.width - 150 : 150;
+        // Safety: Never enter own goal (except for bosses who don't care about defense)
+        if (!this.isBoss) {
+            const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
+            const tooCloseToGoal = Math.abs(playerX - ownGoalX) < 80;
+            
+            if (tooCloseToGoal && this.currentStrategy !== 'defend') {
+                // Move away from goal
+                this.targetX = this.side === 'right' ? 
+                    this.physics.width - 150 : 150;
+            }
         }
         
         // Reset movement
