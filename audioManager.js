@@ -339,6 +339,24 @@ export class AudioManager {
         return this.hapticEnabled;
     }
     
+    toggleMute() {
+        // Toggle both sound and music
+        const newState = !(this.soundEnabled && this.musicEnabled);
+        this.soundEnabled = newState;
+        this.musicEnabled = newState;
+        
+        if (this.currentMusic) {
+            if (this.musicEnabled) {
+                this.currentMusic.play().catch(e => console.log('Music play failed:', e));
+            } else {
+                this.currentMusic.pause();
+            }
+        }
+        
+        this.savePreferences();
+        return newState;
+    }
+    
     setHapticEnabled(enabled) {
         this.hapticEnabled = enabled;
         this.savePreferences();

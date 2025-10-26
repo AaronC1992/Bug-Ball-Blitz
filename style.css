@@ -714,6 +714,7 @@ input[type="text"]:focus {
     background: rgba(0, 0, 0, 0.3);
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 .arcade-slider::-webkit-slider-thumb {
@@ -1813,6 +1814,33 @@ input[type="text"]:focus {
     font-size: 24px;
     color: rgba(255, 255, 255, 0.8);
     font-weight: bold;
+}
+
+.keyboard-hints {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(126, 211, 33, 0.2);
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.keyboard-hints kbd {
+    background: rgba(126, 211, 33, 0.2);
+    border: 1px solid rgba(126, 211, 33, 0.5);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: monospace;
+    font-weight: bold;
+    color: #7ed321;
+    text-shadow: 0 0 5px rgba(126, 211, 33, 0.5);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin-right: 5px;
 }
 
 .primary-btn {

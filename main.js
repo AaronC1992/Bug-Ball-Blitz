@@ -64,12 +64,14 @@ class Game {
         this.countdownStartTime = 0;
         
         // Match intro animation
-        this.introState = 'idle'; // 'idle', 'teams', 'countdown', 'go'
+        this.introState = 'idle'; // 'idle', 'preview', 'teams', 'countdown', 'go'
         this.introStartTime = 0;
+        this.introPreviewDuration = 3000; // 3 seconds for arena preview pan
         this.introTeamsDuration = 2000; // 2 seconds for team names
         this.frameCount = 0; // Frame counter for animations
         this.introCountdownDuration = 3000; // 3 seconds for 3-2-1 countdown
         this.introGoDuration = 800; // 0.8 seconds for GO
+        this.arenaPanOffset = 0; // Arena camera pan offset for preview
         
         // Players
         this.player1 = null;
@@ -326,6 +328,37 @@ class Game {
         // Keyboard
         window.addEventListener('keydown', (e) => {
             this.keys[e.key.toLowerCase()] = true;
+            
+            // Keyboard shortcuts
+            // ESC - Pause/Resume game
+            if (e.key === 'Escape') {
+                if (this.gameState === 'playing' || this.gameState === 'intro' || this.gameState === 'countdown') {
+                    e.preventDefault();
+                    this.pauseGame();
+                } else if (this.gameState === 'paused') {
+                    e.preventDefault();
+                    this.resumeGame();
+                }
+            }
+            
+            // R - Restart match (only when in-game)
+            if (e.key.toLowerCase() === 'r') {
+                if (this.gameState === 'playing' || this.gameState === 'paused' || this.gameState === 'intro' || this.gameState === 'countdown') {
+                    e.preventDefault();
+                    if (confirm('Restart match? Current progress will be lost.')) {
+                        if (this.gameState === 'paused') {
+                            this.resumeGame(); // Exit pause menu first
+                        }
+                        this.restartMatch();
+                    }
+                }
+            }
+            
+            // M - Toggle mute (anywhere)
+            if (e.key.toLowerCase() === 'm') {
+                e.preventDefault();
+                this.audio.toggleMute();
+            }
             
             // Prevent arrow key scrolling
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
@@ -1656,10 +1689,11 @@ class Game {
         this.currentWeather = this.gameMode === 'arcade' ? (this.arcadeSettings?.weather || 'none') : (levelConfig?.weather || 'none');
         this.initWeatherParticles();
         
-        // Start with intro animation
+        // Start with intro animation - arena preview
         this.gameState = 'intro';
-        this.introState = 'teams';
+        this.introState = 'preview';
         this.introStartTime = Date.now();
+        this.arenaPanOffset = 0;
         this.countdownValue = 3;
         this.initialCountdownValue = 3;
         
@@ -1704,7 +1738,22 @@ class Game {
     updateIntro() {
         const elapsed = Date.now() - this.introStartTime;
         
-        if (this.introState === 'teams') {
+        if (this.introState === 'preview') {
+            // Update arena pan offset - smooth pan from left to right
+            const progress = Math.min(elapsed / this.introPreviewDuration, 1);
+            // Ease in-out
+            const eased = progress < 0.5 
+                ? 2 * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            this.arenaPanOffset = (eased - 0.5) * this.canvas.width * 0.3; // Pan 30% of width
+            
+            if (elapsed >= this.introPreviewDuration) {
+                // Move to teams phase
+                this.introState = 'teams';
+                this.introStartTime = Date.now();
+                this.arenaPanOffset = 0; // Reset pan
+            }
+        } else if (this.introState === 'teams') {
             if (elapsed >= this.introTeamsDuration) {
                 // Move to countdown phase
                 this.introState = 'countdown';
@@ -1736,6 +1785,12 @@ class Game {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
+        // Apply arena pan offset for preview phase
+        if (this.introState === 'preview') {
+            this.ctx.save();
+            this.ctx.translate(-this.arenaPanOffset, 0);
+        }
+        
         // Draw arena background
         drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality, this.gameMode, this.towerLevel);
         
@@ -1757,6 +1812,35 @@ class Game {
         }
         
         const elapsed = Date.now() - this.introStartTime;
+        
+        // Restore canvas if we applied pan offset
+        if (this.introState === 'preview') {
+            this.ctx.restore();
+            
+            // Show arena name during preview
+            const fadeInDuration = 500;
+            const fadeOutStart = this.introPreviewDuration - 500;
+            let opacity = 1;
+            
+            if (elapsed < fadeInDuration) {
+                opacity = elapsed / fadeInDuration;
+            } else if (elapsed > fadeOutStart) {
+                opacity = 1 - ((elapsed - fadeOutStart) / 500);
+            }
+            
+            this.ctx.save();
+            this.ctx.font = 'bold 48px Arial';
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+            this.ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.8})`;
+            this.ctx.lineWidth = 6;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            
+            const arenaName = this.selectedArena.name.toUpperCase();
+            this.ctx.strokeText(arenaName, this.canvas.width / 2, this.canvas.height - 100);
+            this.ctx.fillText(arenaName, this.canvas.width / 2, this.canvas.height - 100);
+            this.ctx.restore();
+        }
         
         if (this.introState === 'teams') {
             // Show team names with fade in/out
