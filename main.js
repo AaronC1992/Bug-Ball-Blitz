@@ -2333,7 +2333,7 @@ class Game {
         
         if (this.currentWeather === 'none') return;
         
-        const particleCount = 80;
+        const particleCount = 150; // Increased from 80 for better visibility
         
         for (let i = 0; i < particleCount; i++) {
             const particle = {
@@ -2342,24 +2342,24 @@ class Game {
                 vx: 0,
                 vy: 0,
                 size: 0,
-                opacity: 0.3 + Math.random() * 0.4
+                opacity: 0.5 + Math.random() * 0.5 // More visible
             };
             
             if (this.currentWeather === 'rain') {
-                particle.vx = 1 + Math.random() * 2; // Slight diagonal
-                particle.vy = 8 + Math.random() * 4; // Fast falling
-                particle.size = 2 + Math.random() * 1;
-                particle.length = 10 + Math.random() * 10;
+                particle.vx = 2 + Math.random() * 3; // More diagonal
+                particle.vy = 12 + Math.random() * 8; // Faster falling
+                particle.size = 2.5 + Math.random() * 1.5; // Thicker
+                particle.length = 15 + Math.random() * 20; // Longer streaks
             } else if (this.currentWeather === 'snow') {
-                particle.vx = -1 + Math.random() * 2; // Drift side to side
-                particle.vy = 1 + Math.random() * 2; // Slow falling
-                particle.size = 3 + Math.random() * 3;
+                particle.vx = -2 + Math.random() * 4; // More drift
+                particle.vy = 2 + Math.random() * 3; // Moderate falling
+                particle.size = 4 + Math.random() * 4; // Larger snowflakes
                 particle.drift = Math.random() * Math.PI * 2; // For wavy motion
             } else if (this.currentWeather === 'wind') {
-                particle.vx = 6 + Math.random() * 4; // Fast horizontal
-                particle.vy = -1 + Math.random() * 2; // Slight vertical variance
-                particle.size = 1 + Math.random() * 2;
-                particle.length = 15 + Math.random() * 15;
+                particle.vx = 10 + Math.random() * 8; // Much faster horizontal
+                particle.vy = -2 + Math.random() * 4; // Vertical variance
+                particle.size = 2 + Math.random() * 2;
+                particle.length = 25 + Math.random() * 35; // Longer streaks
             }
             
             this.weatherParticles.push(particle);
@@ -2404,23 +2404,28 @@ class Game {
             this.ctx.globalAlpha = particle.opacity;
             
             if (this.currentWeather === 'rain') {
-                // Draw rain as lines
-                this.ctx.strokeStyle = '#4DA6FF';
+                // Draw rain as bright blue lines
+                this.ctx.strokeStyle = '#66B3FF';
                 this.ctx.lineWidth = particle.size;
+                this.ctx.lineCap = 'round';
                 this.ctx.beginPath();
                 this.ctx.moveTo(particle.x, particle.y);
-                this.ctx.lineTo(particle.x - particle.vx * 2, particle.y - particle.vy * 2);
+                this.ctx.lineTo(particle.x - particle.vx * 2, particle.y - particle.vy);
                 this.ctx.stroke();
             } else if (this.currentWeather === 'snow') {
-                // Draw snow as circles
+                // Draw snow as white circles with slight glow
                 this.ctx.fillStyle = 'white';
+                this.ctx.shadowBlur = 3;
+                this.ctx.shadowColor = 'white';
                 this.ctx.beginPath();
                 this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
                 this.ctx.fill();
+                this.ctx.shadowBlur = 0;
             } else if (this.currentWeather === 'wind') {
-                // Draw wind as horizontal streaks
-                this.ctx.strokeStyle = 'rgba(200, 200, 200, 0.4)';
+                // Draw wind as visible gray/white streaks
+                this.ctx.strokeStyle = 'rgba(220, 220, 220, 0.6)';
                 this.ctx.lineWidth = particle.size;
+                this.ctx.lineCap = 'round';
                 this.ctx.beginPath();
                 this.ctx.moveTo(particle.x, particle.y);
                 this.ctx.lineTo(particle.x - particle.length, particle.y);
@@ -2436,15 +2441,22 @@ class Game {
         
         if (this.currentWeather === 'rain') {
             // Rain adds slight horizontal drift and makes ball slightly heavier
-            this.ball.vx += 0.15;
-            this.ball.vy += 0.05; // Slight downward push
+            this.ball.vx += 0.2;
+            this.ball.vy += 0.08; // Slight downward push
         } else if (this.currentWeather === 'snow') {
-            // Snow reduces friction, making ball slide more
-            this.ball.vx *= 1.005; // Less friction slowdown
-            this.ball.vy *= 1.002;
+            // Snow reduces friction, making ball and players slide more
+            this.ball.vx *= 1.008; // Less friction slowdown for ball
+            this.ball.vy *= 1.003;
+            // Set player friction for sliding effect
+            this.physics.weatherFriction = 0.96; // Much less friction (normal is 0.9)
         } else if (this.currentWeather === 'wind') {
             // Wind pushes ball horizontally
-            this.ball.vx += 0.3;
+            this.ball.vx += 0.4;
+        }
+        
+        // Reset friction if not snowing
+        if (this.currentWeather !== 'snow') {
+            this.physics.weatherFriction = 0.9;
         }
     }
     

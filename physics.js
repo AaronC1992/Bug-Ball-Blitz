@@ -105,8 +105,9 @@ export class Physics {
         player.x += player.vx;
         player.y += player.vy;
         
-        // Apply friction
-        player.vx *= 0.9;
+        // Apply friction (reduced for snow)
+        const frictionMultiplier = this.weatherFriction || 0.9;
+        player.vx *= frictionMultiplier;
         
         // Ground collision
         if (player.y + player.height / 2 > this.groundY) {
