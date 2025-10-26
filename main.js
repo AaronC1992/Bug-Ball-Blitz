@@ -94,6 +94,8 @@ class Game {
         this.celebrationDuration = 60; // 1 second at 60fps
         this.celebrationSide = null;
         this.celebrationType = 'classic';
+        this.bugAnimationType = 'none';
+        this.lastDemoCelebration = null; // Track last demo celebration to randomize
         
         // Input
         this.keys = {};
@@ -2413,8 +2415,28 @@ class Game {
             this.celebrationActive = true;
             this.celebrationFrame = 0;
             this.celebrationSide = goal;
-            this.celebrationType = (profile && profile.selectedCelebration) ? profile.selectedCelebration : 'classic';
-            this.bugAnimationType = (profile && profile.selectedBugAnimation) ? profile.selectedBugAnimation : 'none';
+            
+            // If no profile (demo mode), randomize celebration each goal
+            if (!profile) {
+                const allCelebrations = getCelebrationArray();
+                let randomCelebration;
+                do {
+                    randomCelebration = allCelebrations[Math.floor(Math.random() * allCelebrations.length)];
+                } while (randomCelebration.id === this.lastDemoCelebration && allCelebrations.length > 1);
+                
+                this.celebrationType = randomCelebration.id;
+                this.lastDemoCelebration = randomCelebration.id;
+                
+                // Also randomize bug animation in demo
+                const allBugAnimations = getBugAnimationArray();
+                const randomBugAnimation = allBugAnimations[Math.floor(Math.random() * allBugAnimations.length)];
+                this.bugAnimationType = randomBugAnimation.id;
+            } else {
+                // Use profile selections for actual gameplay
+                this.celebrationType = profile.selectedCelebration || 'classic';
+                this.bugAnimationType = profile.selectedBugAnimation || 'none';
+            }
+            
             // Play celebration sound
             this.audio.playSound('celebration');
         } else {
@@ -3157,32 +3179,39 @@ class Game {
             return;
         }
         
-        // Setup tab switching
+        // Setup tab switching (remove and re-add to avoid duplicates)
         const celebrationsTab = document.getElementById('celebrationsTab');
         const bugAnimationsTab = document.getElementById('bugAnimationsTab');
         const celebrationsContent = document.getElementById('celebrationsTabContent');
         const bugAnimationsContent = document.getElementById('bugAnimationsTabContent');
         
-        // Tab click handlers
-        celebrationsTab.onclick = () => {
-            celebrationsTab.classList.add('active');
-            bugAnimationsTab.classList.remove('active');
+        // Clone and replace to remove old event listeners
+        const celebrationsTabNew = celebrationsTab.cloneNode(true);
+        const bugAnimationsTabNew = bugAnimationsTab.cloneNode(true);
+        celebrationsTab.parentNode.replaceChild(celebrationsTabNew, celebrationsTab);
+        bugAnimationsTab.parentNode.replaceChild(bugAnimationsTabNew, bugAnimationsTab);
+        
+        // Tab click handlers on new elements
+        celebrationsTabNew.addEventListener('click', () => {
+            celebrationsTabNew.classList.add('active');
+            bugAnimationsTabNew.classList.remove('active');
             celebrationsContent.classList.add('active');
             bugAnimationsContent.classList.remove('active');
-        };
+        });
         
-        bugAnimationsTab.onclick = () => {
-            bugAnimationsTab.classList.add('active');
-            celebrationsTab.classList.remove('active');
+        bugAnimationsTabNew.addEventListener('click', () => {
+            bugAnimationsTabNew.classList.add('active');
+            celebrationsTabNew.classList.remove('active');
             bugAnimationsContent.classList.add('active');
             celebrationsContent.classList.remove('active');
-        };
+        });
         
         // Populate celebrations grid
         const celebrationGrid = document.getElementById('celebrationGrid');
         celebrationGrid.innerHTML = '';
         
         const celebrations = getCelebrationArray();
+        console.log('Loading celebrations:', celebrations.length, celebrations.map(c => c.name));
         
         celebrations.forEach(celebration => {
             const isUnlocked = checkCelebrationUnlock(celebration, profile);
@@ -3219,6 +3248,7 @@ class Game {
         bugAnimationGrid.innerHTML = '';
         
         const bugAnimations = getBugAnimationArray();
+        console.log('Loading bug animations:', bugAnimations.length, bugAnimations.map(a => a.name));
         
         bugAnimations.forEach(animation => {
             const isUnlocked = checkBugAnimationUnlock(animation, profile);
