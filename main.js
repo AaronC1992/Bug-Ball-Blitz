@@ -339,16 +339,20 @@ class Game {
         
         // Menu buttons
         document.getElementById('towerCampaignBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             try {
                 document.getElementById('debugDisplay').textContent = 'Tower Campaign clicked! Target: ' + e.target.id;
                 console.log('Tower Campaign clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
-                this.audio.playSound('ui_click');
+                // Skip audio on mobile to avoid issues
+                // this.audio.playSound('ui_click');
                 this.showTowerLevelSelect();
             } catch (error) {
                 document.getElementById('debugDisplay').textContent = 'ERROR in Tower Campaign: ' + error.message;
                 console.error('Tower Campaign error:', error);
             }
-        });
+        }, true); // Use capture phase
         
         // Tower level select buttons
         document.getElementById('continueTowerBtn').addEventListener('click', () => {
@@ -362,16 +366,20 @@ class Game {
         });
         
         document.getElementById('quickPlayBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             try {
                 document.getElementById('debugDisplay').textContent = 'Quick Play clicked! Target: ' + e.target.id;
                 console.log('Quick Play clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
-                this.audio.playSound('ui_click');
+                // Skip audio on mobile to avoid issues
+                // this.audio.playSound('ui_click');
                 this.showDifficultySelection();
             } catch (error) {
                 document.getElementById('debugDisplay').textContent = 'ERROR in Quick Play: ' + error.message;
                 console.error('Quick Play error:', error);
             }
-        });
+        }, true); // Use capture phase
         
         document.getElementById('localMultiplayerBtn').addEventListener('click', (e) => {
             console.log('Local Multiplayer clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
