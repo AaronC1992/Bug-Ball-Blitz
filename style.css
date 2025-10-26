@@ -638,6 +638,159 @@ input[type="text"]:focus {
     margin-top: 10px;
 }
 
+/* Arcade Mode Styles */
+.arcade-subtitle {
+    color: #95a5a6;
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.arcade-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 30px;
+}
+
+.team-setup-section {
+    background: rgba(27, 94, 32, 0.2);
+    border: 2px solid #4caf50;
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.team-setup-section h3 {
+    color: #ffd700;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 24px;
+}
+
+.arcade-setting {
+    margin-bottom: 20px;
+}
+
+.arcade-setting label {
+    display: block;
+    color: #ecf0f1;
+    font-size: 16px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.arcade-slider {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.arcade-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ffd700, #ffa500);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    transition: all 0.2s;
+}
+
+.arcade-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+.arcade-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ffd700, #ffa500);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    border: none;
+    transition: all 0.2s;
+}
+
+.arcade-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+.slider-value {
+    min-width: 80px;
+    text-align: center;
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 18px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.arcade-select {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    color: #ecf0f1;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.arcade-select:hover {
+    border-color: #ffd700;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.arcade-select:focus {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.ai-setting {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #ffd700;
+}
+
+.arcade-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    padding: 20px;
+}
+
+.arcade-settings-grid .arcade-setting {
+    background: rgba(27, 94, 32, 0.2);
+    border: 2px solid #4caf50;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+.arcade-settings-grid .arcade-setting:hover {
+    border-color: #ffd700;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.2);
+}
+
 /* Bug Selection Grid */
 .bug-grid {
     display: grid;

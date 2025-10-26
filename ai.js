@@ -1,15 +1,17 @@
 // ai.js - AI opponent behavior
 
 export class AI {
-    constructor(difficulty, player, ball, physics, side = 'right') {
+    constructor(difficulty, player, ball, physics, side = 'right', personality = 'balanced') {
         this.difficulty = difficulty;
         this.player = player;
         this.ball = ball;
         this.physics = physics;
         this.side = side; // 'left' or 'right' - which goal to defend
+        this.personality = personality; // 'aggressive', 'defensive', 'balanced'
         
-        // AI parameters based on difficulty
+        // AI parameters based on difficulty and personality
         this.params = this.getDifficultyParams(difficulty);
+        this.applyPersonality(personality);
         
         // AI state
         this.reactionTimer = 0;
@@ -18,6 +20,19 @@ export class AI {
         this.lastBallTouch = 0; // Frames since last touched ball
         this.strategyCooldown = 0; // Cooldown for strategy changes
         this.currentStrategy = 'defend'; // 'defend', 'attack', 'intercept'
+    }
+    
+    applyPersonality(personality) {
+        if (personality === 'aggressive') {
+            this.params.aggressiveness = Math.min(1.0, this.params.aggressiveness * 1.5);
+            this.params.positioning = Math.max(0.2, this.params.positioning * 0.7);
+            this.params.maxSpeed = Math.min(1.0, this.params.maxSpeed * 1.2);
+        } else if (personality === 'defensive') {
+            this.params.aggressiveness = Math.max(0.2, this.params.aggressiveness * 0.6);
+            this.params.positioning = Math.min(1.0, this.params.positioning * 1.5);
+            this.params.maxSpeed = Math.max(0.4, this.params.maxSpeed * 0.8);
+        }
+        // 'balanced' keeps default parameters
     }
     
     getDifficultyParams(difficulty) {
@@ -358,19 +373,35 @@ export class AI {
 
 
 export class MultiAI {
-    constructor(difficulty, players, ball, physics, role, side = 'right') {
+    constructor(difficulty, players, ball, physics, role, side = 'right', personalities = ['aggressive', 'defensive']) {
         this.difficulty = difficulty;
         this.players = players; // Array of AI players
         this.ball = ball;
         this.physics = physics;
         this.role = role; // 'attacker' or 'defender'
         this.side = side; // 'left' or 'right' - which goal to defend
+        this.personalities = personalities; // Array of personalities for each player
         
         this.params = this.getDifficultyParams(difficulty);
+        this.playerParams = personalities.map(p => this.applyPersonalityToParams(p, {...this.params}));
         this.reactionTimers = [0, 0]; // Separate timer for each player
         this.roleSwapCooldown = 0;
         this.currentAttacker = 0; // Index of current attacker
         this.strategies = [null, null]; // Strategy for each player
+    }
+    
+    applyPersonalityToParams(personality, params) {
+        const modified = {...params};
+        if (personality === 'aggressive') {
+            modified.aggressiveness = Math.min(1.0, params.aggressiveness * 1.5);
+            modified.spacing = params.spacing * 1.2; // More spread out
+            modified.teamwork = Math.max(0.3, params.teamwork * 0.8);
+        } else if (personality === 'defensive') {
+            modified.aggressiveness = Math.max(0.2, params.aggressiveness * 0.6);
+            modified.spacing = params.spacing * 0.8; // Tighter formation
+            modified.teamwork = Math.min(1.0, params.teamwork * 1.2);
+        }
+        return modified;
     }
     
     getDifficultyParams(difficulty) {
@@ -429,6 +460,7 @@ export class MultiAI {
         }
         
         const player = this.players[playerIndex];
+        const playerParams = this.playerParams[playerIndex];
         
         this.reactionTimers[playerIndex]++;
         this.roleSwapCooldown = Math.max(0, this.roleSwapCooldown - 1);
@@ -440,13 +472,13 @@ export class MultiAI {
         }
         
         // Execute strategy based on role
-        if (this.reactionTimers[playerIndex] >= this.params.reactionTime) {
+        if (this.reactionTimers[playerIndex] >= playerParams.reactionTime) {
             this.reactionTimers[playerIndex] = 0;
             
             if (playerIndex === this.currentAttacker) {
-                this.attackBehavior(player);
+                this.attackBehavior(player, playerIndex);
             } else {
-                this.defendBehavior(player);
+                this.defendBehavior(player, playerIndex);
             }
         }
         
@@ -474,6 +506,8 @@ export class MultiAI {
             return;
         }
         
+        const playerParams = this.playerParams[playerIndex];
+        
         // Prevent both players from clustering
         const otherIndex = playerIndex === 0 ? 1 : 0;
         const otherPlayer = this.players[otherIndex];
@@ -484,7 +518,7 @@ export class MultiAI {
         
         const distance = Math.abs(player.x - otherPlayer.x);
         
-        if (distance < this.params.spacing && playerIndex !== this.currentAttacker) {
+        if (distance < playerParams.spacing && playerIndex !== this.currentAttacker) {
             // Defender should back off to create space
             const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
             
@@ -500,7 +534,9 @@ export class MultiAI {
         }
     }
     
-    attackBehavior(player) {
+    attackBehavior(player, playerIndex) {
+        const playerParams = this.playerParams[playerIndex];
+        
         // Aggressive attack toward opponent's goal
         const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
         const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
@@ -563,7 +599,7 @@ export class MultiAI {
             }
             
             // Apply accuracy variation
-            const error = (1 - this.params.predictionAccuracy) * 50;
+            const error = (1 - playerParams.predictionAccuracy) * 50;
             targetX += (Math.random() - 0.5) * error;
         }
         
@@ -591,20 +627,22 @@ export class MultiAI {
         const closeToGoal = Math.abs(ballX - opponentGoalX) < 200;
         
         if (ballHigh && distanceX < 75 && player.isGrounded && !ballAbove) {
-            if (Math.random() < this.params.jumpTiming * (closeToGoal ? 1.1 : 0.9)) {
+            if (Math.random() < playerParams.jumpTiming * (closeToGoal ? 1.1 : 0.9)) {
                 player.jump = true;
             }
         }
         
         // Apply speed limit
         const currentSpeed = Math.abs(player.vx);
-        const maxSpeed = this.params.maxSpeed * 5.5;
+        const maxSpeed = playerParams.maxSpeed * 5.5;
         if (currentSpeed > maxSpeed) {
             player.vx = Math.sign(player.vx) * maxSpeed;
         }
     }
     
-    defendBehavior(player) {
+    defendBehavior(player, playerIndex) {
+        const playerParams = this.playerParams[playerIndex];
+        
         // Defensive positioning between ball and goal
         const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
         const ballX = this.ball.x;
@@ -673,14 +711,14 @@ export class MultiAI {
         const ballHigh = ballY < playerY - 35;
         
         if (ballHigh && distanceX < 90 && player.isGrounded) {
-            if (Math.random() < this.params.jumpTiming * 0.75) {
+            if (Math.random() < playerParams.jumpTiming * 0.75) {
                 player.jump = true;
             }
         }
         
         // Apply speed limit
         const currentSpeed = Math.abs(player.vx);
-        const maxSpeed = this.params.maxSpeed * 5.0; // Slightly slower when defending
+        const maxSpeed = playerParams.maxSpeed * 5.0; // Slightly slower when defending
         if (currentSpeed > maxSpeed) {
             player.vx = Math.sign(player.vx) * maxSpeed;
         }

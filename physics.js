@@ -5,18 +5,20 @@ export class Physics {
         this.width = width;
         this.height = height;
         this.gravity = 0.6;
+        this.gravityPlayer = 0.6; // Can be modified for arcade mode
+        this.gravityBall = 0.6; // Can be modified for arcade mode
         this.groundY = height * 0.7;
         this.friction = 0.95;
         this.bounceDamping = 0.8; // Increased from 0.7 for more bounce
     }
     
-    updateBall(ball) {
-        // Apply gravity
-        ball.vy += this.gravity;
+    updateBall(ball, speedMultiplier = 1.0) {
+        // Apply gravity (use gravityBall for arcade mode)
+        ball.vy += this.gravityBall;
         
-        // Apply velocity
-        ball.x += ball.vx;
-        ball.y += ball.vy;
+        // Apply velocity with speed multiplier
+        ball.x += ball.vx * speedMultiplier;
+        ball.y += ball.vy * speedMultiplier;
         
         // Apply friction
         ball.vx *= this.friction;
@@ -93,11 +95,11 @@ export class Physics {
         }
     }
     
-    updatePlayer(player, bug) {
+    updatePlayer(player, bug, jumpPowerMultiplier = 1.0) {
         const stats = bug.stats;
         
-        // Apply gravity
-        player.vy += this.gravity;
+        // Apply gravity (use gravityPlayer for arcade mode)
+        player.vy += this.gravityPlayer;
         
         // Apply velocity
         player.x += player.vx;
@@ -135,9 +137,9 @@ export class Physics {
             player.facing = 1;
         }
         
-        // Jump input
+        // Jump input (with jump power multiplier for arcade mode)
         if (player.jump && player.isGrounded) {
-            player.vy = -stats.jump * 15;
+            player.vy = -stats.jump * 15 * jumpPowerMultiplier;
             player.isGrounded = false;
             player.jump = false;
         }

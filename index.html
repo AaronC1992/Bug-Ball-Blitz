@@ -42,7 +42,7 @@
             <button class="dev-btn dev-test-btn" id="devTestProfileBtn" title="Create tester profile with everything unlocked">
                 <span class="dev-icon">👨‍💻</span>
             </button>
-            <div class="version-info">v1.1.1</div>
+            <div class="version-info">v1.2.0</div>
         </div>
 
         <!-- Profile Creation Screen -->
@@ -74,6 +74,7 @@
                     <button class="menu-btn" id="towerCampaignBtn">🏆 Tower Campaign</button>
                     <button class="menu-btn" id="quickPlayBtn">⚡ Quick Play</button>
                     <button class="menu-btn" id="localMultiplayerBtn">🎮 Local Multiplayer</button>
+                    <button class="menu-btn" id="arcadeModeBtn">🎯 Arcade Mode</button>
                     <button class="menu-btn" id="tutorialBtn">📖 How to Play</button>
                     <button class="menu-btn" id="stylesBtn">✨ Styles</button>
                     <button class="menu-btn" id="achievementsBtn">🏅 Achievements</button>
@@ -157,6 +158,188 @@
             </div>
             <div class="menu-buttons">
                 <button class="menu-btn primary-btn" id="backToMainFromTutorialBtn">Got it!</button>
+            </div>
+        </div>
+
+        <!-- Arcade Mode Screens -->
+        <!-- Arcade Player Count Screen -->
+        <div id="arcadePlayerCountScreen" class="screen">
+            <h2>🎯 Arcade Mode - Player Count</h2>
+            <p class="arcade-subtitle">Choose your game mode</p>
+            <div class="menu-buttons">
+                <button class="menu-btn primary-btn" id="arcadeSinglePlayerBtn">
+                    <span class="btn-icon">👤</span>
+                    <span class="btn-text">Single Player</span>
+                </button>
+                <button class="menu-btn primary-btn" id="arcadeMultiplayerBtn">
+                    <span class="btn-icon">👥</span>
+                    <span class="btn-text">Local Multiplayer</span>
+                </button>
+                <button class="menu-btn" id="backFromArcadeCountBtn">← Back</button>
+            </div>
+        </div>
+
+        <!-- Arcade Team Setup Screen -->
+        <div id="arcadeTeamSetupScreen" class="screen">
+            <h2>🎯 Arcade Mode - Team Setup</h2>
+            <div class="arcade-content">
+                <!-- Left Team (Player 1) -->
+                <div class="team-setup-section">
+                    <h3>🔵 Left Team</h3>
+                    
+                    <div class="arcade-setting">
+                        <label>Number of Players:</label>
+                        <div class="slider-container">
+                            <input type="range" id="leftTeamCountSlider" min="1" max="2" value="1" class="arcade-slider">
+                            <span class="slider-value" id="leftTeamCountValue">1</span>
+                        </div>
+                    </div>
+                    
+                    <div class="arcade-setting">
+                        <label>AI Players:</label>
+                        <div class="slider-container">
+                            <input type="range" id="leftAICountSlider" min="0" max="1" value="0" class="arcade-slider">
+                            <span class="slider-value" id="leftAICountValue">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="arcade-setting ai-setting" id="leftAIDifficultyContainer" style="display: none;">
+                        <label>AI Difficulty:</label>
+                        <select id="leftAIDifficulty" class="arcade-select">
+                            <option value="easy">🟢 Easy</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="hard">🟠 Hard</option>
+                            <option value="pro">🔴 Pro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="arcade-setting ai-setting" id="leftAIPersonalityContainer" style="display: none;">
+                        <label>AI Personality:</label>
+                        <select id="leftAIPersonality" class="arcade-select">
+                            <option value="balanced" selected>⚖️ Balanced</option>
+                            <option value="aggressive">⚔️ Aggressive</option>
+                            <option value="defensive">🛡️ Defensive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Right Team (Player 2 in multiplayer) -->
+                <div class="team-setup-section">
+                    <h3>🔴 Right Team</h3>
+                    
+                    <div class="arcade-setting">
+                        <label>Number of Players:</label>
+                        <div class="slider-container">
+                            <input type="range" id="rightTeamCountSlider" min="1" max="2" value="1" class="arcade-slider">
+                            <span class="slider-value" id="rightTeamCountValue">1</span>
+                        </div>
+                    </div>
+                    
+                    <div class="arcade-setting">
+                        <label>AI Players:</label>
+                        <div class="slider-container">
+                            <input type="range" id="rightAICountSlider" min="0" max="1" value="1" class="arcade-slider">
+                            <span class="slider-value" id="rightAICountValue">1</span>
+                        </div>
+                    </div>
+                    
+                    <div class="arcade-setting ai-setting" id="rightAIDifficultyContainer">
+                        <label>AI Difficulty:</label>
+                        <select id="rightAIDifficulty" class="arcade-select">
+                            <option value="easy">🟢 Easy</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="hard">🟠 Hard</option>
+                            <option value="pro">🔴 Pro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="arcade-setting ai-setting" id="rightAIPersonalityContainer">
+                        <label>AI Personality:</label>
+                        <select id="rightAIPersonality" class="arcade-select">
+                            <option value="balanced" selected>⚖️ Balanced</option>
+                            <option value="aggressive">⚔️ Aggressive</option>
+                            <option value="defensive">🛡️ Defensive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-btn primary-btn" id="arcadeTeamNextBtn">Next →</button>
+                <button class="menu-btn" id="backFromArcadeTeamBtn">← Back</button>
+            </div>
+        </div>
+
+        <!-- Arcade Game Settings Screen -->
+        <div id="arcadeSettingsScreen" class="screen">
+            <h2>🎯 Arcade Mode - Game Settings</h2>
+            <div class="arcade-settings-grid">
+                <div class="arcade-setting">
+                    <label>Player Gravity:</label>
+                    <div class="slider-container">
+                        <input type="range" id="playerGravitySlider" min="0.5" max="2" step="0.1" value="1" class="arcade-slider">
+                        <span class="slider-value" id="playerGravityValue">1.0x</span>
+                    </div>
+                </div>
+                
+                <div class="arcade-setting">
+                    <label>Ball Gravity:</label>
+                    <div class="slider-container">
+                        <input type="range" id="ballGravitySlider" min="0.5" max="2" step="0.1" value="1" class="arcade-slider">
+                        <span class="slider-value" id="ballGravityValue">1.0x</span>
+                    </div>
+                </div>
+                
+                <div class="arcade-setting">
+                    <label>Player Size:</label>
+                    <div class="slider-container">
+                        <input type="range" id="playerSizeSlider" min="0.5" max="2" step="0.1" value="1" class="arcade-slider">
+                        <span class="slider-value" id="playerSizeValue">1.0x</span>
+                    </div>
+                </div>
+                
+                <div class="arcade-setting">
+                    <label>Ball Size:</label>
+                    <div class="slider-container">
+                        <input type="range" id="ballSizeSlider" min="0.5" max="2" step="0.1" value="1" class="arcade-slider">
+                        <span class="slider-value" id="ballSizeValue">1.0x</span>
+                    </div>
+                </div>
+                
+                <div class="arcade-setting">
+                    <label>Match Time:</label>
+                    <div class="slider-container">
+                        <input type="range" id="arcadeTimeSlider" min="1" max="10" value="3" class="arcade-slider">
+                        <span class="slider-value" id="arcadeTimeValue">3 min</span>
+                    </div>
+                </div>
+                
+                <div class="arcade-setting">
+                    <label>Score to Win:</label>
+                    <div class="slider-container">
+                        <input type="range" id="arcadeScoreSlider" min="3" max="15" value="5" class="arcade-slider">
+                        <span class="slider-value" id="arcadeScoreValue">5 goals</span>
+                    </div>
+                </div>
+
+                <div class="arcade-setting">
+                    <label>Ball Speed:</label>
+                    <div class="slider-container">
+                        <input type="range" id="ballSpeedSlider" min="0.5" max="2" step="0.1" value="1" class="arcade-slider">
+                        <span class="slider-value" id="ballSpeedValue">1.0x</span>
+                    </div>
+                </div>
+
+                <div class="arcade-setting">
+                    <label>Jump Power:</label>
+                    <div class="slider-container">
+                        <input type="range" id="jumpPowerSlider" min="0.5" max="2" step="0.1" value="1" class="arcade-slider">
+                        <span class="slider-value" id="jumpPowerValue">1.0x</span>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-btn primary-btn" id="startArcadeBtn">Start Match!</button>
+                <button class="menu-btn" id="backFromArcadeSettingsBtn">← Back</button>
             </div>
         </div>
 

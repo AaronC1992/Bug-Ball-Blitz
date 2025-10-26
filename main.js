@@ -349,6 +349,54 @@ class Game {
             this.startMultiplayer();
         });
         
+        // Arcade mode
+        document.getElementById('arcadeModeBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.showArcadeMode();
+        });
+        
+        document.getElementById('arcadeSinglePlayerBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.arcadeIsMultiplayer = false;
+            this.showArcadeTeamSetup();
+        });
+        
+        document.getElementById('arcadeMultiplayerBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.arcadeIsMultiplayer = true;
+            this.showArcadeTeamSetup();
+        });
+        
+        document.getElementById('backFromArcadeCountBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.ui.showScreen('mainMenu');
+        });
+        
+        document.getElementById('arcadeTeamNextBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.saveArcadeTeamSettings();
+            this.showArcadeSettings();
+        });
+        
+        document.getElementById('backFromArcadeTeamBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.ui.showScreen('arcadePlayerCountScreen');
+        });
+        
+        document.getElementById('startArcadeBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.saveArcadeGameSettings();
+            this.startArcadeMatch();
+        });
+        
+        document.getElementById('backFromArcadeSettingsBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.ui.showScreen('arcadeTeamSetupScreen');
+        });
+        
+        // Initialize arcade sliders and their value displays
+        this.initializeArcadeSliders();
+        
         // Difficulty selection
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -954,6 +1002,203 @@ class Game {
         });
     }
     
+    showArcadeMode() {
+        this.ui.showScreen('arcadePlayerCountScreen');
+    }
+    
+    showArcadeTeamSetup() {
+        // Reset arcade settings
+        this.arcadeSettings = {
+            leftTeamCount: 1,
+            leftAICount: 0,
+            leftAIDifficulty: 'medium',
+            leftAIPersonality: 'balanced',
+            rightTeamCount: 1,
+            rightAICount: 1,
+            rightAIDifficulty: 'medium',
+            rightAIPersonality: 'balanced',
+            // Game modifiers (will be set in next screen)
+            playerGravity: 1.0,
+            ballGravity: 1.0,
+            playerSize: 1.0,
+            ballSize: 1.0,
+            matchTime: 3,
+            scoreToWin: 5,
+            ballSpeed: 1.0,
+            jumpPower: 1.0
+        };
+        
+        this.ui.showScreen('arcadeTeamSetupScreen');
+        this.updateArcadeTeamUI();
+    }
+    
+    updateArcadeTeamUI() {
+        // Update UI based on multiplayer mode
+        const rightTeamCountSlider = document.getElementById('rightTeamCountSlider');
+        const leftAICountSlider = document.getElementById('leftAICountSlider');
+        const rightAICountSlider = document.getElementById('rightAICountSlider');
+        
+        if (this.arcadeIsMultiplayer) {
+            // In multiplayer, right team can have human player(s)
+            rightTeamCountSlider.disabled = false;
+            leftAICountSlider.max = 1;
+            rightAICountSlider.max = 1;
+        } else {
+            // In single player, right team is always AI
+            rightTeamCountSlider.value = 1;
+            rightTeamCountSlider.disabled = true;
+            leftAICountSlider.max = 0;
+            rightAICountSlider.min = 1;
+            rightAICountSlider.value = Math.max(1, rightAICountSlider.value);
+        }
+    }
+    
+    initializeArcadeSliders() {
+        // Team setup sliders
+        const sliders = {
+            leftTeamCount: { slider: 'leftTeamCountSlider', value: 'leftTeamCountValue', format: v => v },
+            leftAICount: { slider: 'leftAICountSlider', value: 'leftAICountValue', format: v => v },
+            rightTeamCount: { slider: 'rightTeamCountSlider', value: 'rightTeamCountValue', format: v => v },
+            rightAICount: { slider: 'rightAICountSlider', value: 'rightAICountValue', format: v => v },
+            // Game settings sliders
+            playerGravity: { slider: 'playerGravitySlider', value: 'playerGravityValue', format: v => v + 'x' },
+            ballGravity: { slider: 'ballGravitySlider', value: 'ballGravityValue', format: v => v + 'x' },
+            playerSize: { slider: 'playerSizeSlider', value: 'playerSizeValue', format: v => v + 'x' },
+            ballSize: { slider: 'ballSizeSlider', value: 'ballSizeValue', format: v => v + 'x' },
+            arcadeTime: { slider: 'arcadeTimeSlider', value: 'arcadeTimeValue', format: v => v + ' min' },
+            arcadeScore: { slider: 'arcadeScoreSlider', value: 'arcadeScoreValue', format: v => v + ' goals' },
+            ballSpeed: { slider: 'ballSpeedSlider', value: 'ballSpeedValue', format: v => v + 'x' },
+            jumpPower: { slider: 'jumpPowerSlider', value: 'jumpPowerValue', format: v => v + 'x' }
+        };
+        
+        for (const [key, config] of Object.entries(sliders)) {
+            const sliderEl = document.getElementById(config.slider);
+            const valueEl = document.getElementById(config.value);
+            
+            if (sliderEl && valueEl) {
+                sliderEl.addEventListener('input', () => {
+                    const val = parseFloat(sliderEl.value);
+                    valueEl.textContent = config.format(val);
+                    
+                    // Show/hide AI settings based on AI count
+                    if (key === 'leftAICount') {
+                        const container1 = document.getElementById('leftAIDifficultyContainer');
+                        const container2 = document.getElementById('leftAIPersonalityContainer');
+                        if (container1 && container2) {
+                            const display = val > 0 ? 'block' : 'none';
+                            container1.style.display = display;
+                            container2.style.display = display;
+                        }
+                    } else if (key === 'rightAICount') {
+                        const container1 = document.getElementById('rightAIDifficultyContainer');
+                        const container2 = document.getElementById('rightAIPersonalityContainer');
+                        if (container1 && container2) {
+                            const display = val > 0 ? 'block' : 'none';
+                            container1.style.display = display;
+                            container2.style.display = display;
+                        }
+                    }
+                });
+                
+                // Trigger initial update
+                sliderEl.dispatchEvent(new Event('input'));
+            }
+        }
+    }
+    
+    saveArcadeTeamSettings() {
+        this.arcadeSettings.leftTeamCount = parseInt(document.getElementById('leftTeamCountSlider').value);
+        this.arcadeSettings.leftAICount = parseInt(document.getElementById('leftAICountSlider').value);
+        this.arcadeSettings.leftAIDifficulty = document.getElementById('leftAIDifficulty').value;
+        this.arcadeSettings.leftAIPersonality = document.getElementById('leftAIPersonality').value;
+        
+        this.arcadeSettings.rightTeamCount = parseInt(document.getElementById('rightTeamCountSlider').value);
+        this.arcadeSettings.rightAICount = parseInt(document.getElementById('rightAICountSlider').value);
+        this.arcadeSettings.rightAIDifficulty = document.getElementById('rightAIDifficulty').value;
+        this.arcadeSettings.rightAIPersonality = document.getElementById('rightAIPersonality').value;
+    }
+    
+    showArcadeSettings() {
+        this.ui.showScreen('arcadeSettingsScreen');
+    }
+    
+    saveArcadeGameSettings() {
+        this.arcadeSettings.playerGravity = parseFloat(document.getElementById('playerGravitySlider').value);
+        this.arcadeSettings.ballGravity = parseFloat(document.getElementById('ballGravitySlider').value);
+        this.arcadeSettings.playerSize = parseFloat(document.getElementById('playerSizeSlider').value);
+        this.arcadeSettings.ballSize = parseFloat(document.getElementById('ballSizeSlider').value);
+        this.arcadeSettings.matchTime = parseInt(document.getElementById('arcadeTimeSlider').value);
+        this.arcadeSettings.scoreToWin = parseInt(document.getElementById('arcadeScoreSlider').value);
+        this.arcadeSettings.ballSpeed = parseFloat(document.getElementById('ballSpeedSlider').value);
+        this.arcadeSettings.jumpPower = parseFloat(document.getElementById('jumpPowerSlider').value);
+    }
+    
+    startArcadeMatch() {
+        this.gameMode = 'arcade';
+        
+        // Stop main menu background
+        if (this.mainMenuBackground) {
+            this.mainMenuBackground.stop();
+        }
+        
+        // Select bugs for all players
+        this.ui.showBugSelection((bugId) => {
+            this.selectedBug1 = getBugById(bugId);
+            
+            // If left team has 2 players, select second bug
+            if (this.arcadeSettings.leftTeamCount === 2) {
+                this.ui.showBugSelection((bugId2) => {
+                    this.selectedBugLeftTeam2 = getBugById(bugId2);
+                    this.selectRightTeamBugs();
+                });
+            } else {
+                this.selectedBugLeftTeam2 = null;
+                this.selectRightTeamBugs();
+            }
+        });
+    }
+    
+    selectRightTeamBugs() {
+        // Right team bug selection
+        const rightHumanCount = this.arcadeSettings.rightTeamCount - this.arcadeSettings.rightAICount;
+        
+        if (rightHumanCount > 0) {
+            // Human player on right team - let them select
+            this.ui.showBugSelection((bugId) => {
+                this.selectedBug2 = getBugById(bugId);
+                
+                if (this.arcadeSettings.rightTeamCount === 2) {
+                    if (rightHumanCount === 2) {
+                        // Both right team players are human
+                        this.ui.showBugSelection((bugId2) => {
+                            this.selectedBug3 = getBugById(bugId2);
+                            this.selectArenaForArcade();
+                        });
+                    } else {
+                        // One human, one AI
+                        this.selectedBug3 = this.getRandomBug();
+                        this.selectArenaForArcade();
+                    }
+                } else {
+                    this.selectedBug3 = null;
+                    this.selectArenaForArcade();
+                }
+            });
+        } else {
+            // All AI on right team
+            this.selectedBug2 = this.getRandomBug();
+            this.selectedBug3 = this.arcadeSettings.rightTeamCount === 2 ? this.getRandomBug() : null;
+            this.selectArenaForArcade();
+        }
+    }
+    
+    selectArenaForArcade() {
+        this.ui.showArenaSelection((arenaId) => {
+            this.selectedArena = getArenaById(arenaId);
+            this.startMatch();
+        });
+    }
+    
     getRandomBug() {
         const bugs = ['stagBeetle', 'grasshopper', 'ladybug', 'ant', 'spider'];
         const randomId = bugs[Math.floor(Math.random() * bugs.length)];
@@ -966,18 +1211,31 @@ class Game {
         this.resizeCanvas();
         this.physics = new Physics(this.canvas.width, this.canvas.height);
         
+        // Apply arcade gravity modifiers if in arcade mode
+        if (this.gameMode === 'arcade' && this.arcadeSettings) {
+            this.physics.gravityPlayer = this.physics.gravity * this.arcadeSettings.playerGravity;
+            this.physics.gravityBall = this.physics.gravity * this.arcadeSettings.ballGravity;
+        } else {
+            this.physics.gravityPlayer = this.physics.gravity;
+            this.physics.gravityBall = this.physics.gravity;
+        }
+        
+        // Get size multiplier for arcade mode
+        const sizeMultiplier = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.playerSize : 1.0;
+        const ballSizeMultiplier = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.ballSize : 1.0;
+        
         // Initialize ball
         this.ball = {
             x: this.canvas.width / 2,
             y: this.canvas.height / 2,
             vx: 0,
             vy: 0,
-            radius: 15,
+            radius: 15 * ballSizeMultiplier,
             rotation: 0 // Track rotation angle for rolling effect
         };
         
         // Initialize player 1
-        const p1Size = 40 * this.selectedBug1.stats.size;
+        const p1Size = 40 * this.selectedBug1.stats.size * sizeMultiplier;
         this.player1 = {
             x: this.canvas.width * 0.25,
             y: this.physics.groundY - p1Size / 2,
@@ -993,7 +1251,7 @@ class Game {
         };
         
         // Initialize player 2
-        const p2Size = 40 * this.selectedBug2.stats.size;
+        const p2Size = 40 * this.selectedBug2.stats.size * sizeMultiplier;
         this.player2 = {
             x: this.canvas.width * 0.75,
             y: this.physics.groundY - p2Size / 2,
@@ -1009,7 +1267,76 @@ class Game {
         };
         
         // Initialize AI or third player
-        if (this.gameMode !== 'multiplayer') {
+        if (this.gameMode === 'arcade') {
+            // Arcade mode - custom team setup
+            // Handle left team AI
+            if (this.arcadeSettings.leftAICount > 0) {
+                this.player1AI = new AI(this.arcadeSettings.leftAIDifficulty, this.player1, this.ball, this.physics, 'left', this.arcadeSettings.leftAIPersonality);
+            } else {
+                this.player1AI = null;
+            }
+            
+            // Handle right team
+            const p3Size = this.selectedBug3 ? 40 * this.selectedBug3.stats.size * sizeMultiplier : 0;
+            
+            if (this.arcadeSettings.rightTeamCount === 2) {
+                // Right team has 2 players
+                this.player3 = {
+                    x: this.canvas.width * 0.65,
+                    y: this.physics.groundY - p3Size / 2,
+                    vx: 0,
+                    vy: 0,
+                    width: p3Size,
+                    height: p3Size,
+                    isGrounded: true,
+                    moveLeft: false,
+                    moveRight: false,
+                    jump: false,
+                    facing: -1
+                };
+                
+                if (this.arcadeSettings.rightAICount === 2) {
+                    // Both are AI
+                    this.player2AI_2 = new MultiAI(
+                        this.arcadeSettings.rightAIDifficulty,
+                        [this.player2, this.player3],
+                        this.ball,
+                        this.physics,
+                        'defender',
+                        'right',
+                        [this.arcadeSettings.rightAIPersonality, this.arcadeSettings.rightAIPersonality]
+                    );
+                    this.player2AI = null;
+                } else if (this.arcadeSettings.rightAICount === 1) {
+                    // One AI - figure out which player
+                    const rightHumanCount = this.arcadeSettings.rightTeamCount - this.arcadeSettings.rightAICount;
+                    if (rightHumanCount === 1) {
+                        // Assume player2 is human, player3 is AI
+                        this.player3AI = new AI(this.arcadeSettings.rightAIDifficulty, this.player3, this.ball, this.physics, 'right', this.arcadeSettings.rightAIPersonality);
+                        this.player2AI = null;
+                        this.player2AI_2 = null;
+                    }
+                } else {
+                    // No AI on right team (both human)
+                    this.player2AI = null;
+                    this.player2AI_2 = null;
+                    this.player3AI = null;
+                }
+            } else {
+                // Right team has 1 player
+                this.player3 = null;
+                
+                if (this.arcadeSettings.rightAICount === 1) {
+                    this.player2AI = new AI(this.arcadeSettings.rightAIDifficulty, this.player2, this.ball, this.physics, 'right', this.arcadeSettings.rightAIPersonality);
+                    this.player2AI_2 = null;
+                    this.player3AI = null;
+                } else {
+                    this.player2AI = null;
+                    this.player2AI_2 = null;
+                    this.player3AI = null;
+                }
+            }
+        } else if (this.gameMode !== 'multiplayer') {
             // Check if 2v1 mode (tower levels with 2 AI)
             if (this.selectedBug3) {
                 const p3Size = 40 * this.selectedBug3.stats.size;
@@ -1027,12 +1354,12 @@ class Game {
                     facing: -1
                 };
                 
-                // Multi-AI for 2v1 mode - they're on the right side
-                this.player2AI_2 = new MultiAI(this.difficulty, [this.player2, this.player3], this.ball, this.physics, 'defender', 'right');
+                // Multi-AI for 2v1 mode - one aggressive, one defensive personality
+                this.player2AI_2 = new MultiAI(this.difficulty, [this.player2, this.player3], this.ball, this.physics, 'defender', 'right', ['aggressive', 'defensive']);
                 this.player2AI = null; // Don't create single AI in 1v2 mode
             } else {
                 // 1v1 mode - Player 2 AI is on the right side, defends right goal
-                this.player2AI = new AI(this.difficulty, this.player2, this.ball, this.physics, 'right');
+                this.player2AI = new AI(this.difficulty, this.player2, this.ball, this.physics, 'right', 'balanced');
                 this.player2AI_2 = null; // No multi-AI in 1v1 mode
                 this.player3 = null; // No third player in 1v1 mode
             }
@@ -1042,6 +1369,13 @@ class Game {
             this.player2AI_2 = null;
             this.player3 = null;
         }
+        
+        // Apply arcade match settings if in arcade mode
+        if (this.gameMode === 'arcade' && this.arcadeSettings) {
+            this.matchTimeLimit = this.arcadeSettings.matchTime * 60; // Convert minutes to seconds
+            this.scoreToWin = this.arcadeSettings.scoreToWin;
+        }
+        // Otherwise use the settings from arena preview or defaults
         
         // Reset scores and timer for new match
         this.score1 = 0;
@@ -1365,8 +1699,23 @@ class Game {
         // Update player 2 input
         if (this.gameMode === 'multiplayer') {
             this.updatePlayer2Input();
+        } else if (this.gameMode === 'arcade') {
+            // Arcade AI control
+            if (this.player1AI) {
+                this.player1AI.update();
+            }
+            if (this.player2AI) {
+                this.player2AI.update();
+            }
+            if (this.player2AI_2) {
+                this.player2AI_2.update(0);
+                this.player2AI_2.update(1);
+            }
+            if (this.player3AI) {
+                this.player3AI.update();
+            }
         } else {
-            // AI control
+            // Tower/Quick Play AI control
             if (this.selectedBug3 && this.player2AI_2) {
                 // 1v2 mode: Use MultiAI for both AI players
                 this.player2AI_2.update(0); // Update player2
@@ -1378,14 +1727,18 @@ class Game {
         }
         
         // Update physics
-        this.physics.updatePlayer(this.player1, this.selectedBug1);
-        this.physics.updatePlayer(this.player2, this.selectedBug2);
+        // Get arcade modifiers
+        const jumpPowerMultiplier = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.jumpPower : 1.0;
+        const ballSpeedMultiplier = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.ballSpeed : 1.0;
+        
+        this.physics.updatePlayer(this.player1, this.selectedBug1, jumpPowerMultiplier);
+        this.physics.updatePlayer(this.player2, this.selectedBug2, jumpPowerMultiplier);
         
         if (this.player3) {
-            this.physics.updatePlayer(this.player3, this.selectedBug3);
+            this.physics.updatePlayer(this.player3, this.selectedBug3, jumpPowerMultiplier);
         }
         
-        this.physics.updateBall(this.ball);
+        this.physics.updateBall(this.ball, ballSpeedMultiplier);
         
         // Update ball rotation based on velocity (rolling effect)
         if (this.ball) {
