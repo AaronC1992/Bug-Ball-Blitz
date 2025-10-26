@@ -2430,6 +2430,20 @@ class Game {
             }
             this.ball = this.balls[0]; // Update reference
             
+            // Update AI ball references after reset
+            if (this.player2AI) {
+                this.player2AI.ball = this.ball;
+            }
+            if (this.player2AI_2) {
+                this.player2AI_2.ball = this.ball;
+            }
+            if (this.player1AI) {
+                this.player1AI.ball = this.ball;
+            }
+            if (this.player3AI) {
+                this.player3AI.ball = this.ball;
+            }
+            
             this.physics.resetPlayer(this.player1, 'left');
             this.physics.resetPlayer(this.player2, 'right');
             
