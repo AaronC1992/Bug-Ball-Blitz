@@ -1034,23 +1034,36 @@ class Game {
     
     updateArcadeTeamUI() {
         // Update UI based on multiplayer mode
+        const leftTeamCountSlider = document.getElementById('leftTeamCountSlider');
         const rightTeamCountSlider = document.getElementById('rightTeamCountSlider');
         const leftAICountSlider = document.getElementById('leftAICountSlider');
         const rightAICountSlider = document.getElementById('rightAICountSlider');
         
         if (this.arcadeIsMultiplayer) {
-            // In multiplayer, right team can have human player(s)
+            // In multiplayer, both teams can have human players
             rightTeamCountSlider.disabled = false;
-            leftAICountSlider.max = 1;
-            rightAICountSlider.max = 1;
+            
+            // AI count max should equal team count
+            leftAICountSlider.max = parseInt(leftTeamCountSlider.value);
+            rightAICountSlider.max = parseInt(rightTeamCountSlider.value);
+            rightAICountSlider.min = 0;
         } else {
             // In single player, right team is always AI
-            rightTeamCountSlider.value = 1;
             rightTeamCountSlider.disabled = true;
+            
+            // Left team is human only (no AI)
             leftAICountSlider.max = 0;
+            leftAICountSlider.value = 0;
+            
+            // Right team must have at least 1 AI, max equals team count
             rightAICountSlider.min = 1;
-            rightAICountSlider.value = Math.max(1, rightAICountSlider.value);
+            rightAICountSlider.max = parseInt(rightTeamCountSlider.value);
+            rightAICountSlider.value = Math.max(1, Math.min(parseInt(rightAICountSlider.value), parseInt(rightTeamCountSlider.value)));
         }
+        
+        // Trigger updates to show/hide AI settings
+        if (leftAICountSlider) leftAICountSlider.dispatchEvent(new Event('input'));
+        if (rightAICountSlider) rightAICountSlider.dispatchEvent(new Event('input'));
     }
     
     initializeArcadeSliders() {
@@ -1071,6 +1084,19 @@ class Game {
             jumpPower: { slider: 'jumpPowerSlider', value: 'jumpPowerValue', format: v => v + 'x' }
         };
         
+        // Set initial max values for AI sliders based on team count
+        const leftTeamCountSlider = document.getElementById('leftTeamCountSlider');
+        const rightTeamCountSlider = document.getElementById('rightTeamCountSlider');
+        const leftAICountSlider = document.getElementById('leftAICountSlider');
+        const rightAICountSlider = document.getElementById('rightAICountSlider');
+        
+        if (leftTeamCountSlider && leftAICountSlider) {
+            leftAICountSlider.max = leftTeamCountSlider.value;
+        }
+        if (rightTeamCountSlider && rightAICountSlider) {
+            rightAICountSlider.max = rightTeamCountSlider.value;
+        }
+        
         for (const [key, config] of Object.entries(sliders)) {
             const sliderEl = document.getElementById(config.slider);
             const valueEl = document.getElementById(config.value);
@@ -1079,6 +1105,29 @@ class Game {
                 sliderEl.addEventListener('input', () => {
                     const val = parseFloat(sliderEl.value);
                     valueEl.textContent = config.format(val);
+                    
+                    // Update AI count max based on team count
+                    if (key === 'leftTeamCount') {
+                        const leftAISlider = document.getElementById('leftAICountSlider');
+                        if (leftAISlider) {
+                            leftAISlider.max = val;
+                            // Adjust AI count if it exceeds new max
+                            if (parseInt(leftAISlider.value) > val) {
+                                leftAISlider.value = val;
+                                leftAISlider.dispatchEvent(new Event('input'));
+                            }
+                        }
+                    } else if (key === 'rightTeamCount') {
+                        const rightAISlider = document.getElementById('rightAICountSlider');
+                        if (rightAISlider) {
+                            rightAISlider.max = val;
+                            // Adjust AI count if it exceeds new max
+                            if (parseInt(rightAISlider.value) > val) {
+                                rightAISlider.value = val;
+                                rightAISlider.dispatchEvent(new Event('input'));
+                            }
+                        }
+                    }
                     
                     // Show/hide AI settings based on AI count
                     if (key === 'leftAICount') {
