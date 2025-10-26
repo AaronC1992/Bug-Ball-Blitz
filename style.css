@@ -282,6 +282,8 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(126, 211, 33, 0.3);
     box-shadow: 
         0 6px 0 #1b5e20,
         0 8px 15px rgba(0, 0, 0, 0.5),
@@ -1716,6 +1718,16 @@ input[type="text"]:focus {
 
 /* Small Phone Portrait Mode */
 @media screen and (max-width: 400px) and (orientation: portrait) {
+    .menu-buttons {
+        gap: 20px; /* Increase gap to prevent touch overlap */
+    }
+    
+    .menu-btn {
+        margin: 5px 0; /* Additional spacing */
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    
     .joystick-container {
         left: 15px;
         bottom: calc(15px + env(safe-area-inset-bottom, 0px));
@@ -3034,3 +3046,16 @@ canvas {
     height: 100%;
     touch-action: none;
 }
+
+/* Portrait mode specific - prevent button overlap on mobile */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    .menu-buttons {
+        gap: 18px !important; /* Increase gap in portrait mode */
+    }
+    
+    .menu-btn {
+        margin: 3px 0; /* Additional separation */
+        isolation: isolate; /* Create new stacking context */
+    }
+}
+
