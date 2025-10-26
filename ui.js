@@ -537,6 +537,35 @@ export class UIManager {
         const bugs = getBugArray();
         const achievementManager = this.game ? this.game.achievements : null;
         
+        // Create Random Bug card as first option
+        const randomCard = document.createElement('div');
+        randomCard.className = 'bug-card';
+        
+        randomCard.innerHTML = `
+            <div class="bug-sprite" style="font-size: 80px; display: flex; align-items: center; justify-content: center; height: 80px;">❓</div>
+            <div class="bug-name">🎲 Random Bug</div>
+            <div class="bug-stats">
+                <div class="stat-bar-container">
+                    <small>Surprise!</small>
+                    <div class="stat-bar">
+                        <div class="stat-bar-fill" style="width: 100%; background: linear-gradient(90deg, #8b5cf6, #6366f1, #8b5cf6);"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        randomCard.addEventListener('click', () => {
+            const unlockedBugs = bugs.filter(bug => isBugUnlocked(bug.id, achievementManager));
+            if (unlockedBugs.length > 0) {
+                const randomBug = unlockedBugs[Math.floor(Math.random() * unlockedBugs.length)];
+                SaveSystem.updatePreferences(this.currentProfile, { selectedBug: randomBug.id });
+                callback(randomBug.id);
+            }
+        });
+        
+        bugGrid.appendChild(randomCard);
+        
+        // Add all regular bugs
         bugs.forEach(bug => {
             const isUnlocked = isBugUnlocked(bug.id, achievementManager);
             const bugCard = document.createElement('div');
@@ -582,21 +611,6 @@ export class UIManager {
             bugGrid.appendChild(bugCard);
         });
         
-        // Random button - select a random unlocked bug
-        const randomBtn = document.getElementById('randomBugBtn');
-        if (randomBtn) {
-            const newRandomBtn = randomBtn.cloneNode(true);
-            randomBtn.parentNode.replaceChild(newRandomBtn, randomBtn);
-            newRandomBtn.addEventListener('click', () => {
-                const unlockedBugs = bugs.filter(bug => isBugUnlocked(bug.id, achievementManager));
-                if (unlockedBugs.length > 0) {
-                    const randomBug = unlockedBugs[Math.floor(Math.random() * unlockedBugs.length)];
-                    SaveSystem.updatePreferences(this.currentProfile, { selectedBug: randomBug.id });
-                    callback(randomBug.id);
-                }
-            });
-        }
-        
         // Cancel button
         const cancelBtn = document.getElementById('cancelBugSelectBtn');
         if (cancelBtn) {
@@ -615,6 +629,48 @@ export class UIManager {
         const arenas = getArenaArray();
         const achievementManager = this.game ? this.game.achievements : null;
         
+        // Create Random Arena card as first option
+        const randomCard = document.createElement('div');
+        randomCard.className = 'arena-card';
+        
+        const randomCanvas = document.createElement('canvas');
+        randomCanvas.className = 'arena-preview';
+        randomCanvas.width = 250;
+        randomCanvas.height = 100;
+        
+        const ctx = randomCanvas.getContext('2d');
+        // Draw a mystery/random preview
+        const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+        gradient.addColorStop(0, '#8b5cf6');
+        gradient.addColorStop(1, '#6366f1');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 250, 100);
+        
+        // Draw large question mark
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.font = 'bold 60px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('?', 125, 50);
+        
+        randomCard.appendChild(randomCanvas);
+        
+        const randomName = document.createElement('div');
+        randomName.className = 'arena-name';
+        randomName.textContent = '🎲 Random Arena';
+        randomCard.appendChild(randomName);
+        
+        randomCard.addEventListener('click', () => {
+            const unlockedArenas = arenas.filter(arena => isArenaUnlocked(arena.id, achievementManager));
+            if (unlockedArenas.length > 0) {
+                const randomArena = unlockedArenas[Math.floor(Math.random() * unlockedArenas.length)];
+                callback(randomArena.id);
+            }
+        });
+        
+        arenaGrid.appendChild(randomCard);
+        
+        // Add all regular arenas
         arenas.forEach(arena => {
             const isUnlocked = isArenaUnlocked(arena.id, achievementManager);
             const arenaCard = document.createElement('div');
@@ -650,20 +706,6 @@ export class UIManager {
             
             arenaGrid.appendChild(arenaCard);
         });
-        
-        // Random button - select a random unlocked arena
-        const randomBtn = document.getElementById('randomArenaBtn');
-        if (randomBtn) {
-            const newRandomBtn = randomBtn.cloneNode(true);
-            randomBtn.parentNode.replaceChild(newRandomBtn, randomBtn);
-            newRandomBtn.addEventListener('click', () => {
-                const unlockedArenas = arenas.filter(arena => isArenaUnlocked(arena.id, achievementManager));
-                if (unlockedArenas.length > 0) {
-                    const randomArena = unlockedArenas[Math.floor(Math.random() * unlockedArenas.length)];
-                    callback(randomArena.id);
-                }
-            });
-        }
         
         // Cancel button
         const cancelBtn = document.getElementById('cancelArenaSelectBtn');
