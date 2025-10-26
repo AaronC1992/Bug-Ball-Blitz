@@ -646,6 +646,12 @@ class Game {
         document.getElementById('backToMainFromAchievementsBtn').addEventListener('click', () => {
             this.ui.showScreen('mainMenu');
         });
+        
+        document.getElementById('saveProgressBtn').addEventListener('click', () => {
+            // Progress is auto-saved, but provide visual feedback
+            SaveSystem.saveProfile(this.ui.currentProfile);
+            alert('✅ Progress saved successfully!');
+        });
     }
     
     setupMobileControls() {
@@ -1124,7 +1130,8 @@ class Game {
             arcadeTime: { slider: 'arcadeTimeSlider', value: 'arcadeTimeValue', format: v => v + ' min' },
             arcadeScore: { slider: 'arcadeScoreSlider', value: 'arcadeScoreValue', format: v => v + ' goals' },
             ballSpeed: { slider: 'ballSpeedSlider', value: 'ballSpeedValue', format: v => v + 'x' },
-            jumpPower: { slider: 'jumpPowerSlider', value: 'jumpPowerValue', format: v => v + 'x' }
+            jumpPower: { slider: 'jumpPowerSlider', value: 'jumpPowerValue', format: v => v + 'x' },
+            ballCount: { slider: 'ballCountSlider', value: 'ballCountValue', format: v => v }
         };
         
         for (const [key, config] of Object.entries(sliders)) {
@@ -1264,6 +1271,8 @@ class Game {
         this.arcadeSettings.scoreToWin = parseInt(document.getElementById('arcadeScoreSlider').value);
         this.arcadeSettings.ballSpeed = parseFloat(document.getElementById('ballSpeedSlider').value);
         this.arcadeSettings.jumpPower = parseFloat(document.getElementById('jumpPowerSlider').value);
+        this.arcadeSettings.ballCount = parseInt(document.getElementById('ballCountSlider').value);
+        this.arcadeSettings.weather = document.getElementById('weatherSelect').value;
     }
     
     startArcadeMatch() {

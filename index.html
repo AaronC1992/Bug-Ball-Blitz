@@ -42,7 +42,7 @@
             <button class="dev-btn dev-test-btn" id="devTestProfileBtn" title="Create tester profile with everything unlocked">
                 <span class="dev-icon">👨‍💻</span>
             </button>
-            <div class="version-info">v1.2.12</div>
+            <div class="version-info">v1.3.0</div>
         </div>
 
         <!-- Profile Creation Screen -->
@@ -79,6 +79,7 @@
                     <button class="menu-btn" id="stylesBtn">✨ Styles</button>
                     <button class="menu-btn" id="achievementsBtn">🏅 Achievements</button>
                     <button class="menu-btn" id="viewStatsBtn">📊 View Stats</button>
+                    <button class="menu-btn" id="saveProgressBtn">💾 Save Progress</button>
                     <button class="menu-btn" id="logoutBtn">🔙 Logout</button>
                 </div>
             </div>
@@ -337,6 +338,26 @@
                         <input type="range" id="jumpPowerSlider" min="0.5" max="2" step="0.1" value="1" class="arcade-slider">
                         <span class="slider-value" id="jumpPowerValue">1.0x</span>
                     </div>
+                </div>
+                
+                <div class="arcade-setting">
+                    <label>Number of Balls:</label>
+                    <div class="slider-container">
+                        <input type="range" id="ballCountSlider" min="1" max="3" value="1" class="arcade-slider">
+                        <span class="slider-value" id="ballCountValue">1</span>
+                    </div>
+                    <small class="setting-hint">Play with multiple balls at once!</small>
+                </div>
+                
+                <div class="arcade-setting">
+                    <label>Weather Effects:</label>
+                    <select id="weatherSelect" class="arcade-select">
+                        <option value="none">☀️ None</option>
+                        <option value="rain">🌧️ Rain</option>
+                        <option value="snow">❄️ Snow</option>
+                        <option value="wind">💨 Wind</option>
+                    </select>
+                    <small class="setting-hint">Weather slightly affects ball physics</small>
                 </div>
             </div>
             <div class="menu-buttons">
