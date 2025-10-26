@@ -2489,7 +2489,7 @@ class Game {
             this.physics.weatherFriction = 0.96; // Much less friction (normal is 0.9)
         } else if (this.currentWeather === 'wind') {
             // Wind pushes ball horizontally (changes direction every 5 seconds)
-            this.ball.vx += 0.4 * this.weatherDirection;
+            this.ball.vx += 0.2 * this.weatherDirection; // Reduced from 0.4
         }
         
         // Reset friction if not snowing
