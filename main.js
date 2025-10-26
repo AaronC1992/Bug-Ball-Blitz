@@ -338,7 +338,8 @@ class Game {
         });
         
         // Menu buttons
-        document.getElementById('towerCampaignBtn').addEventListener('click', () => {
+        document.getElementById('towerCampaignBtn').addEventListener('click', (e) => {
+            console.log('Tower Campaign clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
             this.audio.playSound('ui_click');
             this.showTowerLevelSelect();
         });
@@ -354,18 +355,21 @@ class Game {
             this.ui.showScreen('mainMenu');
         });
         
-        document.getElementById('quickPlayBtn').addEventListener('click', () => {
+        document.getElementById('quickPlayBtn').addEventListener('click', (e) => {
+            console.log('Quick Play clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
             this.audio.playSound('ui_click');
             this.showDifficultySelection();
         });
         
-        document.getElementById('localMultiplayerBtn').addEventListener('click', () => {
+        document.getElementById('localMultiplayerBtn').addEventListener('click', (e) => {
+            console.log('Local Multiplayer clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
             this.audio.playSound('ui_click');
             this.startMultiplayer();
         });
         
         // Arcade mode
-        document.getElementById('arcadeModeBtn').addEventListener('click', () => {
+        document.getElementById('arcadeModeBtn').addEventListener('click', (e) => {
+            console.log('Arcade Mode clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
             this.audio.playSound('ui_click');
             this.showArcadeMode();
         });
@@ -646,7 +650,8 @@ class Game {
         });
         
         // Styles menu
-        document.getElementById('stylesBtn').addEventListener('click', () => {
+        document.getElementById('stylesBtn').addEventListener('click', (e) => {
+            console.log('Styles clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
             this.showStylesMenu();
         });
         
