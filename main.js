@@ -1144,6 +1144,7 @@ class Game {
                                 leftAISlider.dispatchEvent(new Event('input'));
                             }
                         }
+                        this.updateTeamComposition('left');
                     } else if (key === 'rightTeamCount') {
                         const rightAISlider = document.getElementById('rightAICountSlider');
                         if (rightAISlider) {
@@ -1154,9 +1155,10 @@ class Game {
                                 rightAISlider.dispatchEvent(new Event('input'));
                             }
                         }
+                        this.updateTeamComposition('right');
                     }
                     
-                    // Show/hide AI settings based on AI count
+                    // Update team composition display when AI count changes
                     if (key === 'leftAICount') {
                         const container1 = document.getElementById('leftAIDifficultyContainer');
                         const container2 = document.getElementById('leftAIPersonalityContainer');
@@ -1165,6 +1167,7 @@ class Game {
                             container1.style.display = display;
                             container2.style.display = display;
                         }
+                        this.updateTeamComposition('left');
                     } else if (key === 'rightAICount') {
                         const container1 = document.getElementById('rightAIDifficultyContainer');
                         const container2 = document.getElementById('rightAIPersonalityContainer');
@@ -1173,11 +1176,34 @@ class Game {
                             container1.style.display = display;
                             container2.style.display = display;
                         }
+                        this.updateTeamComposition('right');
                     }
                 });
                 
                 // Trigger initial update
                 sliderEl.dispatchEvent(new Event('input'));
+            }
+        }
+    }
+    
+    updateTeamComposition(team) {
+        const teamCountSlider = document.getElementById(`${team}TeamCountSlider`);
+        const aiCountSlider = document.getElementById(`${team}AICountSlider`);
+        const compositionEl = document.getElementById(`${team}TeamComposition`);
+        
+        if (teamCountSlider && aiCountSlider && compositionEl) {
+            const totalPlayers = parseInt(teamCountSlider.value);
+            const aiPlayers = parseInt(aiCountSlider.value);
+            const humanPlayers = totalPlayers - aiPlayers;
+            
+            compositionEl.textContent = `${humanPlayers} Human, ${aiPlayers} AI`;
+            
+            // Highlight if invalid
+            if (aiPlayers > totalPlayers) {
+                compositionEl.style.color = '#e74c3c';
+                compositionEl.textContent = `⚠️ AI count cannot exceed team size`;
+            } else {
+                compositionEl.style.color = '#95a5a6';
             }
         }
     }

@@ -680,6 +680,14 @@ input[type="text"]:focus {
     font-weight: bold;
 }
 
+.setting-hint {
+    display: block;
+    color: #95a5a6;
+    font-size: 13px;
+    margin-top: 5px;
+    font-style: italic;
+}
+
 .slider-container {
     display: flex;
     align-items: center;

@@ -188,11 +188,12 @@
                     <h3>🔵 Left Team</h3>
                     
                     <div class="arcade-setting">
-                        <label>Number of Players:</label>
+                        <label>Team Size:</label>
                         <div class="slider-container">
                             <input type="range" id="leftTeamCountSlider" min="1" max="2" value="1" step="1" class="arcade-slider">
                             <span class="slider-value" id="leftTeamCountValue">1</span>
                         </div>
+                        <small class="setting-hint">Total players on this team</small>
                     </div>
                     
                     <div class="arcade-setting">
@@ -201,6 +202,7 @@
                             <input type="range" id="leftAICountSlider" min="0" max="2" value="0" step="1" class="arcade-slider">
                             <span class="slider-value" id="leftAICountValue">0</span>
                         </div>
+                        <small class="setting-hint" id="leftTeamComposition">1 Human, 0 AI</small>
                     </div>
                     
                     <div class="arcade-setting ai-setting" id="leftAIDifficultyContainer" style="display: none;">
@@ -228,11 +230,12 @@
                     <h3>🔴 Right Team</h3>
                     
                     <div class="arcade-setting">
-                        <label>Number of Players:</label>
+                        <label>Team Size:</label>
                         <div class="slider-container">
                             <input type="range" id="rightTeamCountSlider" min="1" max="2" value="1" step="1" class="arcade-slider">
                             <span class="slider-value" id="rightTeamCountValue">1</span>
                         </div>
+                        <small class="setting-hint">Total players on this team</small>
                     </div>
                     
                     <div class="arcade-setting">
@@ -241,6 +244,7 @@
                             <input type="range" id="rightAICountSlider" min="0" max="2" value="1" step="1" class="arcade-slider">
                             <span class="slider-value" id="rightAICountValue">1</span>
                         </div>
+                        <small class="setting-hint" id="rightTeamComposition">0 Human, 1 AI</small>
                     </div>
                     
                     <div class="arcade-setting ai-setting" id="rightAIDifficultyContainer">
