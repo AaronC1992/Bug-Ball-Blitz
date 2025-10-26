@@ -338,7 +338,19 @@ class Game {
         });
         
         // Menu buttons
-        document.getElementById('towerCampaignBtn').addEventListener('click', () => {
+        const towerCampaignBtn = document.getElementById('towerCampaignBtn');
+        let towerCampaignHandled = false;
+        
+        towerCampaignBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            towerCampaignHandled = true;
+            this.audio.playSound('ui_click');
+            this.showTowerLevelSelect();
+            setTimeout(() => { towerCampaignHandled = false; }, 300);
+        }, { passive: false });
+        
+        towerCampaignBtn.addEventListener('click', () => {
+            if (towerCampaignHandled) return;
             this.audio.playSound('ui_click');
             this.showTowerLevelSelect();
         });
@@ -354,18 +366,54 @@ class Game {
             this.ui.showScreen('mainMenu');
         });
         
-        document.getElementById('quickPlayBtn').addEventListener('click', () => {
+        const quickPlayBtn = document.getElementById('quickPlayBtn');
+        let quickPlayHandled = false;
+        
+        quickPlayBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            quickPlayHandled = true;
+            this.audio.playSound('ui_click');
+            this.showDifficultySelection();
+            setTimeout(() => { quickPlayHandled = false; }, 300);
+        }, { passive: false });
+        
+        quickPlayBtn.addEventListener('click', () => {
+            if (quickPlayHandled) return;
             this.audio.playSound('ui_click');
             this.showDifficultySelection();
         });
         
-        document.getElementById('localMultiplayerBtn').addEventListener('click', () => {
+        const localMultiplayerBtn = document.getElementById('localMultiplayerBtn');
+        let localMultiplayerHandled = false;
+        
+        localMultiplayerBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            localMultiplayerHandled = true;
+            this.audio.playSound('ui_click');
+            this.startMultiplayer();
+            setTimeout(() => { localMultiplayerHandled = false; }, 300);
+        }, { passive: false });
+        
+        localMultiplayerBtn.addEventListener('click', () => {
+            if (localMultiplayerHandled) return;
             this.audio.playSound('ui_click');
             this.startMultiplayer();
         });
         
         // Arcade mode
-        document.getElementById('arcadeModeBtn').addEventListener('click', () => {
+        const arcadeModeBtn = document.getElementById('arcadeModeBtn');
+        let arcadeModeHandled = false;
+        
+        arcadeModeBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            arcadeModeHandled = true;
+            this.audio.playSound('ui_click');
+            this.showArcadeMode();
+            setTimeout(() => { arcadeModeHandled = false; }, 300);
+        }, { passive: false });
+        
+        arcadeModeBtn.addEventListener('click', () => {
+            if (arcadeModeHandled) return;
             this.audio.playSound('ui_click');
             this.showArcadeMode();
         });
