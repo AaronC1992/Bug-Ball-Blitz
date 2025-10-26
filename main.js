@@ -338,21 +338,10 @@ class Game {
         });
         
         // Menu buttons
-        document.getElementById('towerCampaignBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            try {
-                document.getElementById('debugDisplay').textContent = 'Tower Campaign clicked! Target: ' + e.target.id;
-                console.log('Tower Campaign clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
-                // Skip audio on mobile to avoid issues
-                // this.audio.playSound('ui_click');
-                this.showTowerLevelSelect();
-            } catch (error) {
-                document.getElementById('debugDisplay').textContent = 'ERROR in Tower Campaign: ' + error.message;
-                console.error('Tower Campaign error:', error);
-            }
-        }, true); // Use capture phase
+        document.getElementById('towerCampaignBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.showTowerLevelSelect();
+        });
         
         // Tower level select buttons
         document.getElementById('continueTowerBtn').addEventListener('click', () => {
@@ -365,31 +354,18 @@ class Game {
             this.ui.showScreen('mainMenu');
         });
         
-        document.getElementById('quickPlayBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            try {
-                document.getElementById('debugDisplay').textContent = 'Quick Play clicked! Target: ' + e.target.id;
-                console.log('Quick Play clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
-                // Skip audio on mobile to avoid issues
-                // this.audio.playSound('ui_click');
-                this.showDifficultySelection();
-            } catch (error) {
-                document.getElementById('debugDisplay').textContent = 'ERROR in Quick Play: ' + error.message;
-                console.error('Quick Play error:', error);
-            }
-        }, true); // Use capture phase
+        document.getElementById('quickPlayBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.showDifficultySelection();
+        });
         
-        document.getElementById('localMultiplayerBtn').addEventListener('click', (e) => {
-            console.log('Local Multiplayer clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
+        document.getElementById('localMultiplayerBtn').addEventListener('click', () => {
             this.audio.playSound('ui_click');
             this.startMultiplayer();
         });
         
         // Arcade mode
-        document.getElementById('arcadeModeBtn').addEventListener('click', (e) => {
-            console.log('Arcade Mode clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
+        document.getElementById('arcadeModeBtn').addEventListener('click', () => {
             this.audio.playSound('ui_click');
             this.showArcadeMode();
         });
@@ -670,9 +646,7 @@ class Game {
         });
         
         // Styles menu
-        document.getElementById('stylesBtn').addEventListener('click', (e) => {
-            document.getElementById('debugDisplay').textContent = '*** STYLES CLICKED! *** Target: ' + e.target.id;
-            console.log('Styles clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
+        document.getElementById('stylesBtn').addEventListener('click', () => {
             this.showStylesMenu();
         });
         
@@ -801,7 +775,6 @@ class Game {
     }
     
     showTowerLevelSelect() {
-        console.log('showTowerLevelSelect called');
         this.ui.showScreen('towerLevelSelectScreen');
         this.populateTowerLevelGrid();
     }
@@ -1084,12 +1057,7 @@ class Game {
     }
     
     showDifficultySelection() {
-        document.getElementById('debugDisplay').textContent = 'showDifficultySelection() running! About to show difficultyScreen...';
-        console.log('showDifficultySelection called');
         this.ui.showScreen('difficultyScreen');
-        setTimeout(() => {
-            document.getElementById('debugDisplay').textContent = 'After showScreen: currentScreen = ' + this.ui.currentScreen;
-        }, 100);
     }
     
     startQuickPlay() {
@@ -3255,8 +3223,6 @@ class Game {
     }
     
     showStylesMenu() {
-        document.getElementById('debugDisplay').textContent = 'showStylesMenu() function running!';
-        console.log('showStylesMenu called from:', new Error().stack);
         const profile = this.ui.currentProfile;
         if (!profile) {
             console.error('No profile loaded');

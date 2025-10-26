@@ -84,11 +84,6 @@ export class UIManager {
     }
     
     showScreen(screenId) {
-        const debugEl = document.getElementById('debugDisplay');
-        if (debugEl) {
-            debugEl.textContent = 'showScreen called with: ' + screenId;
-        }
-        
         // Hide all screens
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
@@ -99,10 +94,6 @@ export class UIManager {
         if (screen) {
             screen.classList.add('active');
             this.currentScreen = screenId;
-        } else {
-            if (debugEl) {
-                debugEl.textContent = 'ERROR: Screen not found: ' + screenId;
-            }
         }
     }
     
