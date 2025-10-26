@@ -476,8 +476,9 @@ function drawGlow(ctx, player, frame) {
 
 function drawGrow(ctx, player, frame) {
     const scale = 1 + Math.sin(frame / 15) * 0.5;
-    const originalRadius = (player.width / 2);
-    (player.width / 2) *= scale;
+    const originalWidth = player.width;
+    player.width *= scale;
+    player.height *= scale;
     
     // Power-up waves
     const waveRadius = (player.width / 2) * (1 + (frame % 20) / 20);
