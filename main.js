@@ -20,6 +20,8 @@ class Game {
         this.ui = new UIManager(this);
         this.audio = new AudioManager();
         this.particles = new ParticleSystem();
+        this.weatherParticles = []; // Weather effect particles
+        this.currentWeather = 'none'; // Current weather type
         this.achievements = new AchievementManager();
         this.quality = new QualityManager();
         
@@ -874,6 +876,22 @@ class Game {
         document.getElementById('loadingLevelDifficulty').textContent = 
             difficultyColors[levelConfig.difficulty] || levelConfig.difficulty.toUpperCase();
         
+        // Show weather info if in arcade mode or tower mode with weather
+        const weatherEl = document.getElementById('loadingWeather');
+        const weather = this.gameMode === 'arcade' ? this.arcadeSettings?.weather : levelConfig.weather;
+        
+        if (weather && weather !== 'none') {
+            const weatherIcons = {
+                'rain': '🌧️ Rain',
+                'snow': '❄️ Snow',
+                'wind': '💨 Wind'
+            };
+            weatherEl.textContent = `Weather: ${weatherIcons[weather] || weather}`;
+            weatherEl.style.display = 'block';
+        } else {
+            weatherEl.style.display = 'none';
+        }
+        
         // Generate tower visual
         this.generateTowerVisual();
         
@@ -953,34 +971,34 @@ class Game {
     
     getTowerLevelConfig(level) {
         // Levels 1-4: Single AI - Learn the basics
-        if (level === 1) return { difficulty: 'easy', aiCount: 1, name: 'Tutorial Match' };
-        if (level === 2) return { difficulty: 'medium', aiCount: 1, name: 'Rookie Challenge' };
-        if (level === 3) return { difficulty: 'hard', aiCount: 1, name: 'Advanced Opponent' };
-        if (level === 4) return { difficulty: 'pro', aiCount: 1, name: 'Expert Showdown' };
+        if (level === 1) return { difficulty: 'easy', aiCount: 1, name: 'Tutorial Match', weather: 'none' };
+        if (level === 2) return { difficulty: 'medium', aiCount: 1, name: 'Rookie Challenge', weather: 'none' };
+        if (level === 3) return { difficulty: 'hard', aiCount: 1, name: 'Advanced Opponent', weather: 'none' };
+        if (level === 4) return { difficulty: 'pro', aiCount: 1, name: 'Expert Showdown', weather: 'none' };
         
         // Levels 5-8: Two AIs - Team coordination needed
-        if (level === 5) return { difficulty: 'easy', aiCount: 2, name: 'Double Trouble Easy' };
-        if (level === 6) return { difficulty: 'medium', aiCount: 2, name: 'Double Trouble Medium' };
-        if (level === 7) return { difficulty: 'hard', aiCount: 2, name: 'Double Trouble Hard' };
-        if (level === 8) return { difficulty: 'pro', aiCount: 2, name: 'Double Trouble Pro' };
+        if (level === 5) return { difficulty: 'easy', aiCount: 2, name: 'Double Trouble Easy', weather: 'none' };
+        if (level === 6) return { difficulty: 'medium', aiCount: 2, name: 'Double Trouble Medium', weather: 'rain' };
+        if (level === 7) return { difficulty: 'hard', aiCount: 2, name: 'Double Trouble Hard', weather: 'snow' };
+        if (level === 8) return { difficulty: 'pro', aiCount: 2, name: 'Double Trouble Pro', weather: 'wind' };
         
         // Levels 9-12: Back to 1v1 but harder
-        if (level === 9) return { difficulty: 'easy', aiCount: 1, name: 'Speed Trial Easy' };
-        if (level === 10) return { difficulty: 'medium', aiCount: 1, name: 'Speed Trial Medium' };
-        if (level === 11) return { difficulty: 'hard', aiCount: 1, name: 'Speed Trial Hard' };
-        if (level === 12) return { difficulty: 'pro', aiCount: 1, name: 'Speed Trial Pro' };
+        if (level === 9) return { difficulty: 'easy', aiCount: 1, name: 'Speed Trial Easy', weather: 'none' };
+        if (level === 10) return { difficulty: 'medium', aiCount: 1, name: 'Speed Trial Medium', weather: 'rain' };
+        if (level === 11) return { difficulty: 'hard', aiCount: 1, name: 'Speed Trial Hard', weather: 'snow' };
+        if (level === 12) return { difficulty: 'pro', aiCount: 1, name: 'Speed Trial Pro', weather: 'wind' };
         
         // Levels 13-16: 2v1 again with more challenge
-        if (level === 13) return { difficulty: 'easy', aiCount: 2, name: 'Team Assault Easy' };
-        if (level === 14) return { difficulty: 'medium', aiCount: 2, name: 'Team Assault Medium' };
-        if (level === 15) return { difficulty: 'hard', aiCount: 2, name: 'Team Assault Hard' };
-        if (level === 16) return { difficulty: 'pro', aiCount: 2, name: 'Team Assault Pro' };
+        if (level === 13) return { difficulty: 'easy', aiCount: 2, name: 'Team Assault Easy', weather: 'rain' };
+        if (level === 14) return { difficulty: 'medium', aiCount: 2, name: 'Team Assault Medium', weather: 'snow' };
+        if (level === 15) return { difficulty: 'hard', aiCount: 2, name: 'Team Assault Hard', weather: 'wind' };
+        if (level === 16) return { difficulty: 'pro', aiCount: 2, name: 'Team Assault Pro', weather: 'rain' };
         
         // Levels 17-20: Elite challenges
-        if (level === 17) return { difficulty: 'hard', aiCount: 1, name: 'Elite Solo Hard' };
-        if (level === 18) return { difficulty: 'pro', aiCount: 1, name: 'Elite Solo Pro' };
-        if (level === 19) return { difficulty: 'hard', aiCount: 2, name: 'Elite Team Hard' };
-        if (level === 20) return { difficulty: 'pro', aiCount: 2, name: 'Final Boss' };
+        if (level === 17) return { difficulty: 'hard', aiCount: 1, name: 'Elite Solo Hard', weather: 'snow' };
+        if (level === 18) return { difficulty: 'pro', aiCount: 1, name: 'Elite Solo Pro', weather: 'wind' };
+        if (level === 19) return { difficulty: 'hard', aiCount: 2, name: 'Elite Team Hard', weather: 'rain' };
+        if (level === 20) return { difficulty: 'pro', aiCount: 2, name: 'Final Boss', weather: 'wind' };
         
         // Beyond level 20 - Ultimate challenges repeat
         const cycleLevel = ((level - 21) % 4) + 17;
@@ -1553,6 +1571,11 @@ class Game {
         this.updateScoreDisplay();
         this.updateTimerDisplay();
         
+        // Initialize weather effects
+        const levelConfig = this.gameMode === 'tower' ? this.towerLevels[this.currentTowerLevel] : null;
+        this.currentWeather = this.gameMode === 'arcade' ? (this.arcadeSettings?.weather || 'none') : (levelConfig?.weather || 'none');
+        this.initWeatherParticles();
+        
         // Start with intro animation
         this.gameState = 'intro';
         this.introState = 'teams';
@@ -1832,6 +1855,9 @@ class Game {
         // Update particles
         this.particles.update();
         
+        // Update weather particles
+        this.updateWeatherParticles();
+        
         // Update achievement notifications
         this.achievements.updateNotifications();
         
@@ -1902,6 +1928,9 @@ class Game {
         }
         
         this.physics.updateBall(this.ball, ballSpeedMultiplier);
+        
+        // Apply weather effects to ball
+        this.applyWeatherEffects();
         
         // Update ball rotation based on velocity (rolling effect)
         if (this.ball) {
@@ -2040,6 +2069,9 @@ class Game {
         
         // Draw particles (behind players and ball)
         this.particles.render(this.ctx);
+        
+        // Draw weather effects
+        this.drawWeatherParticles();
         
         // Draw ball
         this.drawBall();
@@ -2293,6 +2325,127 @@ class Game {
         const seconds = Math.floor(timeRemaining % 60);
         document.getElementById('timerDisplay').textContent = 
             `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    
+    initWeatherParticles() {
+        this.weatherParticles = [];
+        
+        if (this.currentWeather === 'none') return;
+        
+        const particleCount = 80;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const particle = {
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                vx: 0,
+                vy: 0,
+                size: 0,
+                opacity: 0.3 + Math.random() * 0.4
+            };
+            
+            if (this.currentWeather === 'rain') {
+                particle.vx = 1 + Math.random() * 2; // Slight diagonal
+                particle.vy = 8 + Math.random() * 4; // Fast falling
+                particle.size = 2 + Math.random() * 1;
+                particle.length = 10 + Math.random() * 10;
+            } else if (this.currentWeather === 'snow') {
+                particle.vx = -1 + Math.random() * 2; // Drift side to side
+                particle.vy = 1 + Math.random() * 2; // Slow falling
+                particle.size = 3 + Math.random() * 3;
+                particle.drift = Math.random() * Math.PI * 2; // For wavy motion
+            } else if (this.currentWeather === 'wind') {
+                particle.vx = 6 + Math.random() * 4; // Fast horizontal
+                particle.vy = -1 + Math.random() * 2; // Slight vertical variance
+                particle.size = 1 + Math.random() * 2;
+                particle.length = 15 + Math.random() * 15;
+            }
+            
+            this.weatherParticles.push(particle);
+        }
+    }
+    
+    updateWeatherParticles() {
+        if (this.currentWeather === 'none') return;
+        
+        for (let particle of this.weatherParticles) {
+            // Update position
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            
+            // Snow drift effect
+            if (this.currentWeather === 'snow') {
+                particle.drift += 0.05;
+                particle.x += Math.sin(particle.drift) * 0.5;
+            }
+            
+            // Wrap particles around screen
+            if (particle.x > this.canvas.width) {
+                particle.x = 0;
+            } else if (particle.x < 0) {
+                particle.x = this.canvas.width;
+            }
+            
+            if (particle.y > this.canvas.height) {
+                particle.y = 0;
+            } else if (particle.y < 0) {
+                particle.y = this.canvas.height;
+            }
+        }
+    }
+    
+    drawWeatherParticles() {
+        if (this.currentWeather === 'none') return;
+        
+        this.ctx.save();
+        
+        for (let particle of this.weatherParticles) {
+            this.ctx.globalAlpha = particle.opacity;
+            
+            if (this.currentWeather === 'rain') {
+                // Draw rain as lines
+                this.ctx.strokeStyle = '#4DA6FF';
+                this.ctx.lineWidth = particle.size;
+                this.ctx.beginPath();
+                this.ctx.moveTo(particle.x, particle.y);
+                this.ctx.lineTo(particle.x - particle.vx * 2, particle.y - particle.vy * 2);
+                this.ctx.stroke();
+            } else if (this.currentWeather === 'snow') {
+                // Draw snow as circles
+                this.ctx.fillStyle = 'white';
+                this.ctx.beginPath();
+                this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                this.ctx.fill();
+            } else if (this.currentWeather === 'wind') {
+                // Draw wind as horizontal streaks
+                this.ctx.strokeStyle = 'rgba(200, 200, 200, 0.4)';
+                this.ctx.lineWidth = particle.size;
+                this.ctx.beginPath();
+                this.ctx.moveTo(particle.x, particle.y);
+                this.ctx.lineTo(particle.x - particle.length, particle.y);
+                this.ctx.stroke();
+            }
+        }
+        
+        this.ctx.restore();
+    }
+    
+    applyWeatherEffects() {
+        if (!this.ball || this.currentWeather === 'none') return;
+        
+        if (this.currentWeather === 'rain') {
+            // Rain adds slight horizontal drift and makes ball slightly heavier
+            this.ball.vx += 0.15;
+            this.ball.vy += 0.05; // Slight downward push
+        } else if (this.currentWeather === 'snow') {
+            // Snow reduces friction, making ball slide more
+            this.ball.vx *= 1.005; // Less friction slowdown
+            this.ball.vy *= 1.002;
+        } else if (this.currentWeather === 'wind') {
+            // Wind pushes ball horizontally
+            this.ball.vx += 0.3;
+        }
     }
     
     endMatch() {
