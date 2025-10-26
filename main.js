@@ -376,10 +376,12 @@ class Game {
             this.audio.playSound('ui_click');
             
             // Validate teams have players
-            const leftHasHuman = document.getElementById('leftHumanPlayerCheckbox').checked;
-            const rightHasHuman = document.getElementById('rightHumanPlayerCheckbox').checked;
-            const leftAICount = parseInt(document.getElementById('leftAICountSlider').value);
-            const rightAICount = parseInt(document.getElementById('rightAICountSlider').value);
+            const leftHasHuman = document.getElementById('leftHumanPlayerCheckbox')?.checked ?? true;
+            const rightHasHuman = document.getElementById('rightHumanPlayerCheckbox')?.checked ?? false;
+            const leftAICount = parseInt(document.getElementById('leftAICountSlider')?.value ?? 0);
+            const rightAICount = parseInt(document.getElementById('rightAICountSlider')?.value ?? 0);
+            
+            console.log('Arcade validation:', { leftHasHuman, rightHasHuman, leftAICount, rightAICount });
             
             // Check if teams have at least 1 player
             const leftTeamSize = (leftHasHuman ? 1 : 0) + leftAICount;
@@ -1272,6 +1274,8 @@ class Game {
             this.mainMenuBackground.stop();
         }
         
+        console.log('Starting arcade match:', this.arcadeSettings);
+        
         // Check if left team has human player
         if (this.arcadeSettings.leftHasHuman) {
             // Left team has human - select bug for player 1
@@ -1291,6 +1295,7 @@ class Game {
             }, '🐛 Left Team - Player 1');
         } else {
             // Left team is all AI (spectator mode) - select random bugs
+            console.log('Left team is AI-only, auto-selecting bugs');
             this.selectedBug1 = this.getRandomBug();
             this.selectedBugLeftTeam2 = this.arcadeSettings.leftTeamCount === 2 ? this.getRandomBug() : null;
             this.selectRightTeamBugs();
@@ -1300,6 +1305,13 @@ class Game {
     selectRightTeamBugs() {
         // Right team bug selection
         const rightHumanCount = this.arcadeSettings.rightTeamCount - this.arcadeSettings.rightAICount;
+        
+        console.log('Right team selection:', { 
+            rightTeamCount: this.arcadeSettings.rightTeamCount, 
+            rightAICount: this.arcadeSettings.rightAICount,
+            rightHumanCount,
+            rightHasHuman: this.arcadeSettings.rightHasHuman
+        });
         
         if (rightHumanCount > 0) {
             // Human player on right team - let them select
@@ -1325,6 +1337,7 @@ class Game {
             }, '🐛 Right Team - Player 1');
         } else {
             // All AI on right team
+            console.log('Right team is AI-only, auto-selecting bugs');
             this.selectedBug2 = this.getRandomBug();
             this.selectedBug3 = this.arcadeSettings.rightTeamCount === 2 ? this.getRandomBug() : null;
             this.selectArenaForArcade();
