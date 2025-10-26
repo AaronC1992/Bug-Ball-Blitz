@@ -40,6 +40,7 @@ body {
     padding: 20px 20px 60px 20px;
     overflow-y: auto;
     overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .screen.active {
@@ -2182,43 +2183,76 @@ input[type="text"]:focus {
     
     /* Styles Screen - Mobile specific */
     #stylesScreen {
-        overflow-y: auto;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch;
-        padding: 15px 15px 100px 15px !important;
+        padding: 60px 10px 120px 10px !important;
         justify-content: flex-start !important;
-        padding-top: 20px !important;
+        display: flex !important;
+        flex-direction: column;
+        height: 100vh;
+        box-sizing: border-box;
+    }
+    
+    #stylesScreen.active {
+        display: flex !important;
+    }
+    
+    #stylesScreen h2 {
+        margin-top: 0;
+        padding-top: 0;
+        flex-shrink: 0;
     }
     
     #celebrationGrid {
         grid-template-columns: 1fr;
-        padding: 10px;
-        gap: 15px;
+        padding: 5px;
+        gap: 12px;
         max-width: 100%;
         margin-bottom: 20px;
+        width: 100%;
+        flex-shrink: 0;
     }
     
     .celebration-card {
         padding: 15px;
         min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .celebration-icon {
-        font-size: 50px;
-        margin-bottom: 10px;
+        font-size: 45px;
+        margin-bottom: 8px;
     }
     
     .celebration-card h3 {
         font-size: 18px;
+        margin: 8px 0;
     }
     
     .celebration-description {
         font-size: 13px;
         min-height: auto;
+        margin: 8px 0;
+    }
+    
+    .unlock-condition {
+        font-size: 12px;
+        margin-top: 10px;
+        padding-top: 10px;
     }
     
     .styles-subtitle {
         font-size: 14px;
-        margin: -5px 0 15px 0;
+        margin: 5px 0 15px 0;
+        flex-shrink: 0;
+    }
+    
+    #stylesScreen .menu-buttons {
+        margin-top: 20px;
+        padding-bottom: 20px;
+        flex-shrink: 0;
     }
 
     .hud {
