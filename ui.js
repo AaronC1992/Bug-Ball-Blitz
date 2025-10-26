@@ -513,9 +513,18 @@ export class UIManager {
         }
     }
     
-    showBugSelection(callback) {
+    showBugSelection(callback, customMessage = null) {
         const bugGrid = document.getElementById('bugGrid');
         bugGrid.innerHTML = '';
+        
+        // Update header message if provided
+        const bugSelectionScreen = document.getElementById('bugSelectionScreen');
+        const existingHeader = bugSelectionScreen.querySelector('h2');
+        if (customMessage && existingHeader) {
+            existingHeader.textContent = customMessage;
+        } else if (existingHeader) {
+            existingHeader.textContent = '🐛 Select Your Bug';
+        }
         
         const bugs = getBugArray();
         const achievementManager = this.game ? this.game.achievements : null;

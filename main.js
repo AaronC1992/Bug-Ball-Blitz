@@ -374,6 +374,27 @@ class Game {
         
         document.getElementById('arcadeTeamNextBtn').addEventListener('click', () => {
             this.audio.playSound('ui_click');
+            
+            // Validate teams have players
+            const leftHasHuman = document.getElementById('leftHumanPlayerCheckbox').checked;
+            const rightHasHuman = document.getElementById('rightHumanPlayerCheckbox').checked;
+            const leftAICount = parseInt(document.getElementById('leftAICountSlider').value);
+            const rightAICount = parseInt(document.getElementById('rightAICountSlider').value);
+            
+            // Check if teams have at least 1 player
+            const leftTeamSize = (leftHasHuman ? 1 : 0) + leftAICount;
+            const rightTeamSize = (rightHasHuman ? 1 : 0) + rightAICount;
+            
+            if (leftTeamSize === 0) {
+                alert('Left team needs at least 1 player! Add a human or AI player.');
+                return;
+            }
+            
+            if (rightTeamSize === 0) {
+                alert('Right team needs at least 1 player! Add a human or AI player.');
+                return;
+            }
+            
             this.saveArcadeTeamSettings();
             this.showArcadeSettings();
         });
@@ -1262,12 +1283,12 @@ class Game {
                     this.ui.showBugSelection((bugId2) => {
                         this.selectedBugLeftTeam2 = getBugById(bugId2);
                         this.selectRightTeamBugs();
-                    });
+                    }, '🐛 Left Team - Player 2');
                 } else {
                     this.selectedBugLeftTeam2 = null;
                     this.selectRightTeamBugs();
                 }
-            });
+            }, '🐛 Left Team - Player 1');
         } else {
             // Left team is all AI (spectator mode) - select random bugs
             this.selectedBug1 = this.getRandomBug();
@@ -1291,7 +1312,7 @@ class Game {
                         this.ui.showBugSelection((bugId2) => {
                             this.selectedBug3 = getBugById(bugId2);
                             this.selectArenaForArcade();
-                        });
+                        }, '🐛 Right Team - Player 2');
                     } else {
                         // One human, one AI
                         this.selectedBug3 = this.getRandomBug();
@@ -1301,7 +1322,7 @@ class Game {
                     this.selectedBug3 = null;
                     this.selectArenaForArcade();
                 }
-            });
+            }, '🐛 Right Team - Player 1');
         } else {
             // All AI on right team
             this.selectedBug2 = this.getRandomBug();
