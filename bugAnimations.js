@@ -186,7 +186,7 @@ export function drawBugAnimation(ctx, animationType, player, animationFrame) {
     
     const x = player.x;
     const y = player.y;
-    const radius = player.radius;
+    const radius = player.width / 2; // Player uses width/height, not radius
     
     switch (animationType) {
         case 'wiggle':
@@ -241,6 +241,7 @@ function drawWiggle(ctx, player, frame) {
 
 function drawSpin(ctx, player, frame) {
     const rotation = (frame / 30) * Math.PI * 2;
+    const radius = player.width / 2;
     
     ctx.save();
     ctx.translate(player.x, player.y);
@@ -250,10 +251,10 @@ function drawSpin(ctx, player, frame) {
     // Draw spinning lines around bug
     for (let i = 0; i < 8; i++) {
         const angle = (i / 8) * Math.PI * 2 + rotation;
-        const startX = player.x + Math.cos(angle) * player.radius * 1.5;
-        const startY = player.y + Math.sin(angle) * player.radius * 1.5;
-        const endX = player.x + Math.cos(angle) * player.radius * 2.5;
-        const endY = player.y + Math.sin(angle) * player.radius * 2.5;
+        const startX = player.x + Math.cos(angle) * radius * 1.5;
+        const startY = player.y + Math.sin(angle) * radius * 1.5;
+        const endX = player.x + Math.cos(angle) * radius * 2.5;
+        const endY = player.y + Math.sin(angle) * radius * 2.5;
         
         ctx.strokeStyle = '#FFD700';
         ctx.lineWidth = 3;
@@ -270,13 +271,14 @@ function drawSpin(ctx, player, frame) {
 
 function drawBounce(ctx, player, frame) {
     const bounceHeight = Math.abs(Math.sin(frame / 10)) * 50;
+    const radius = player.width / 2;
     player.y -= bounceHeight;
     
     // Draw shadow
     ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.beginPath();
-    const shadowSize = player.radius * (1 - bounceHeight / 100);
-    ctx.ellipse(player.x, player.y + bounceHeight + player.radius, shadowSize, shadowSize * 0.5, 0, 0, Math.PI * 2);
+    const shadowSize = radius * (1 - bounceHeight / 100);
+    ctx.ellipse(player.x, player.y + bounceHeight + radius, shadowSize, shadowSize * 0.5, 0, 0, Math.PI * 2);
     ctx.fill();
 }
 
@@ -284,6 +286,7 @@ function drawBackflip(ctx, player, frame) {
     const progress = (frame % 30) / 30;
     const rotation = progress * Math.PI * 2;
     const arcHeight = Math.sin(progress * Math.PI) * 60;
+    const radius = player.width / 2;
     
     ctx.save();
     ctx.translate(player.x, player.y - arcHeight);
@@ -292,10 +295,10 @@ function drawBackflip(ctx, player, frame) {
     
     // Trail effect
     if (progress > 0.2) {
-        ctx.fillStyle = player.color;
+        ctx.fillStyle = '#7ed321' || '#7ed321';
         ctx.globalAlpha = 0.3;
         ctx.beginPath();
-        ctx.arc(player.x, player.y - arcHeight + 20, player.radius * 0.8, 0, Math.PI * 2);
+        ctx.arc(player.x, player.y - arcHeight + 20, radius * 0.8, 0, Math.PI * 2);
         ctx.fill();
     }
     
@@ -308,6 +311,7 @@ function drawBackflip(ctx, player, frame) {
 function drawShimmy(ctx, player, frame) {
     const shimmy = Math.sin(frame / 2) * 10;
     const sway = Math.cos(frame / 3) * 8;
+    const radius = player.width / 2;
     
     player.x += shimmy;
     player.y += sway;
@@ -315,8 +319,8 @@ function drawShimmy(ctx, player, frame) {
     // Sparkle particles
     for (let i = 0; i < 3; i++) {
         const angle = (frame / 5 + i * Math.PI * 2 / 3) % (Math.PI * 2);
-        const px = player.x + Math.cos(angle) * player.radius * 2;
-        const py = player.y + Math.sin(angle) * player.radius * 2;
+        const px = player.x + Math.cos(angle) * radius * 2;
+        const py = player.y + Math.sin(angle) * radius * 2;
         
         ctx.fillStyle = '#FFD700';
         ctx.globalAlpha = 0.6;
@@ -339,8 +343,8 @@ function drawMoonwalk(ctx, player, frame) {
         ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 - i * 0.1})`;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(lineX, player.y - player.radius);
-        ctx.lineTo(lineX, player.y + player.radius);
+        ctx.moveTo(lineX, player.y - (player.width / 2));
+        ctx.lineTo(lineX, player.y + (player.width / 2));
         ctx.stroke();
     }
 }
@@ -356,7 +360,7 @@ function drawBreakdance(ctx, player, frame) {
     // Draw spinning legs effect
     for (let i = 0; i < 4; i++) {
         const angle = (i / 4) * Math.PI * 2;
-        ctx.strokeStyle = player.color;
+        ctx.strokeStyle = '#7ed321';
         ctx.lineWidth = 5;
         ctx.globalAlpha = 0.7;
         ctx.beginPath();
@@ -373,7 +377,7 @@ function drawBreakdance(ctx, player, frame) {
     ctx.lineWidth = 3;
     ctx.globalAlpha = 0.5;
     ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius * 2, 0, Math.PI * 2);
+    ctx.arc(player.x, player.y, (player.width / 2) * 2, 0, Math.PI * 2);
     ctx.stroke();
     ctx.globalAlpha = 1;
 }
@@ -383,20 +387,20 @@ function drawFloat(ctx, player, frame) {
     player.y -= floatHeight;
     
     // Glowing aura
-    const gradient = ctx.createRadialGradient(player.x, player.y, player.radius, player.x, player.y, player.radius * 3);
+    const gradient = ctx.createRadialGradient(player.x, player.y, (player.width / 2), player.x, player.y, (player.width / 2) * 3);
     gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
     gradient.addColorStop(0.5, 'rgba(200, 200, 255, 0.2)');
     gradient.addColorStop(1, 'rgba(200, 200, 255, 0)');
     
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius * 3, 0, Math.PI * 2);
+    ctx.arc(player.x, player.y, (player.width / 2) * 3, 0, Math.PI * 2);
     ctx.fill();
     
     // Floating particles
     for (let i = 0; i < 6; i++) {
         const angle = (frame / 20 + i * Math.PI / 3) % (Math.PI * 2);
-        const distance = player.radius * 2 + Math.sin(frame / 10 + i) * 10;
+        const distance = (player.width / 2) * 2 + Math.sin(frame / 10 + i) * 10;
         const px = player.x + Math.cos(angle) * distance;
         const py = player.y + Math.sin(angle) * distance;
         
@@ -422,15 +426,15 @@ function drawCartwheel(ctx, player, frame) {
     ctx.rotate(rotation);
     
     // Draw rotating arms/legs
-    ctx.strokeStyle = player.color;
+    ctx.strokeStyle = '#7ed321';
     ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(-player.radius * 1.5, 0);
-    ctx.lineTo(player.radius * 1.5, 0);
+    ctx.moveTo(-(player.width / 2) * 1.5, 0);
+    ctx.lineTo((player.width / 2) * 1.5, 0);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(0, -player.radius * 1.5);
-    ctx.lineTo(0, player.radius * 1.5);
+    ctx.moveTo(0, -(player.width / 2) * 1.5);
+    ctx.lineTo(0, (player.width / 2) * 1.5);
     ctx.stroke();
     
     ctx.restore();
@@ -444,22 +448,22 @@ function drawGlow(ctx, player, frame) {
     
     for (let i = 0; i < colors.length; i++) {
         const gradient = ctx.createRadialGradient(
-            player.x, player.y, player.radius,
-            player.x, player.y, player.radius * pulseSize * (1 + i * 0.3)
+            player.x, player.y, (player.width / 2),
+            player.x, player.y, (player.width / 2) * pulseSize * (1 + i * 0.3)
         );
         gradient.addColorStop(0, colors[i] + '40');
         gradient.addColorStop(1, colors[i] + '00');
         
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius * pulseSize * (1 + i * 0.3), 0, Math.PI * 2);
+        ctx.arc(player.x, player.y, (player.width / 2) * pulseSize * (1 + i * 0.3), 0, Math.PI * 2);
         ctx.fill();
     }
     
     // Energy particles
     for (let i = 0; i < 12; i++) {
         const angle = (frame / 15 + i * Math.PI * 2 / 12) % (Math.PI * 2);
-        const distance = player.radius * pulseSize;
+        const distance = (player.width / 2) * pulseSize;
         const px = player.x + Math.cos(angle) * distance;
         const py = player.y + Math.sin(angle) * distance;
         
@@ -472,11 +476,11 @@ function drawGlow(ctx, player, frame) {
 
 function drawGrow(ctx, player, frame) {
     const scale = 1 + Math.sin(frame / 15) * 0.5;
-    const originalRadius = player.radius;
-    player.radius *= scale;
+    const originalRadius = (player.width / 2);
+    (player.width / 2) *= scale;
     
     // Power-up waves
-    const waveRadius = player.radius * (1 + (frame % 20) / 20);
+    const waveRadius = (player.width / 2) * (1 + (frame % 20) / 20);
     ctx.strokeStyle = '#FF4500';
     ctx.lineWidth = 3;
     ctx.globalAlpha = 1 - (frame % 20) / 20;
@@ -493,7 +497,7 @@ function drawTornado(ctx, player, frame) {
     for (let i = 0; i < 30; i++) {
         const progress = i / 30;
         const angle = rotation + progress * Math.PI * 4;
-        const radius = progress * player.radius * 3;
+        const radius = progress * (player.width / 2) * 3;
         const px = player.x + Math.cos(angle) * radius;
         const py = player.y + Math.sin(angle) * radius - progress * 100;
         
@@ -506,10 +510,10 @@ function drawTornado(ctx, player, frame) {
     // Wind lines
     for (let i = 0; i < 8; i++) {
         const angle = rotation + i * Math.PI / 4;
-        const startX = player.x + Math.cos(angle) * player.radius;
-        const startY = player.y + Math.sin(angle) * player.radius;
-        const endX = player.x + Math.cos(angle) * player.radius * 2.5;
-        const endY = player.y + Math.sin(angle) * player.radius * 2.5;
+        const startX = player.x + Math.cos(angle) * (player.width / 2);
+        const startY = player.y + Math.sin(angle) * (player.width / 2);
+        const endX = player.x + Math.cos(angle) * (player.width / 2) * 2.5;
+        const endY = player.y + Math.sin(angle) * (player.width / 2) * 2.5;
         
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.lineWidth = 2;
@@ -537,7 +541,7 @@ function drawTeleport(ctx, player, frame) {
     // Electric particles
     for (let i = 0; i < 15; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * player.radius * 2;
+        const distance = Math.random() * (player.width / 2) * 2;
         const px = player.x + Math.cos(angle) * distance;
         const py = player.y + Math.sin(angle) * distance;
         
@@ -575,8 +579,8 @@ function drawUltimate(ctx, player, frame) {
     
     // Ultimate aura
     const gradient = ctx.createRadialGradient(
-        player.x, player.y, player.radius,
-        player.x, player.y, player.radius * 4
+        player.x, player.y, (player.width / 2),
+        player.x, player.y, (player.width / 2) * 4
     );
     gradient.addColorStop(0, 'rgba(255, 215, 0, 0.5)');
     gradient.addColorStop(0.5, 'rgba(255, 0, 255, 0.3)');
@@ -584,6 +588,6 @@ function drawUltimate(ctx, player, frame) {
     
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius * 4, 0, Math.PI * 2);
+    ctx.arc(player.x, player.y, (player.width / 2) * 4, 0, Math.PI * 2);
     ctx.fill();
 }

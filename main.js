@@ -1879,18 +1879,23 @@ class Game {
             
             // Draw bug animation on player 1
             if (this.bugAnimationType && this.bugAnimationType !== 'none') {
-                // Save player1 original position
+                // Save player1 original position and size
                 const originalX = this.player1.x;
                 const originalY = this.player1.y;
-                const originalRadius = this.player1.radius;
+                const originalWidth = this.player1.width;
+                const originalHeight = this.player1.height;
                 
-                // Draw bug animation (may modify player position temporarily)
+                // Apply bug animation (modifies player position temporarily)
                 drawBugAnimation(this.ctx, this.bugAnimationType, this.player1, this.celebrationFrame);
                 
-                // Restore player1 original position (bug animations modify it temporarily)
+                // Redraw the player with the modified position/size for animation effect
+                this.drawPlayer(this.player1, this.selectedBug1);
+                
+                // Restore player1 original position after drawing
                 this.player1.x = originalX;
                 this.player1.y = originalY;
-                this.player1.radius = originalRadius;
+                this.player1.width = originalWidth;
+                this.player1.height = originalHeight;
             }
             
             this.celebrationFrame++;
