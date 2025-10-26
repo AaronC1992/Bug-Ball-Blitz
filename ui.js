@@ -651,13 +651,29 @@ export class UIManager {
             arenaGrid.appendChild(arenaCard);
         });
         
+        // Random button - select a random unlocked arena
+        const randomBtn = document.getElementById('randomArenaBtn');
+        if (randomBtn) {
+            const newRandomBtn = randomBtn.cloneNode(true);
+            randomBtn.parentNode.replaceChild(newRandomBtn, randomBtn);
+            newRandomBtn.addEventListener('click', () => {
+                const unlockedArenas = arenas.filter(arena => isArenaUnlocked(arena.id, achievementManager));
+                if (unlockedArenas.length > 0) {
+                    const randomArena = unlockedArenas[Math.floor(Math.random() * unlockedArenas.length)];
+                    callback(randomArena.id);
+                }
+            });
+        }
+        
         // Cancel button
         const cancelBtn = document.getElementById('cancelArenaSelectBtn');
-        const newCancelBtn = cancelBtn.cloneNode(true);
-        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-        newCancelBtn.addEventListener('click', () => {
-            this.showScreen('mainMenu');
-        });
+        if (cancelBtn) {
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+            newCancelBtn.addEventListener('click', () => {
+                this.showScreen('mainMenu');
+            });
+        }
         
         this.showScreen('arenaSelectScreen');
     }
