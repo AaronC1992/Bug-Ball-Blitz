@@ -1009,11 +1009,9 @@ class Game {
     showArcadeTeamSetup() {
         // Reset arcade settings
         this.arcadeSettings = {
-            leftTeamCount: 1,
             leftAICount: 0,
             leftAIDifficulty: 'medium',
             leftAIPersonality: 'balanced',
-            rightTeamCount: 1,
             rightAICount: 1,
             rightAIDifficulty: 'medium',
             rightAIPersonality: 'balanced',
@@ -1031,13 +1029,9 @@ class Game {
         this.ui.showScreen('arcadeTeamSetupScreen');
         
         // Reset slider values
-        const leftTeamCountSlider = document.getElementById('leftTeamCountSlider');
-        const rightTeamCountSlider = document.getElementById('rightTeamCountSlider');
         const leftAICountSlider = document.getElementById('leftAICountSlider');
         const rightAICountSlider = document.getElementById('rightAICountSlider');
         
-        if (leftTeamCountSlider) leftTeamCountSlider.value = 1;
-        if (rightTeamCountSlider) rightTeamCountSlider.value = 1;
         if (leftAICountSlider) leftAICountSlider.value = 0;
         if (rightAICountSlider) rightAICountSlider.value = 1;
         
@@ -1046,59 +1040,39 @@ class Game {
     
     updateArcadeTeamUI() {
         // Update UI based on multiplayer mode
-        const leftTeamCountSlider = document.getElementById('leftTeamCountSlider');
-        const rightTeamCountSlider = document.getElementById('rightTeamCountSlider');
         const leftAICountSlider = document.getElementById('leftAICountSlider');
         const rightAICountSlider = document.getElementById('rightAICountSlider');
         
-        if (!leftTeamCountSlider || !rightTeamCountSlider || !leftAICountSlider || !rightAICountSlider) {
+        if (!leftAICountSlider || !rightAICountSlider) {
             console.warn('Arcade sliders not found');
             return;
         }
         
         if (this.arcadeIsMultiplayer) {
-            // In multiplayer, both teams can have human players
-            rightTeamCountSlider.disabled = false;
-            
-            // AI count max should equal team count
-            leftAICountSlider.max = parseInt(leftTeamCountSlider.value);
-            rightAICountSlider.max = parseInt(rightTeamCountSlider.value);
+            // In multiplayer, both teams can have AI teammates (0-1)
+            leftAICountSlider.max = 1;
+            rightAICountSlider.max = 1;
             rightAICountSlider.min = 0;
-            
-            // Ensure AI count doesn't exceed team count
-            if (parseInt(leftAICountSlider.value) > parseInt(leftTeamCountSlider.value)) {
-                leftAICountSlider.value = leftTeamCountSlider.value;
-            }
-            if (parseInt(rightAICountSlider.value) > parseInt(rightTeamCountSlider.value)) {
-                rightAICountSlider.value = rightTeamCountSlider.value;
-            }
         } else {
-            // In single player, right team is always AI
-            rightTeamCountSlider.disabled = true;
+            // In single player mode
+            // Left team: human player + optional AI teammate (0-1)
+            leftAICountSlider.max = 1;
             
-            // Left team is human only (no AI)
-            leftAICountSlider.max = 0;
-            leftAICountSlider.value = 0;
-            
-            // Right team must have at least 1 AI, max equals team count
+            // Right team: must have at least 1 AI, can have up to 2
             rightAICountSlider.min = 1;
-            rightAICountSlider.max = parseInt(rightTeamCountSlider.value);
-            rightAICountSlider.value = Math.max(1, Math.min(parseInt(rightAICountSlider.value), parseInt(rightTeamCountSlider.value)));
+            rightAICountSlider.max = 2;
+            rightAICountSlider.value = Math.max(1, parseInt(rightAICountSlider.value));
         }
         
-        // Trigger updates to show/hide AI settings and update value displays
-        if (leftTeamCountSlider) leftTeamCountSlider.dispatchEvent(new Event('input'));
-        if (rightTeamCountSlider) rightTeamCountSlider.dispatchEvent(new Event('input'));
+        // Trigger updates to show/hide AI settings and update displays
         if (leftAICountSlider) leftAICountSlider.dispatchEvent(new Event('input'));
         if (rightAICountSlider) rightAICountSlider.dispatchEvent(new Event('input'));
     }
     
     initializeArcadeSliders() {
-        // Team setup sliders
+        // Team setup sliders - simplified (no team count slider)
         const sliders = {
-            leftTeamCount: { slider: 'leftTeamCountSlider', value: 'leftTeamCountValue', format: v => v },
             leftAICount: { slider: 'leftAICountSlider', value: 'leftAICountValue', format: v => v },
-            rightTeamCount: { slider: 'rightTeamCountSlider', value: 'rightTeamCountValue', format: v => v },
             rightAICount: { slider: 'rightAICountSlider', value: 'rightAICountValue', format: v => v },
             // Game settings sliders
             playerGravity: { slider: 'playerGravitySlider', value: 'playerGravityValue', format: v => v + 'x' },
@@ -1111,19 +1085,6 @@ class Game {
             jumpPower: { slider: 'jumpPowerSlider', value: 'jumpPowerValue', format: v => v + 'x' }
         };
         
-        // Set initial max values for AI sliders based on team count
-        const leftTeamCountSlider = document.getElementById('leftTeamCountSlider');
-        const rightTeamCountSlider = document.getElementById('rightTeamCountSlider');
-        const leftAICountSlider = document.getElementById('leftAICountSlider');
-        const rightAICountSlider = document.getElementById('rightAICountSlider');
-        
-        if (leftTeamCountSlider && leftAICountSlider) {
-            leftAICountSlider.max = leftTeamCountSlider.value;
-        }
-        if (rightTeamCountSlider && rightAICountSlider) {
-            rightAICountSlider.max = rightTeamCountSlider.value;
-        }
-        
         for (const [key, config] of Object.entries(sliders)) {
             const sliderEl = document.getElementById(config.slider);
             const valueEl = document.getElementById(config.value);
@@ -1132,31 +1093,6 @@ class Game {
                 sliderEl.addEventListener('input', () => {
                     const val = parseFloat(sliderEl.value);
                     valueEl.textContent = config.format(val);
-                    
-                    // Update AI count max based on team count
-                    if (key === 'leftTeamCount') {
-                        const leftAISlider = document.getElementById('leftAICountSlider');
-                        if (leftAISlider) {
-                            leftAISlider.max = val;
-                            // Adjust AI count if it exceeds new max
-                            if (parseInt(leftAISlider.value) > val) {
-                                leftAISlider.value = val;
-                                leftAISlider.dispatchEvent(new Event('input'));
-                            }
-                        }
-                        this.updateTeamComposition('left');
-                    } else if (key === 'rightTeamCount') {
-                        const rightAISlider = document.getElementById('rightAICountSlider');
-                        if (rightAISlider) {
-                            rightAISlider.max = val;
-                            // Adjust AI count if it exceeds new max
-                            if (parseInt(rightAISlider.value) > val) {
-                                rightAISlider.value = val;
-                                rightAISlider.dispatchEvent(new Event('input'));
-                            }
-                        }
-                        this.updateTeamComposition('right');
-                    }
                     
                     // Update team composition display when AI count changes
                     if (key === 'leftAICount') {
@@ -1187,35 +1123,63 @@ class Game {
     }
     
     updateTeamComposition(team) {
-        const teamCountSlider = document.getElementById(`${team}TeamCountSlider`);
         const aiCountSlider = document.getElementById(`${team}AICountSlider`);
         const compositionEl = document.getElementById(`${team}TeamComposition`);
         
-        if (teamCountSlider && aiCountSlider && compositionEl) {
-            const totalPlayers = parseInt(teamCountSlider.value);
-            const aiPlayers = parseInt(aiCountSlider.value);
-            const humanPlayers = totalPlayers - aiPlayers;
+        if (aiCountSlider && compositionEl) {
+            const aiCount = parseInt(aiCountSlider.value);
+            const isSinglePlayer = this.arcadeSettings && this.arcadeSettings.playerCount === 1;
+            const isRightTeam = team === 'right';
             
-            compositionEl.textContent = `${humanPlayers} Human, ${aiPlayers} AI`;
+            let teamSize, humanCount;
             
-            // Highlight if invalid
-            if (aiPlayers > totalPlayers) {
-                compositionEl.style.color = '#e74c3c';
-                compositionEl.textContent = `⚠️ AI count cannot exceed team size`;
+            // Calculate team composition based on mode and team
+            if (isSinglePlayer && isRightTeam) {
+                // Single player right team: all AI (1 or 2)
+                humanCount = 0;
+                teamSize = aiCount;
             } else {
-                compositionEl.style.color = '#95a5a6';
+                // Left team or multiplayer: 1 human + AI teammates
+                humanCount = 1;
+                teamSize = 1 + aiCount;
             }
+            
+            // Build composition text
+            const parts = [];
+            if (humanCount > 0) {
+                parts.push(`${humanCount} Human${humanCount > 1 ? 's' : ''}`);
+            }
+            if (aiCount > 0) {
+                parts.push(`${aiCount} AI`);
+            }
+            
+            compositionEl.textContent = parts.join(', ') || 'No players';
+            compositionEl.style.color = '#95a5a6';
         }
     }
     
     saveArcadeTeamSettings() {
-        this.arcadeSettings.leftTeamCount = parseInt(document.getElementById('leftTeamCountSlider').value);
-        this.arcadeSettings.leftAICount = parseInt(document.getElementById('leftAICountSlider').value);
+        // Get AI counts from sliders
+        const leftAICount = parseInt(document.getElementById('leftAICountSlider').value);
+        const rightAICount = parseInt(document.getElementById('rightAICountSlider').value);
+        
+        // Calculate team counts from AI counts
+        // Left team always has 1 human + AI teammates
+        this.arcadeSettings.leftTeamCount = 1 + leftAICount;
+        this.arcadeSettings.leftAICount = leftAICount;
         this.arcadeSettings.leftAIDifficulty = document.getElementById('leftAIDifficulty').value;
         this.arcadeSettings.leftAIPersonality = document.getElementById('leftAIPersonality').value;
         
-        this.arcadeSettings.rightTeamCount = parseInt(document.getElementById('rightTeamCountSlider').value);
-        this.arcadeSettings.rightAICount = parseInt(document.getElementById('rightAICountSlider').value);
+        // Right team depends on player count mode
+        const isSinglePlayer = this.arcadeSettings.playerCount === 1;
+        if (isSinglePlayer) {
+            // Single player: right team is all AI (1 or 2)
+            this.arcadeSettings.rightTeamCount = rightAICount;
+        } else {
+            // Multiplayer: right team has 1 human + AI teammates
+            this.arcadeSettings.rightTeamCount = 1 + rightAICount;
+        }
+        this.arcadeSettings.rightAICount = rightAICount;
         this.arcadeSettings.rightAIDifficulty = document.getElementById('rightAIDifficulty').value;
         this.arcadeSettings.rightAIPersonality = document.getElementById('rightAIPersonality').value;
     }
