@@ -2194,7 +2194,7 @@ input[type="text"]:focus {
     }
     
     /* Styles Screen - Mobile specific */
-    #stylesScreen {
+    #stylesScreen.active {
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch;
@@ -2204,10 +2204,6 @@ input[type="text"]:focus {
         flex-direction: column;
         height: 100vh;
         box-sizing: border-box;
-    }
-    
-    #stylesScreen.active {
-        display: flex !important;
     }
     
     #stylesScreen h2 {
