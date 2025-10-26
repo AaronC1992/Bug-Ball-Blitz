@@ -518,8 +518,8 @@ export class UIManager {
         bugGrid.innerHTML = '';
         
         // Update header message if provided
-        const bugSelectionScreen = document.getElementById('bugSelectionScreen');
-        const existingHeader = bugSelectionScreen.querySelector('h2');
+        const bugSelectScreen = document.getElementById('bugSelectScreen');
+        const existingHeader = bugSelectScreen?.querySelector('h2');
         if (customMessage && existingHeader) {
             existingHeader.textContent = customMessage;
         } else if (existingHeader) {
@@ -576,24 +576,28 @@ export class UIManager {
         
         // Random button - select a random unlocked bug
         const randomBtn = document.getElementById('randomBugBtn');
-        const newRandomBtn = randomBtn.cloneNode(true);
-        randomBtn.parentNode.replaceChild(newRandomBtn, randomBtn);
-        newRandomBtn.addEventListener('click', () => {
-            const unlockedBugs = bugs.filter(bug => isBugUnlocked(bug.id, achievementManager));
-            if (unlockedBugs.length > 0) {
-                const randomBug = unlockedBugs[Math.floor(Math.random() * unlockedBugs.length)];
-                SaveSystem.updatePreferences(this.currentProfile, { selectedBug: randomBug.id });
-                callback(randomBug.id);
-            }
-        });
+        if (randomBtn) {
+            const newRandomBtn = randomBtn.cloneNode(true);
+            randomBtn.parentNode.replaceChild(newRandomBtn, randomBtn);
+            newRandomBtn.addEventListener('click', () => {
+                const unlockedBugs = bugs.filter(bug => isBugUnlocked(bug.id, achievementManager));
+                if (unlockedBugs.length > 0) {
+                    const randomBug = unlockedBugs[Math.floor(Math.random() * unlockedBugs.length)];
+                    SaveSystem.updatePreferences(this.currentProfile, { selectedBug: randomBug.id });
+                    callback(randomBug.id);
+                }
+            });
+        }
         
         // Cancel button
         const cancelBtn = document.getElementById('cancelBugSelectBtn');
-        const newCancelBtn = cancelBtn.cloneNode(true);
-        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-        newCancelBtn.addEventListener('click', () => {
-            this.showScreen('mainMenu');
-        });
+        if (cancelBtn) {
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+            newCancelBtn.addEventListener('click', () => {
+                this.showScreen('mainMenu');
+            });
+        }
         
         this.showScreen('bugSelectScreen');
     }
