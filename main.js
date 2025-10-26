@@ -780,6 +780,7 @@ class Game {
     }
     
     showTowerLevelSelect() {
+        console.log('showTowerLevelSelect called');
         this.ui.showScreen('towerLevelSelectScreen');
         this.populateTowerLevelGrid();
     }
@@ -1062,6 +1063,7 @@ class Game {
     }
     
     showDifficultySelection() {
+        console.log('showDifficultySelection called');
         this.ui.showScreen('difficultyScreen');
     }
     
@@ -3228,6 +3230,7 @@ class Game {
     }
     
     showStylesMenu() {
+        console.log('showStylesMenu called from:', new Error().stack);
         const profile = this.ui.currentProfile;
         if (!profile) {
             console.error('No profile loaded');
