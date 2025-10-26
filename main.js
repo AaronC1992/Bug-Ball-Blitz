@@ -343,6 +343,7 @@ class Game {
         
         towerCampaignBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             towerCampaignHandled = true;
             this.audio.playSound('ui_click');
             this.showTowerLevelSelect();
@@ -371,6 +372,7 @@ class Game {
         
         quickPlayBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             quickPlayHandled = true;
             this.audio.playSound('ui_click');
             this.showDifficultySelection();
@@ -388,6 +390,7 @@ class Game {
         
         localMultiplayerBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             localMultiplayerHandled = true;
             this.audio.playSound('ui_click');
             this.startMultiplayer();
@@ -406,6 +409,7 @@ class Game {
         
         arcadeModeBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             arcadeModeHandled = true;
             this.audio.playSound('ui_click');
             this.showArcadeMode();
@@ -708,7 +712,19 @@ class Game {
         });
         
         // Styles menu
-        document.getElementById('stylesBtn').addEventListener('click', () => {
+        const stylesBtn = document.getElementById('stylesBtn');
+        let stylesBtnHandled = false;
+        
+        stylesBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            stylesBtnHandled = true;
+            this.showStylesMenu();
+            setTimeout(() => { stylesBtnHandled = false; }, 300);
+        }, { passive: false });
+        
+        stylesBtn.addEventListener('click', () => {
+            if (stylesBtnHandled) return;
             this.showStylesMenu();
         });
         
@@ -720,7 +736,19 @@ class Game {
             this.ui.showScreen('mainMenu');
         });
         
-        document.getElementById('achievementsBtn').addEventListener('click', () => {
+        const achievementsBtn = document.getElementById('achievementsBtn');
+        let achievementsBtnHandled = false;
+        
+        achievementsBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            achievementsBtnHandled = true;
+            this.showAchievementsMenu();
+            setTimeout(() => { achievementsBtnHandled = false; }, 300);
+        }, { passive: false });
+        
+        achievementsBtn.addEventListener('click', () => {
+            if (achievementsBtnHandled) return;
             this.showAchievementsMenu();
         });
         
