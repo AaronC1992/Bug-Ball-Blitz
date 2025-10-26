@@ -12,7 +12,7 @@
 </head>
 <body>
     <!-- Version number - always visible -->
-    <div class="version">v1.8.2</div>
+    <div class="version">v1.9.0</div>
     
     <div id="gameContainer">
         <!-- Title Screen -->
@@ -370,9 +370,27 @@
 
         <!-- Styles Screen -->
         <div id="stylesScreen" class="screen">
-            <h2>🎨 Goal Celebrations</h2>
-            <p class="styles-subtitle">Unlock celebrations by winning matches!</p>
-            <div id="celebrationGrid" class="celebration-grid"></div>
+            <h2>🎨 Celebrations & Animations</h2>
+            <p class="styles-subtitle">Customize your victory style!</p>
+            
+            <!-- Tab Navigation -->
+            <div class="style-tabs">
+                <button class="style-tab active" id="celebrationsTab">Goal Celebrations</button>
+                <button class="style-tab" id="bugAnimationsTab">Bug Animations</button>
+            </div>
+            
+            <!-- Celebrations Tab Content -->
+            <div id="celebrationsTabContent" class="tab-content active">
+                <p class="tab-description">Choose how the field celebrates when you score!</p>
+                <div id="celebrationGrid" class="celebration-grid"></div>
+            </div>
+            
+            <!-- Bug Animations Tab Content -->
+            <div id="bugAnimationsTabContent" class="tab-content">
+                <p class="tab-description">Choose how your bug dances after scoring!</p>
+                <div id="bugAnimationGrid" class="celebration-grid"></div>
+            </div>
+            
             <div class="menu-buttons">
                 <button class="menu-btn" id="backToMainFromStylesBtn">← Back</button>
             </div>

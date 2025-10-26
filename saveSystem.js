@@ -35,6 +35,7 @@ export class SaveSystem {
                 selectedArena: 'grassField'
             },
             selectedCelebration: 'classic',
+            selectedBugAnimation: 'none',
             // Achievement progress (starts fresh for each profile)
             achievementProgress: {
                 stats: {
@@ -69,6 +70,9 @@ export class SaveSystem {
         // Migrate old profiles to new format
         if (!profile.selectedCelebration) {
             profile.selectedCelebration = 'classic';
+        }
+        if (!profile.selectedBugAnimation) {
+            profile.selectedBugAnimation = 'none';
         }
         if (!profile.tower.highestLevel) {
             profile.tower.highestLevel = profile.tower.levelsCompleted || 0;

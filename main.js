@@ -7,6 +7,7 @@ import { getArenaById, drawArenaBackground, getArenaArray, getUnlockedArenas } f
 import { Physics } from './physics.js';
 import { AI, MultiAI } from './ai.js';
 import { getCelebrationArray, getCelebrationById, checkCelebrationUnlock, drawCelebration } from './celebrations.js';
+import { getBugAnimationArray, getBugAnimationById, checkBugAnimationUnlock, drawBugAnimation } from './bugAnimations.js';
 import { MenuBackground } from './menuBackground.js';
 import { AudioManager } from './audioManager.js';
 import { ParticleSystem } from './particles.js';
@@ -1870,8 +1871,26 @@ class Game {
         
         // Draw celebration if active
         if (this.celebrationActive) {
+            // Draw field celebration
             drawCelebration(this.ctx, this.celebrationType, this.celebrationSide, 
                 this.canvas.width, this.canvas.height, this.celebrationFrame);
+            
+            // Draw bug animation on player 1
+            if (this.bugAnimationType && this.bugAnimationType !== 'none') {
+                // Save player1 original position
+                const originalX = this.player1.x;
+                const originalY = this.player1.y;
+                const originalRadius = this.player1.radius;
+                
+                // Draw bug animation (may modify player position temporarily)
+                drawBugAnimation(this.ctx, this.bugAnimationType, this.player1, this.celebrationFrame);
+                
+                // Restore player1 original position (bug animations modify it temporarily)
+                this.player1.x = originalX;
+                this.player1.y = originalY;
+                this.player1.radius = originalRadius;
+            }
+            
             this.celebrationFrame++;
             
             if (this.celebrationFrame >= this.celebrationDuration) {
@@ -2395,6 +2414,7 @@ class Game {
             this.celebrationFrame = 0;
             this.celebrationSide = goal;
             this.celebrationType = (profile && profile.selectedCelebration) ? profile.selectedCelebration : 'classic';
+            this.bugAnimationType = (profile && profile.selectedBugAnimation) ? profile.selectedBugAnimation : 'none';
             // Play celebration sound
             this.audio.playSound('celebration');
         } else {
@@ -3137,8 +3157,30 @@ class Game {
             return;
         }
         
-        const grid = document.getElementById('celebrationGrid');
-        grid.innerHTML = '';
+        // Setup tab switching
+        const celebrationsTab = document.getElementById('celebrationsTab');
+        const bugAnimationsTab = document.getElementById('bugAnimationsTab');
+        const celebrationsContent = document.getElementById('celebrationsTabContent');
+        const bugAnimationsContent = document.getElementById('bugAnimationsTabContent');
+        
+        // Tab click handlers
+        celebrationsTab.onclick = () => {
+            celebrationsTab.classList.add('active');
+            bugAnimationsTab.classList.remove('active');
+            celebrationsContent.classList.add('active');
+            bugAnimationsContent.classList.remove('active');
+        };
+        
+        bugAnimationsTab.onclick = () => {
+            bugAnimationsTab.classList.add('active');
+            celebrationsTab.classList.remove('active');
+            bugAnimationsContent.classList.add('active');
+            celebrationsContent.classList.remove('active');
+        };
+        
+        // Populate celebrations grid
+        const celebrationGrid = document.getElementById('celebrationGrid');
+        celebrationGrid.innerHTML = '';
         
         const celebrations = getCelebrationArray();
         
@@ -3164,12 +3206,48 @@ class Game {
                     this.ui.currentProfile = profile; // Update the UI's reference
                     
                     // Update UI
-                    document.querySelectorAll('.celebration-card').forEach(c => c.classList.remove('selected'));
+                    celebrationGrid.querySelectorAll('.celebration-card').forEach(c => c.classList.remove('selected'));
                     card.classList.add('selected');
                 });
             }
             
-            grid.appendChild(card);
+            celebrationGrid.appendChild(card);
+        });
+        
+        // Populate bug animations grid
+        const bugAnimationGrid = document.getElementById('bugAnimationGrid');
+        bugAnimationGrid.innerHTML = '';
+        
+        const bugAnimations = getBugAnimationArray();
+        
+        bugAnimations.forEach(animation => {
+            const isUnlocked = checkBugAnimationUnlock(animation, profile);
+            const isSelected = profile.selectedBugAnimation === animation.id;
+            
+            const card = document.createElement('div');
+            card.className = `celebration-card ${isUnlocked ? '' : 'locked'} ${isSelected ? 'selected' : ''}`;
+            
+            card.innerHTML = `
+                <div class="celebration-icon">${animation.icon}</div>
+                <h3>${animation.name}</h3>
+                <p class="celebration-description">${animation.description}</p>
+                <p class="unlock-condition">${isUnlocked ? '✓ Unlocked' : '🔒 ' + animation.unlockCondition}</p>
+            `;
+            
+            if (isUnlocked) {
+                card.addEventListener('click', () => {
+                    // Update selected bug animation
+                    profile.selectedBugAnimation = animation.id;
+                    SaveSystem.saveProfile(profile);
+                    this.ui.currentProfile = profile; // Update the UI's reference
+                    
+                    // Update UI
+                    bugAnimationGrid.querySelectorAll('.celebration-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                });
+            }
+            
+            bugAnimationGrid.appendChild(card);
         });
         
         this.ui.showScreen('stylesScreen');

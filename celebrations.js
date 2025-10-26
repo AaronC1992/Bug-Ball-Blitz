@@ -98,6 +98,106 @@ export const CELEBRATIONS = {
         unlockCondition: 'Complete Tower Level 20',
         requiredTowerLevel: 20,
         unlocked: false
+    },
+    
+    explosion: {
+        id: 'explosion',
+        name: 'Goal Explosion',
+        icon: '💥',
+        description: 'Massive explosion effect',
+        unlockCondition: 'Score 35 goals',
+        requiredGoals: 35,
+        unlocked: false
+    },
+    
+    treasure: {
+        id: 'treasure',
+        name: 'Treasure Chest',
+        icon: '💎',
+        description: 'Treasure chest opens with gems',
+        unlockCondition: 'Win 35 matches',
+        requiredWins: 35,
+        unlocked: false
+    },
+    
+    meteor: {
+        id: 'meteor',
+        name: 'Meteor Shower',
+        icon: '☄️',
+        description: 'Meteors rain from the sky',
+        unlockCondition: 'Score 75 goals',
+        requiredGoals: 75,
+        unlocked: false
+    },
+    
+    aurora: {
+        id: 'aurora',
+        name: 'Aurora Borealis',
+        icon: '🌌',
+        description: 'Northern lights shimmer',
+        unlockCondition: 'Win 40 matches',
+        requiredWins: 40,
+        unlocked: false
+    },
+    
+    galaxy: {
+        id: 'galaxy',
+        name: 'Galaxy Swirl',
+        icon: '🌀',
+        description: 'Swirling galaxy appears',
+        unlockCondition: 'Score 100 goals',
+        requiredGoals: 100,
+        unlocked: false
+    },
+    
+    dragons: {
+        id: 'dragons',
+        name: 'Dragon Flight',
+        icon: '🐉',
+        description: 'Dragons fly across the field',
+        unlockCondition: 'Win 50 matches',
+        requiredWins: 50,
+        unlocked: false
+    },
+    
+    tsunami: {
+        id: 'tsunami',
+        name: 'Tsunami Wave',
+        icon: '🌊',
+        description: 'Massive wave crashes through',
+        unlockCondition: 'Complete Tower Level 15',
+        requiredTowerLevel: 15,
+        unlocked: false
+    },
+    
+    volcano: {
+        id: 'volcano',
+        name: 'Volcanic Eruption',
+        icon: '🌋',
+        description: 'Lava erupts from the ground',
+        unlockCondition: 'Score 125 goals',
+        requiredGoals: 125,
+        unlocked: false
+    },
+    
+    phoenix: {
+        id: 'phoenix',
+        name: 'Phoenix Rising',
+        icon: '🔥',
+        description: 'Phoenix rises from flames',
+        unlockCondition: 'Win 60 matches',
+        requiredWins: 60,
+        unlocked: false
+    },
+    
+    blackhole: {
+        id: 'blackhole',
+        name: 'Black Hole',
+        icon: '⚫',
+        description: 'Black hole pulls everything in',
+        unlockCondition: 'Complete Tower Level 18',
+        requiredTowerLevel: 18,
+        unlocked: false
     }
 };
 
@@ -162,6 +262,36 @@ export function drawCelebration(ctx, celebrationType, side, width, height, anima
             break;
         case 'champion':
             drawChampionCrown(ctx, width / 2, 100, animationFrame);
+            break;
+        case 'explosion':
+            drawExplosion(ctx, width / 2, height / 2, animationFrame);
+            break;
+        case 'treasure':
+            drawTreasureChest(ctx, width / 2, height * 0.6, animationFrame);
+            break;
+        case 'meteor':
+            drawMeteorShower(ctx, width, height, animationFrame);
+            break;
+        case 'aurora':
+            drawAurora(ctx, width, height, animationFrame);
+            break;
+        case 'galaxy':
+            drawGalaxySwirl(ctx, width / 2, height / 2, animationFrame);
+            break;
+        case 'dragons':
+            drawDragonFlight(ctx, width, height, animationFrame);
+            break;
+        case 'tsunami':
+            drawTsunami(ctx, width, height, animationFrame);
+            break;
+        case 'volcano':
+            drawVolcano(ctx, width / 2, height * 0.7, animationFrame);
+            break;
+        case 'phoenix':
+            drawPhoenixRising(ctx, width / 2, height / 2, animationFrame);
+            break;
+        case 'blackhole':
+            drawBlackHole(ctx, width / 2, height / 2, animationFrame);
             break;
         default:
             // Classic - no special animation
@@ -457,5 +587,482 @@ function drawChampionCrown(ctx, x, y, frame) {
     ctx.beginPath();
     ctx.arc(x, crownY - 20, sparkleProgress * 30, 0, Math.PI * 2);
     ctx.fill();
+    ctx.globalAlpha = 1;
+}
+
+function drawExplosion(ctx, x, y, frame) {
+    const progress = frame / 60;
+    const radius = progress * 400;
+    
+    // Outer blast wave
+    const gradient = ctx.createRadialGradient(x, y, radius * 0.5, x, y, radius);
+    gradient.addColorStop(0, `rgba(255, 100, 0, ${1 - progress})`);
+    gradient.addColorStop(0.5, `rgba(255, 200, 0, ${0.8 - progress})`);
+    gradient.addColorStop(1, `rgba(255, 50, 0, 0)`);
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Shockwave rings
+    for (let i = 0; i < 3; i++) {
+        const ringProgress = (progress + i * 0.15) % 1;
+        const ringRadius = ringProgress * 300;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - ringProgress})`;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(x, y, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+    
+    // Debris particles
+    for (let i = 0; i < 30; i++) {
+        const angle = (i / 30) * Math.PI * 2;
+        const speed = 3 + (i % 5);
+        const distance = progress * speed * 100;
+        const px = x + Math.cos(angle) * distance;
+        const py = y + Math.sin(angle) * distance;
+        
+        ctx.fillStyle = i % 2 === 0 ? '#FF4500' : '#FFD700';
+        ctx.globalAlpha = 1 - progress;
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawTreasureChest(ctx, x, y, frame) {
+    const progress = frame / 60;
+    const chestWidth = 80;
+    const chestHeight = 60;
+    
+    // Chest body
+    ctx.fillStyle = '#8B4513';
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 3;
+    ctx.fillRect(x - chestWidth / 2, y, chestWidth, chestHeight);
+    ctx.strokeRect(x - chestWidth / 2, y, chestWidth, chestHeight);
+    
+    // Chest lid (opening)
+    const lidAngle = Math.min(progress * Math.PI / 2, Math.PI / 2);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(-lidAngle);
+    ctx.fillStyle = '#A0522D';
+    ctx.fillRect(-chestWidth / 2, -30, chestWidth, 30);
+    ctx.strokeRect(-chestWidth / 2, -30, chestWidth, 30);
+    ctx.restore();
+    
+    // Gems bursting out
+    if (progress > 0.3) {
+        for (let i = 0; i < 15; i++) {
+            const angle = (i / 15) * Math.PI * 2;
+            const burstProgress = (progress - 0.3) / 0.7;
+            const distance = burstProgress * 150;
+            const gemY = y - 30 - distance + Math.sin(burstProgress * Math.PI) * 100;
+            const px = x + Math.cos(angle) * distance * 0.5;
+            
+            const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFD700', '#FF00FF'];
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.globalAlpha = 1 - burstProgress;
+            
+            // Diamond shape
+            ctx.beginPath();
+            ctx.moveTo(px, gemY - 10);
+            ctx.lineTo(px + 8, gemY);
+            ctx.lineTo(px, gemY + 10);
+            ctx.lineTo(px - 8, gemY);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawMeteorShower(ctx, width, height, frame) {
+    const numMeteors = 20;
+    
+    for (let i = 0; i < numMeteors; i++) {
+        const startX = (i * 137) % width + width;
+        const progress = ((frame + i * 3) % 60) / 60;
+        const x = startX - progress * (width + 200);
+        const y = progress * height * 1.2;
+        
+        if (x < -100 || y > height) continue;
+        
+        // Meteor trail
+        const gradient = ctx.createLinearGradient(x, y, x + 50, y - 50);
+        gradient.addColorStop(0, 'rgba(255, 100, 0, 0)');
+        gradient.addColorStop(1, 'rgba(255, 200, 0, 0.8)');
+        
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 50, y - 50);
+        ctx.stroke();
+        
+        // Meteor head
+        ctx.fillStyle = '#FF4500';
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Sparkles
+        for (let j = 0; j < 5; j++) {
+            const sparkleX = x + j * 10;
+            const sparkleY = y - j * 10;
+            ctx.fillStyle = '#FFD700';
+            ctx.globalAlpha = 0.7 - j * 0.1;
+            ctx.beginPath();
+            ctx.arc(sparkleX, sparkleY, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawAurora(ctx, width, height, frame) {
+    const numWaves = 5;
+    
+    for (let i = 0; i < numWaves; i++) {
+        const yOffset = i * 30;
+        const colors = ['#00FF00', '#00FFFF', '#0080FF', '#FF00FF', '#FF0080'];
+        
+        ctx.fillStyle = colors[i];
+        ctx.globalAlpha = 0.3;
+        
+        ctx.beginPath();
+        ctx.moveTo(0, yOffset);
+        
+        for (let x = 0; x <= width; x += 20) {
+            const waveHeight = Math.sin((x / 100) + (frame / 20) + i) * 50;
+            ctx.lineTo(x, yOffset + waveHeight + 100);
+        }
+        
+        ctx.lineTo(width, height);
+        ctx.lineTo(0, height);
+        ctx.closePath();
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    
+    // Sparkles
+    for (let i = 0; i < 30; i++) {
+        const x = (i * 73 + frame * 2) % width;
+        const y = ((i * 127) % 200) + Math.sin(frame / 10 + i) * 20;
+        const pulse = (Math.sin(frame / 5 + i) + 1) / 2;
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.globalAlpha = pulse * 0.8;
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawGalaxySwirl(ctx, x, y, frame) {
+    const numStars = 100;
+    const rotation = frame / 60;
+    
+    // Galaxy spiral
+    for (let i = 0; i < numStars; i++) {
+        const angle = (i / numStars) * Math.PI * 8 + rotation;
+        const distance = (i / numStars) * 300;
+        const px = x + Math.cos(angle) * distance;
+        const py = y + Math.sin(angle) * distance;
+        
+        const colors = ['#FFFFFF', '#FFD700', '#00FFFF', '#FF00FF'];
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.globalAlpha = 1 - (i / numStars) * 0.5;
+        
+        const size = 3 - (i / numStars) * 2;
+        ctx.beginPath();
+        ctx.arc(px, py, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Central glow
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 100);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+    gradient.addColorStop(0.5, 'rgba(100, 100, 255, 0.4)');
+    gradient.addColorStop(1, 'rgba(100, 100, 255, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, 100, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.globalAlpha = 1;
+}
+
+function drawDragonFlight(ctx, width, height, frame) {
+    const numDragons = 3;
+    
+    for (let i = 0; i < numDragons; i++) {
+        const progress = ((frame + i * 20) % 80) / 80;
+        const x = -100 + progress * (width + 200);
+        const y = 100 + i * 80 + Math.sin(progress * Math.PI * 4) * 30;
+        
+        // Dragon body (simple)
+        ctx.strokeStyle = i % 2 === 0 ? '#FF0000' : '#FFD700';
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        
+        // Body curve
+        ctx.beginPath();
+        ctx.moveTo(x - 40, y);
+        ctx.quadraticCurveTo(x, y - 20, x + 40, y);
+        ctx.stroke();
+        
+        // Wings
+        const wingFlap = Math.sin(frame / 5 + i) * 20;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - 30, y - 40 + wingFlap);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 30, y - 40 + wingFlap);
+        ctx.stroke();
+        
+        // Fire breath
+        if (progress > 0.3 && progress < 0.7) {
+            for (let j = 0; j < 10; j++) {
+                const fireX = x + 40 + j * 10;
+                const fireY = y + (Math.random() - 0.5) * 20;
+                const fireSize = 5 - j * 0.3;
+                
+                ctx.fillStyle = j % 2 === 0 ? '#FF4500' : '#FFD700';
+                ctx.globalAlpha = 1 - j / 10;
+                ctx.beginPath();
+                ctx.arc(fireX, fireY, fireSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawTsunami(ctx, width, height, frame) {
+    const progress = frame / 60;
+    const waveHeight = height * 0.6;
+    const waveX = -width + progress * width * 2;
+    
+    // Wave body
+    const gradient = ctx.createLinearGradient(0, waveHeight, 0, height);
+    gradient.addColorStop(0, 'rgba(0, 100, 200, 0.8)');
+    gradient.addColorStop(1, 'rgba(0, 50, 150, 0.9)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.moveTo(waveX - 200, height);
+    
+    // Wave curve
+    for (let x = waveX - 200; x < waveX + 400; x += 20) {
+        const curveHeight = waveHeight + Math.sin((x - waveX) / 50) * 80;
+        ctx.lineTo(x, curveHeight);
+    }
+    
+    ctx.lineTo(waveX + 400, height);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Wave foam
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 6;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(waveX - 200, waveHeight);
+    for (let x = waveX - 200; x < waveX + 400; x += 20) {
+        const curveHeight = waveHeight + Math.sin((x - waveX) / 50) * 80;
+        ctx.lineTo(x, curveHeight);
+    }
+    ctx.stroke();
+    
+    // Spray particles
+    for (let i = 0; i < 30; i++) {
+        const px = waveX + (i - 15) * 20 + Math.random() * 40;
+        const py = waveHeight - 50 - Math.random() * 100;
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawVolcano(ctx, x, y, frame) {
+    const progress = frame / 60;
+    
+    // Volcano mountain
+    ctx.fillStyle = '#654321';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - 100, y + 100);
+    ctx.lineTo(x + 100, y + 100);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Lava eruption
+    for (let i = 0; i < 20; i++) {
+        const angle = Math.PI / 2 + (i - 10) * 0.2;
+        const speed = 3 + (i % 5);
+        const distance = progress * speed * 100;
+        const lavaX = x + Math.cos(angle) * distance * 0.3;
+        const lavaY = y - Math.sin(angle) * distance;
+        
+        // Lava chunk
+        ctx.fillStyle = '#FF4500';
+        ctx.globalAlpha = 1 - progress;
+        ctx.beginPath();
+        ctx.arc(lavaX, lavaY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Glow
+        const gradient = ctx.createRadialGradient(lavaX, lavaY, 0, lavaX, lavaY, 20);
+        gradient.addColorStop(0, 'rgba(255, 200, 0, 0.8)');
+        gradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(lavaX, lavaY, 20, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Smoke
+    for (let i = 0; i < 10; i++) {
+        const smokeProgress = (progress + i * 0.1) % 1;
+        const smokeX = x + (Math.random() - 0.5) * 60;
+        const smokeY = y - smokeProgress * 200;
+        const smokeSize = 20 + smokeProgress * 30;
+        
+        ctx.fillStyle = `rgba(80, 80, 80, ${0.5 - smokeProgress * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(smokeX, smokeY, smokeSize, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawPhoenixRising(ctx, x, y, frame) {
+    const progress = frame / 60;
+    const phoenixY = y + 100 - progress * 200;
+    
+    // Phoenix body
+    ctx.strokeStyle = '#FF4500';
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    
+    // Body curve
+    ctx.beginPath();
+    ctx.moveTo(x, phoenixY);
+    ctx.quadraticCurveTo(x, phoenixY + 40, x, phoenixY + 60);
+    ctx.stroke();
+    
+    // Wings
+    const wingSpan = progress * 150;
+    const wingFlap = Math.sin(frame / 8) * 20;
+    
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(x, phoenixY + 20);
+    ctx.quadraticCurveTo(x - wingSpan / 2, phoenixY - wingFlap, x - wingSpan, phoenixY + 40);
+    ctx.moveTo(x, phoenixY + 20);
+    ctx.quadraticCurveTo(x + wingSpan / 2, phoenixY - wingFlap, x + wingSpan, phoenixY + 40);
+    ctx.stroke();
+    
+    // Flame trail
+    for (let i = 0; i < 20; i++) {
+        const flameY = phoenixY + 60 + i * 10;
+        const flameSize = 15 - i * 0.5;
+        const flameX = x + Math.sin(frame / 10 + i) * 10;
+        
+        const colors = ['#FF0000', '#FF4500', '#FFD700'];
+        ctx.fillStyle = colors[i % 3];
+        ctx.globalAlpha = 1 - i / 20;
+        ctx.beginPath();
+        ctx.arc(flameX, flameY, flameSize, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Embers
+    for (let i = 0; i < 30; i++) {
+        const angle = (i / 30) * Math.PI * 2;
+        const distance = progress * 100 + (i % 3) * 20;
+        const emberX = x + Math.cos(angle) * distance;
+        const emberY = phoenixY + Math.sin(angle) * distance;
+        
+        ctx.fillStyle = '#FFD700';
+        ctx.globalAlpha = 1 - progress;
+        ctx.beginPath();
+        ctx.arc(emberX, emberY, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawBlackHole(ctx, x, y, frame) {
+    const progress = frame / 60;
+    const holeSize = 50 + progress * 50;
+    
+    // Black hole center
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(x, y, holeSize, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Event horizon
+    const gradient = ctx.createRadialGradient(x, y, holeSize, x, y, holeSize * 3);
+    gradient.addColorStop(0, 'rgba(100, 0, 150, 0.8)');
+    gradient.addColorStop(0.5, 'rgba(50, 0, 100, 0.4)');
+    gradient.addColorStop(1, 'rgba(0, 0, 50, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, holeSize * 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Accretion disk
+    const numRings = 10;
+    for (let i = 0; i < numRings; i++) {
+        const angle = (frame / 20 + i * 0.3) % (Math.PI * 2);
+        const radius = holeSize + i * 20;
+        
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        
+        const diskGradient = ctx.createLinearGradient(-radius, 0, radius, 0);
+        diskGradient.addColorStop(0, 'rgba(200, 100, 255, 0)');
+        diskGradient.addColorStop(0.5, `rgba(150, 50, 200, ${0.6 - i * 0.05})`);
+        diskGradient.addColorStop(1, 'rgba(200, 100, 255, 0)');
+        
+        ctx.strokeStyle = diskGradient;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, radius, radius * 0.3, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+    
+    // Particles being pulled in
+    for (let i = 0; i < 50; i++) {
+        const particleAngle = (i / 50) * Math.PI * 2 + frame / 10;
+        const spiralProgress = ((frame + i * 2) % 100) / 100;
+        const distance = (1 - spiralProgress) * 300 + holeSize;
+        const px = x + Math.cos(particleAngle) * distance;
+        const py = y + Math.sin(particleAngle) * distance;
+        
+        ctx.fillStyle = i % 2 === 0 ? '#FFFFFF' : '#00FFFF';
+        ctx.globalAlpha = spiralProgress;
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
     ctx.globalAlpha = 1;
 }
