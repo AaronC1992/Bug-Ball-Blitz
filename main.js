@@ -1402,16 +1402,24 @@ class Game {
         // Get size multiplier for arcade mode
         const sizeMultiplier = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.playerSize : 1.0;
         const ballSizeMultiplier = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.ballSize : 1.0;
+        const ballCount = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.ballCount || 1 : 1;
         
-        // Initialize ball
-        this.ball = {
-            x: this.canvas.width / 2,
-            y: this.canvas.height / 2,
-            vx: 0,
-            vy: 0,
-            radius: 15 * ballSizeMultiplier,
-            rotation: 0 // Track rotation angle for rolling effect
-        };
+        // Initialize balls (multiple in arcade mode)
+        this.balls = [];
+        for (let i = 0; i < ballCount; i++) {
+            // Spread balls out horizontally if multiple
+            const spacing = this.canvas.width / (ballCount + 1);
+            this.balls.push({
+                x: spacing * (i + 1),
+                y: this.canvas.height / 2,
+                vx: 0,
+                vy: 0,
+                radius: 15 * ballSizeMultiplier,
+                rotation: 0 // Track rotation angle for rolling effect
+            });
+        }
+        // Keep this.ball reference for backwards compatibility (points to first ball)
+        this.ball = this.balls[0];
         
         // Initialize player 1
         const p1Size = 40 * this.selectedBug1.stats.size * sizeMultiplier;
@@ -1941,63 +1949,64 @@ class Game {
             this.physics.updatePlayer(this.player3, this.selectedBug3, jumpPowerMultiplier);
         }
         
-        this.physics.updateBall(this.ball, ballSpeedMultiplier);
+        // Update all balls
+        for (let ball of this.balls) {
+            this.physics.updateBall(ball, ballSpeedMultiplier);
+            
+            // Update ball rotation based on velocity (rolling effect)
+            const rotationSpeed = ball.vx / (2 * Math.PI * ball.radius);
+            ball.rotation += rotationSpeed;
+        }
         
-        // Apply weather effects to ball
+        // Apply weather effects to all balls
         this.applyWeatherEffects();
         
-        // Update ball rotation based on velocity (rolling effect)
-        if (this.ball) {
-            // Rotate based on horizontal velocity (positive = clockwise, negative = counter-clockwise)
-            // Using vx because horizontal movement is most visible
-            const rotationSpeed = this.ball.vx / (2 * Math.PI * this.ball.radius);
-            this.ball.rotation += rotationSpeed;
-        }
-        
-        // Check collisions and play kick sounds with haptic feedback
-        const ballVelocity = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
-        
-        if (this.physics.checkBallPlayerCollision(this.ball, this.player1, this.selectedBug1)) {
-            const hapticStrength = Math.min(Math.floor(ballVelocity * 3), 50);
-            this.audio.playSoundWithHaptic('kick', hapticStrength, ballVelocity);
-            // Create kick dust particles
-            const maxParticles = this.quality.getSetting('particleCount');
-            this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx, maxParticles);
-            if (ballVelocity > 15) {
-                this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20, maxParticles);
-            }
-        }
-        if (this.physics.checkBallPlayerCollision(this.ball, this.player2, this.selectedBug2)) {
-            this.audio.playSound('kick', ballVelocity);
-            // Create kick dust particles
-            const maxParticles = this.quality.getSetting('particleCount');
-            this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx, maxParticles);
-            if (ballVelocity > 15) {
-                this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20, maxParticles);
-            }
-        }
-        
-        if (this.player3) {
-            if (this.physics.checkBallPlayerCollision(this.ball, this.player3, this.selectedBug3)) {
-                this.audio.playSound('kick', ballVelocity);
-                // Create kick dust particles
+        // Check collisions for all balls
+        for (let ball of this.balls) {
+            const ballVelocity = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            
+            if (this.physics.checkBallPlayerCollision(ball, this.player1, this.selectedBug1)) {
+                const hapticStrength = Math.min(Math.floor(ballVelocity * 3), 50);
+                this.audio.playSoundWithHaptic('kick', hapticStrength, ballVelocity);
                 const maxParticles = this.quality.getSetting('particleCount');
-                this.particles.createKickDust(this.ball.x, this.ball.y, this.ball.vx, maxParticles);
+                this.particles.createKickDust(ball.x, ball.y, ball.vx, maxParticles);
                 if (ballVelocity > 15) {
-                    this.particles.createImpactSparks(this.ball.x, this.ball.y, ballVelocity / 20, maxParticles);
+                    this.particles.createImpactSparks(ball.x, ball.y, ballVelocity / 20, maxParticles);
+                }
+            }
+            if (this.physics.checkBallPlayerCollision(ball, this.player2, this.selectedBug2)) {
+                this.audio.playSound('kick', ballVelocity);
+                const maxParticles = this.quality.getSetting('particleCount');
+                this.particles.createKickDust(ball.x, ball.y, ball.vx, maxParticles);
+                if (ballVelocity > 15) {
+                    this.particles.createImpactSparks(ball.x, ball.y, ballVelocity / 20, maxParticles);
+                }
+            }
+            
+            if (this.player3) {
+                if (this.physics.checkBallPlayerCollision(ball, this.player3, this.selectedBug3)) {
+                    this.audio.playSound('kick', ballVelocity);
+                    const maxParticles = this.quality.getSetting('particleCount');
+                    this.particles.createKickDust(ball.x, ball.y, ball.vx, maxParticles);
+                    if (ballVelocity > 15) {
+                        this.particles.createImpactSparks(ball.x, ball.y, ballVelocity / 20, maxParticles);
+                    }
+                }
+            }
+            
+            // CRITICAL FIX: After all collisions, ensure ball is never stuck underground
+            const minBallY = this.physics.groundY - ball.radius;
+            if (ball.y > minBallY) {
+                ball.y = minBallY;
+                if (ball.vy > -2) {
+                    ball.vy = -8; // Strong upward push to free the ball
                 }
             }
         }
         
-        // CRITICAL FIX: After all collisions, ensure ball is never stuck underground
-        // This handles the case where ball is caught between two overlapping players
-        const minBallY = this.physics.groundY - this.ball.radius;
-        if (this.ball.y > minBallY) {
-            this.ball.y = minBallY;
-            // Push ball upward forcefully when stuck
-            if (this.ball.vy > -2) {
-                this.ball.vy = -8; // Strong upward push to free the ball
-            }
+        // Create ball trail for first ball (visual effect)
+        if (this.ball) {
+            this.particles.createBallTrail(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy);
         }
         
         // Check for near misses (ball close to goal but not in)
@@ -2026,10 +2035,12 @@ class Game {
             }
         }
         
-        // Check goals
-        const goal = this.physics.checkGoal(this.ball);
-        if (goal) {
-            this.handleGoal(goal);
+        // Check goals for all balls
+        for (let i = 0; i < this.balls.length; i++) {
+            const goal = this.physics.checkGoal(this.balls[i]);
+            if (goal) {
+                this.handleGoal(goal, i);
+            }
         }
     }
     
@@ -2087,8 +2098,10 @@ class Game {
         // Draw weather effects
         this.drawWeatherParticles();
         
-        // Draw ball
-        this.drawBall();
+        // Draw all balls
+        for (let ball of this.balls) {
+            this.drawBall(ball);
+        }
         
         // Draw players
         this.drawPlayer(this.player1, this.selectedBug1);
@@ -2136,29 +2149,31 @@ class Game {
         }
     }
     
-    drawBall() {
+    drawBall(ball = this.ball) {
+        if (!ball) return;
+        
         this.ctx.save();
         
         // Translate to ball position
-        this.ctx.translate(this.ball.x, this.ball.y);
+        this.ctx.translate(ball.x, ball.y);
         
         // Rotate based on ball rotation
-        this.ctx.rotate(this.ball.rotation);
+        this.ctx.rotate(ball.rotation);
         
         // Draw soccer ball at origin (since we translated)
         this.ctx.fillStyle = 'white';
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, this.ball.radius, 0, Math.PI * 2);
+        this.ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
         this.ctx.fill();
         
         // Black pentagons
         this.ctx.fillStyle = 'black';
         for (let i = 0; i < 5; i++) {
             const angle = (i * Math.PI * 2 / 5);
-            const x = Math.cos(angle) * this.ball.radius * 0.6;
-            const y = Math.sin(angle) * this.ball.radius * 0.6;
+            const x = Math.cos(angle) * ball.radius * 0.6;
+            const y = Math.sin(angle) * ball.radius * 0.6;
             this.ctx.beginPath();
-            this.ctx.arc(x, y, this.ball.radius * 0.25, 0, Math.PI * 2);
+            this.ctx.arc(x, y, ball.radius * 0.25, 0, Math.PI * 2);
             this.ctx.fill();
         }
         
@@ -2166,7 +2181,7 @@ class Game {
         
         // Dynamic shadow that scales with ball height
         const groundY = this.physics.groundY;
-        const ballHeight = groundY - this.ball.y;
+        const ballHeight = groundY - ball.y;
         const maxHeight = 200; // Maximum expected ball height
         
         // Scale shadow based on height (smaller and lighter when higher)
@@ -2177,10 +2192,10 @@ class Game {
         this.ctx.fillStyle = `rgba(0, 0, 0, ${shadowOpacity})`;
         this.ctx.beginPath();
         this.ctx.ellipse(
-            this.ball.x, 
+            ball.x, 
             groundY + 5, 
-            this.ball.radius * 0.8 * shadowScale, 
-            this.ball.radius * 0.3 * shadowScale, 
+            ball.radius * 0.8 * shadowScale, 
+            ball.radius * 0.3 * shadowScale, 
             0, 0, Math.PI * 2
         );
         this.ctx.fill();
@@ -2243,7 +2258,7 @@ class Game {
         this.ctx.restore();
     }
     
-    handleGoal(goal) {
+    handleGoal(goal, ballIndex = 0) {
         // Prevent multiple goal detections
         if (this.gameState !== 'playing') {
             return;
@@ -2302,7 +2317,10 @@ class Game {
         
         // Reset positions after a short delay
         setTimeout(() => {
-            this.physics.resetBall(this.ball);
+            // Reset all balls if multiple balls mode
+            for (let ball of this.balls) {
+                this.physics.resetBall(ball);
+            }
             this.physics.resetPlayer(this.player1, 'left');
             this.physics.resetPlayer(this.player2, 'right');
             
@@ -2475,25 +2493,30 @@ class Game {
     }
     
     applyWeatherEffects() {
-        if (!this.ball || this.currentWeather === 'none') return;
+        if (this.currentWeather === 'none') return;
         
-        if (this.currentWeather === 'rain') {
-            // Rain adds horizontal drift (changes direction every 5 seconds)
-            this.ball.vx += 0.2 * this.weatherDirection;
-            this.ball.vy += 0.08; // Slight downward push
-        } else if (this.currentWeather === 'snow') {
-            // Snow reduces friction, making ball and players slide more
-            this.ball.vx *= 1.008; // Less friction slowdown for ball
-            this.ball.vy *= 1.003;
-            // Set player friction for sliding effect
-            this.physics.weatherFriction = 0.96; // Much less friction (normal is 0.9)
-        } else if (this.currentWeather === 'wind') {
-            // Wind pushes ball horizontally (changes direction every 5 seconds)
-            this.ball.vx += 0.2 * this.weatherDirection; // Reduced from 0.4
+        // Apply effects to all balls
+        for (let ball of this.balls) {
+            if (!ball) continue;
+            
+            if (this.currentWeather === 'rain') {
+                // Rain adds horizontal drift (changes direction every 5 seconds)
+                ball.vx += 0.2 * this.weatherDirection;
+                ball.vy += 0.08; // Slight downward push
+            } else if (this.currentWeather === 'snow') {
+                // Snow reduces friction, making ball and players slide more
+                ball.vx *= 1.008; // Less friction slowdown for ball
+                ball.vy *= 1.003;
+            } else if (this.currentWeather === 'wind') {
+                // Wind pushes ball horizontally (changes direction every 5 seconds)
+                ball.vx += 0.2 * this.weatherDirection; // Reduced from 0.4
+            }
         }
         
-        // Reset friction if not snowing
-        if (this.currentWeather !== 'snow') {
+        // Set player friction for snow
+        if (this.currentWeather === 'snow') {
+            this.physics.weatherFriction = 0.96; // Much less friction (normal is 0.9)
+        } else {
             this.physics.weatherFriction = 0.9;
         }
     }
