@@ -191,7 +191,7 @@ export class AI {
     }
     
     bossStrategy() {
-        // Boss AI: Chase ball intelligently and push it toward opponent goal
+        // Boss AI: Aggressive ball chasing - push it toward opponent goal
         const ballX = this.ball.x;
         const ballY = this.ball.y;
         const playerX = this.player.x;
@@ -203,35 +203,35 @@ export class AI {
         const distanceY = Math.abs(ballY - playerY);
         const ballOnGround = ballY > this.physics.groundY - this.ball.radius - 50;
         
-        // Check if ball is on the WRONG side (between us and opponent goal)
-        // We need to get on the OTHER side to push it correctly
-        const ballOnWrongSide = this.side === 'right' ?
-            (ballX < playerX) : // If we're on right, ball should be to our right, not left
-            (ballX > playerX);  // If we're on left, ball should be to our left, not right
+        // Determine if we're on the correct side to push ball toward opponent
+        const onCorrectSide = this.side === 'right' ?
+            (playerX > ballX) : // Right side: we should be to the right of ball
+            (playerX < ballX);  // Left side: we should be to the left of ball
         
-        if (ballOnWrongSide && distanceX < 100) {
-            // Ball is between us and opponent goal - need to jump over it
-            if (ballOnGround && this.player.isGrounded && distanceX < 70) {
-                // Jump over the ball to get on the correct side
+        // If we're very close to the ball (danger of own goal), check positioning
+        const veryClose = distanceX < 60;
+        const ballNearOwnGoal = Math.abs(ballX - ownGoalX) < 200;
+        
+        if (!onCorrectSide && veryClose && ballNearOwnGoal) {
+            // Only reposition if we're close AND ball is near our goal
+            // Jump over ball to get on correct side
+            if (ballOnGround && this.player.isGrounded) {
                 this.shouldJump = true;
-                // Move to the far side of the ball
-                this.targetX = this.side === 'right' ? ballX + 60 : ballX - 60;
-            } else {
-                // Move around the ball to get on correct side
-                this.targetX = this.side === 'right' ? ballX + 80 : ballX - 80;
-                this.shouldJump = false;
             }
+            // Move to get on the correct side
+            this.targetX = this.side === 'right' ? ballX + 50 : ballX - 50;
         } else {
-            // Ball is on the correct side (between us and our goal) - push it toward opponent
+            // Default: Go directly to ball and be aggressive
             this.targetX = ballX;
             
-            // Jump when ball is high or for aggressive aerial plays
-            const ballInRange = distanceX < 80;
-            const ballHigh = ballY < playerY - 20;
+            // Jump when ball is in range
+            const ballInRange = distanceX < 100;
+            const ballHigh = ballY < playerY - 30;
             
-            this.shouldJump = this.player.isGrounded && (
-                (ballHigh && ballInRange) ||
-                (ballInRange && distanceY < 50 && Math.random() < 0.2)
+            // Jump if ball is high, or random aggressive aerial
+            this.shouldJump = this.player.isGrounded && ballInRange && (
+                ballHigh || 
+                (distanceY < 60 && Math.random() < 0.25)
             );
         }
     }
