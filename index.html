@@ -42,7 +42,7 @@
             <button class="dev-btn dev-test-btn" id="devTestProfileBtn" title="Create tester profile with everything unlocked">
                 <span class="dev-icon">👨‍💻</span>
             </button>
-            <div class="version-info">v1.2.4</div>
+            <div class="version-info">v1.2.5</div>
         </div>
 
         <!-- Profile Creation Screen -->
@@ -188,9 +188,17 @@
                     <h3>🔵 Left Team</h3>
                     
                     <div class="arcade-setting">
-                        <label>AI Teammates:</label>
+                        <label>
+                            <input type="checkbox" id="leftHumanPlayerCheckbox" checked style="margin-right: 8px;">
+                            Add Human Player
+                        </label>
+                        <small class="setting-hint">Uncheck for AI-only team (spectator mode)</small>
+                    </div>
+                    
+                    <div class="arcade-setting">
+                        <label>AI Players:</label>
                         <div class="slider-container">
-                            <input type="range" id="leftAICountSlider" min="0" max="1" value="0" step="1" class="arcade-slider">
+                            <input type="range" id="leftAICountSlider" min="0" max="2" value="0" step="1" class="arcade-slider">
                             <span class="slider-value" id="leftAICountValue">0</span>
                         </div>
                         <small class="setting-hint" id="leftTeamComposition">1 Human, 0 AI</small>
@@ -219,6 +227,14 @@
                 <!-- Right Team (Player 2 in multiplayer) -->
                 <div class="team-setup-section">
                     <h3>🔴 Right Team</h3>
+                    
+                    <div class="arcade-setting">
+                        <label>
+                            <input type="checkbox" id="rightHumanPlayerCheckbox" style="margin-right: 8px;">
+                            Add Human Player
+                        </label>
+                        <small class="setting-hint">Check to add a human player to this team</small>
+                    </div>
                     
                     <div class="arcade-setting">
                         <label>AI Players:</label>

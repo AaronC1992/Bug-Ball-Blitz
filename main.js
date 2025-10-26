@@ -1012,6 +1012,7 @@ class Game {
             leftAICount: 0,
             leftAIDifficulty: 'medium',
             leftAIPersonality: 'balanced',
+            rightHasHuman: false,  // New: track if right team has human player
             rightAICount: 1,
             rightAIDifficulty: 'medium',
             rightAIPersonality: 'balanced',
@@ -1028,12 +1029,16 @@ class Game {
         
         this.ui.showScreen('arcadeTeamSetupScreen');
         
-        // Reset slider values
+        // Reset slider values and checkboxes
         const leftAICountSlider = document.getElementById('leftAICountSlider');
         const rightAICountSlider = document.getElementById('rightAICountSlider');
+        const leftHumanCheckbox = document.getElementById('leftHumanPlayerCheckbox');
+        const rightHumanCheckbox = document.getElementById('rightHumanPlayerCheckbox');
         
         if (leftAICountSlider) leftAICountSlider.value = 0;
         if (rightAICountSlider) rightAICountSlider.value = 1;
+        if (leftHumanCheckbox) leftHumanCheckbox.checked = true; // Left team starts with human player
+        if (rightHumanCheckbox) rightHumanCheckbox.checked = false;
         
         this.updateArcadeTeamUI();
     }
@@ -1042,23 +1047,37 @@ class Game {
         // Update UI based on multiplayer mode
         const leftAICountSlider = document.getElementById('leftAICountSlider');
         const rightAICountSlider = document.getElementById('rightAICountSlider');
+        const leftHumanCheckbox = document.getElementById('leftHumanPlayerCheckbox');
+        const rightHumanCheckbox = document.getElementById('rightHumanPlayerCheckbox');
         
         if (!leftAICountSlider || !rightAICountSlider) {
             console.warn('Arcade sliders not found');
             return;
         }
         
-        if (this.arcadeIsMultiplayer) {
-            // In multiplayer, both teams can have AI teammates (0-1)
+        // Set constraints based on checkbox states
+        const leftHasHuman = leftHumanCheckbox ? leftHumanCheckbox.checked : true;
+        const rightHasHuman = rightHumanCheckbox ? rightHumanCheckbox.checked : false;
+        
+        // Left team AI slider constraints
+        if (leftHasHuman) {
+            // With human: can have 0-1 AI teammate
+            leftAICountSlider.min = 0;
             leftAICountSlider.max = 1;
-            rightAICountSlider.max = 1;
-            rightAICountSlider.min = 0;
         } else {
-            // In single player mode
-            // Left team: human player + optional AI teammate (0-1)
-            leftAICountSlider.max = 1;
-            
-            // Right team: must have at least 1 AI, can have up to 2
+            // Without human (spectator mode): must have 1-2 AI
+            leftAICountSlider.min = 1;
+            leftAICountSlider.max = 2;
+            leftAICountSlider.value = Math.max(1, parseInt(leftAICountSlider.value));
+        }
+        
+        // Right team AI slider constraints
+        if (rightHasHuman) {
+            // With human: can have 0-1 AI teammate
+            rightAICountSlider.min = 0;
+            rightAICountSlider.max = 1;
+        } else {
+            // Without human: must have 1-2 AI
             rightAICountSlider.min = 1;
             rightAICountSlider.max = 2;
             rightAICountSlider.value = Math.max(1, parseInt(rightAICountSlider.value));
@@ -1120,28 +1139,46 @@ class Game {
                 sliderEl.dispatchEvent(new Event('input'));
             }
         }
+        
+        // Add checkbox event listeners
+        const leftHumanCheckbox = document.getElementById('leftHumanPlayerCheckbox');
+        const rightHumanCheckbox = document.getElementById('rightHumanPlayerCheckbox');
+        
+        if (leftHumanCheckbox) {
+            leftHumanCheckbox.addEventListener('change', () => {
+                this.updateArcadeTeamUI();
+                this.updateTeamComposition('left');
+            });
+        }
+        
+        if (rightHumanCheckbox) {
+            rightHumanCheckbox.addEventListener('change', () => {
+                this.updateArcadeTeamUI();
+                this.updateTeamComposition('right');
+            });
+        }
     }
     
     updateTeamComposition(team) {
         const aiCountSlider = document.getElementById(`${team}AICountSlider`);
         const compositionEl = document.getElementById(`${team}TeamComposition`);
+        const humanCheckbox = document.getElementById(`${team}HumanPlayerCheckbox`);
         
         if (aiCountSlider && compositionEl) {
             const aiCount = parseInt(aiCountSlider.value);
-            const isSinglePlayer = this.arcadeSettings && this.arcadeSettings.playerCount === 1;
-            const isRightTeam = team === 'right';
+            const hasHuman = humanCheckbox ? humanCheckbox.checked : true;
             
             let teamSize, humanCount;
             
-            // Calculate team composition based on mode and team
-            if (isSinglePlayer && isRightTeam) {
-                // Single player right team: all AI (1 or 2)
-                humanCount = 0;
-                teamSize = aiCount;
-            } else {
-                // Left team or multiplayer: 1 human + AI teammates
+            // Calculate team composition based on checkbox
+            if (hasHuman) {
+                // Team has human player + AI teammates
                 humanCount = 1;
                 teamSize = 1 + aiCount;
+            } else {
+                // All AI team (spectator mode)
+                humanCount = 0;
+                teamSize = aiCount;
             }
             
             // Build composition text
@@ -1159,25 +1196,32 @@ class Game {
     }
     
     saveArcadeTeamSettings() {
-        // Get AI counts from sliders
+        // Get AI counts and checkbox states
         const leftAICount = parseInt(document.getElementById('leftAICountSlider').value);
         const rightAICount = parseInt(document.getElementById('rightAICountSlider').value);
+        const leftHasHuman = document.getElementById('leftHumanPlayerCheckbox').checked;
+        const rightHasHuman = document.getElementById('rightHumanPlayerCheckbox').checked;
         
-        // Calculate team counts from AI counts
-        // Left team always has 1 human + AI teammates
-        this.arcadeSettings.leftTeamCount = 1 + leftAICount;
+        // Calculate team counts based on checkbox states
+        // Left team
+        if (leftHasHuman) {
+            this.arcadeSettings.leftTeamCount = 1 + leftAICount; // 1 human + AI
+            this.arcadeSettings.leftHasHuman = true;
+        } else {
+            this.arcadeSettings.leftTeamCount = leftAICount; // All AI (spectator)
+            this.arcadeSettings.leftHasHuman = false;
+        }
         this.arcadeSettings.leftAICount = leftAICount;
         this.arcadeSettings.leftAIDifficulty = document.getElementById('leftAIDifficulty').value;
         this.arcadeSettings.leftAIPersonality = document.getElementById('leftAIPersonality').value;
         
-        // Right team depends on player count mode
-        const isSinglePlayer = this.arcadeSettings.playerCount === 1;
-        if (isSinglePlayer) {
-            // Single player: right team is all AI (1 or 2)
-            this.arcadeSettings.rightTeamCount = rightAICount;
+        // Right team
+        if (rightHasHuman) {
+            this.arcadeSettings.rightTeamCount = 1 + rightAICount; // 1 human + AI
+            this.arcadeSettings.rightHasHuman = true;
         } else {
-            // Multiplayer: right team has 1 human + AI teammates
-            this.arcadeSettings.rightTeamCount = 1 + rightAICount;
+            this.arcadeSettings.rightTeamCount = rightAICount; // All AI
+            this.arcadeSettings.rightHasHuman = false;
         }
         this.arcadeSettings.rightAICount = rightAICount;
         this.arcadeSettings.rightAIDifficulty = document.getElementById('rightAIDifficulty').value;
@@ -1207,21 +1251,29 @@ class Game {
             this.mainMenuBackground.stop();
         }
         
-        // Select bugs for all players
-        this.ui.showBugSelection((bugId) => {
-            this.selectedBug1 = getBugById(bugId);
-            
-            // If left team has 2 players, select second bug
-            if (this.arcadeSettings.leftTeamCount === 2) {
-                this.ui.showBugSelection((bugId2) => {
-                    this.selectedBugLeftTeam2 = getBugById(bugId2);
+        // Check if left team has human player
+        if (this.arcadeSettings.leftHasHuman) {
+            // Left team has human - select bug for player 1
+            this.ui.showBugSelection((bugId) => {
+                this.selectedBug1 = getBugById(bugId);
+                
+                // If left team has 2 players, select second bug
+                if (this.arcadeSettings.leftTeamCount === 2) {
+                    this.ui.showBugSelection((bugId2) => {
+                        this.selectedBugLeftTeam2 = getBugById(bugId2);
+                        this.selectRightTeamBugs();
+                    });
+                } else {
+                    this.selectedBugLeftTeam2 = null;
                     this.selectRightTeamBugs();
-                });
-            } else {
-                this.selectedBugLeftTeam2 = null;
-                this.selectRightTeamBugs();
-            }
-        });
+                }
+            });
+        } else {
+            // Left team is all AI (spectator mode) - select random bugs
+            this.selectedBug1 = this.getRandomBug();
+            this.selectedBugLeftTeam2 = this.arcadeSettings.leftTeamCount === 2 ? this.getRandomBug() : null;
+            this.selectRightTeamBugs();
+        }
     }
     
     selectRightTeamBugs() {
@@ -1336,7 +1388,11 @@ class Game {
         if (this.gameMode === 'arcade') {
             // Arcade mode - custom team setup
             // Handle left team AI
-            if (this.arcadeSettings.leftAICount > 0) {
+            if (!this.arcadeSettings.leftHasHuman && this.arcadeSettings.leftTeamCount >= 1) {
+                // Spectator mode - player1 is AI controlled
+                this.player1AI = new AI(this.arcadeSettings.leftAIDifficulty, this.player1, this.ball, this.physics, 'left', this.arcadeSettings.leftAIPersonality);
+            } else if (this.arcadeSettings.leftAICount > 0) {
+                // Left team has human + AI teammate (currently not fully implemented for 2v2)
                 this.player1AI = new AI(this.arcadeSettings.leftAIDifficulty, this.player1, this.ball, this.physics, 'left', this.arcadeSettings.leftAIPersonality);
             } else {
                 this.player1AI = null;
