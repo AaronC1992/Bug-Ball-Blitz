@@ -2317,10 +2317,24 @@ class Game {
         
         // Reset positions after a short delay
         setTimeout(() => {
-            // Reset all balls if multiple balls mode
-            for (let ball of this.balls) {
-                this.physics.resetBall(ball);
+            // Reinitialize balls to match the correct count
+            const ballSizeMultiplier = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.ballSize : 1.0;
+            const ballCount = (this.gameMode === 'arcade' && this.arcadeSettings) ? this.arcadeSettings.ballCount || 1 : 1;
+            
+            this.balls = [];
+            for (let i = 0; i < ballCount; i++) {
+                const spacing = this.canvas.width / (ballCount + 1);
+                this.balls.push({
+                    x: spacing * (i + 1),
+                    y: this.canvas.height / 2,
+                    vx: 0,
+                    vy: 0,
+                    radius: 15 * ballSizeMultiplier,
+                    rotation: 0
+                });
             }
+            this.ball = this.balls[0]; // Update reference
+            
             this.physics.resetPlayer(this.player1, 'left');
             this.physics.resetPlayer(this.player2, 'right');
             
