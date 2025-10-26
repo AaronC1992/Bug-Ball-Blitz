@@ -77,6 +77,10 @@ class Game {
         this.selectedBug3 = null;
         this.selectedArena = null;
         
+        // AI cosmetic differentiation flags
+        this.player2NeedsCosmetic = false;
+        this.player3NeedsCosmetic = false;
+        
         // Scores
         this.score1 = 0;
         this.score2 = 0;
@@ -1581,6 +1585,10 @@ class Game {
         this.updateScoreDisplay();
         this.updateTimerDisplay();
         
+        // Check if AI players need cosmetic differentiation
+        this.player2NeedsCosmetic = (this.selectedBug1.id === this.selectedBug2.id && this.gameMode !== 'multiplayer');
+        this.player3NeedsCosmetic = (this.selectedBug3 && this.selectedBug1.id === this.selectedBug3.id);
+        
         // Initialize weather effects
         const levelConfig = this.gameMode === 'tower' ? this.towerLevels[this.currentTowerLevel] : null;
         this.currentWeather = this.gameMode === 'arcade' ? (this.arcadeSettings?.weather || 'none') : (levelConfig?.weather || 'none');
@@ -2202,6 +2210,10 @@ class Game {
     }
     
     drawPlayer(player, bug) {
+        // Determine if this player needs cosmetic differentiation
+        const needsCosmetic = (player === this.player2 && this.player2NeedsCosmetic) || 
+                             (player === this.player3 && this.player3NeedsCosmetic);
+        
         // Draw dynamic shadow first (before the player)
         const groundY = this.physics.groundY;
         const playerGroundY = groundY - player.height / 2;
@@ -2235,12 +2247,33 @@ class Game {
             this.ctx.scale(-1, 1);
         }
         
+        // Apply cosmetic change if needed (darker shade)
+        let bugColor = bug.color;
+        if (needsCosmetic) {
+            // Darken the color for AI differentiation
+            bugColor = this.darkenColor(bug.color, 0.4);
+        }
+        
         // Draw bug SVG (simplified rendering - in reality we'd parse SVG)
         // For now, draw a colored circle with the bug color
-        this.ctx.fillStyle = bug.color;
+        this.ctx.fillStyle = bugColor;
         this.ctx.beginPath();
         this.ctx.arc(0, 0, player.width / 2, 0, Math.PI * 2);
         this.ctx.fill();
+        
+        // Add stripe pattern for AI differentiation
+        if (needsCosmetic) {
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            this.ctx.lineWidth = player.width * 0.1;
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, player.width / 2 - player.width * 0.05, 0, Math.PI * 2);
+            this.ctx.stroke();
+            
+            // Add a second inner circle
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, player.width / 3, 0, Math.PI * 2);
+            this.ctx.stroke();
+        }
         
         // Draw eyes
         this.ctx.fillStyle = 'white';
@@ -2256,6 +2289,20 @@ class Game {
         this.ctx.fill();
         
         this.ctx.restore();
+    }
+    
+    darkenColor(color, amount) {
+        // Convert hex color to RGB, darken it, and return hex
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        const newR = Math.floor(r * (1 - amount));
+        const newG = Math.floor(g * (1 - amount));
+        const newB = Math.floor(b * (1 - amount));
+        
+        return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
     }
     
     handleGoal(goal, ballIndex = 0) {
