@@ -22,6 +22,8 @@ class Game {
         this.particles = new ParticleSystem();
         this.weatherParticles = []; // Weather effect particles
         this.currentWeather = 'none'; // Current weather type
+        this.weatherDirection = 1; // 1 for right, -1 for left
+        this.weatherDirectionTimer = 0; // Timer for direction changes
         this.achievements = new AchievementManager();
         this.quality = new QualityManager();
         
@@ -1844,6 +1846,18 @@ class Game {
             this.ctx.fillStyle = topColor;
             this.ctx.strokeText(topText, this.canvas.width / 2, this.canvas.height / 2 - 100);
             this.ctx.fillText(topText, this.canvas.width / 2, this.canvas.height / 2 - 100);
+            
+            // Display weather status if active
+            if (this.currentWeather && this.currentWeather !== 'none') {
+                this.ctx.font = 'bold 28px Arial';
+                this.ctx.lineWidth = 3;
+                const weatherIcons = { 'rain': '🌧️ Rain', 'snow': '❄️ Snow', 'wind': '💨 Wind' };
+                const weatherText = weatherIcons[this.currentWeather] || this.currentWeather;
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                this.ctx.strokeText(weatherText, this.canvas.width / 2, this.canvas.height / 2 + 120);
+                this.ctx.fillText(weatherText, this.canvas.width / 2, this.canvas.height / 2 + 120);
+            }
+            
             this.ctx.restore();
         }
         
@@ -2333,6 +2347,10 @@ class Game {
         
         if (this.currentWeather === 'none') return;
         
+        // Reset weather direction timer
+        this.weatherDirection = 1;
+        this.weatherDirectionTimer = 0;
+        
         const particleCount = 150; // Increased from 80 for better visibility
         
         for (let i = 0; i < particleCount; i++) {
@@ -2341,12 +2359,14 @@ class Game {
                 y: Math.random() * this.canvas.height,
                 vx: 0,
                 vy: 0,
+                baseVx: 0, // Store base velocity for direction changes
                 size: 0,
                 opacity: 0.5 + Math.random() * 0.5 // More visible
             };
             
             if (this.currentWeather === 'rain') {
-                particle.vx = 2 + Math.random() * 3; // More diagonal
+                particle.baseVx = 2 + Math.random() * 3; // More diagonal
+                particle.vx = particle.baseVx;
                 particle.vy = 12 + Math.random() * 8; // Faster falling
                 particle.size = 2.5 + Math.random() * 1.5; // Thicker
                 particle.length = 15 + Math.random() * 20; // Longer streaks
@@ -2356,7 +2376,8 @@ class Game {
                 particle.size = 4 + Math.random() * 4; // Larger snowflakes
                 particle.drift = Math.random() * Math.PI * 2; // For wavy motion
             } else if (this.currentWeather === 'wind') {
-                particle.vx = 10 + Math.random() * 8; // Much faster horizontal
+                particle.baseVx = 10 + Math.random() * 8; // Much faster horizontal
+                particle.vx = particle.baseVx;
                 particle.vy = -2 + Math.random() * 4; // Vertical variance
                 particle.size = 2 + Math.random() * 2;
                 particle.length = 25 + Math.random() * 35; // Longer streaks
@@ -2368,6 +2389,23 @@ class Game {
     
     updateWeatherParticles() {
         if (this.currentWeather === 'none') return;
+        
+        // Update direction timer for rain and wind (change every 5 seconds)
+        if (this.currentWeather === 'rain' || this.currentWeather === 'wind') {
+            this.weatherDirectionTimer += 1/60; // Assuming 60 FPS
+            
+            if (this.weatherDirectionTimer >= 5) {
+                this.weatherDirectionTimer = 0;
+                this.weatherDirection *= -1; // Flip direction
+                
+                // Update all particle directions
+                for (let particle of this.weatherParticles) {
+                    if (particle.baseVx !== undefined) {
+                        particle.vx = particle.baseVx * this.weatherDirection;
+                    }
+                }
+            }
+        }
         
         for (let particle of this.weatherParticles) {
             // Update position
@@ -2440,8 +2478,8 @@ class Game {
         if (!this.ball || this.currentWeather === 'none') return;
         
         if (this.currentWeather === 'rain') {
-            // Rain adds slight horizontal drift and makes ball slightly heavier
-            this.ball.vx += 0.2;
+            // Rain adds horizontal drift (changes direction every 5 seconds)
+            this.ball.vx += 0.2 * this.weatherDirection;
             this.ball.vy += 0.08; // Slight downward push
         } else if (this.currentWeather === 'snow') {
             // Snow reduces friction, making ball and players slide more
@@ -2450,8 +2488,8 @@ class Game {
             // Set player friction for sliding effect
             this.physics.weatherFriction = 0.96; // Much less friction (normal is 0.9)
         } else if (this.currentWeather === 'wind') {
-            // Wind pushes ball horizontally
-            this.ball.vx += 0.4;
+            // Wind pushes ball horizontally (changes direction every 5 seconds)
+            this.ball.vx += 0.4 * this.weatherDirection;
         }
         
         // Reset friction if not snowing
