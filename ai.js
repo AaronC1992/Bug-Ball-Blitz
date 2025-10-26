@@ -171,6 +171,12 @@ export class AI {
     }
     
     calculateAction() {
+        // Boss mode has its own special strategy
+        if (this.isBoss) {
+            this.bossStrategy();
+            return;
+        }
+        
         switch (this.currentStrategy) {
             case 'defend':
                 this.defendStrategy();
@@ -182,6 +188,32 @@ export class AI {
                 this.interceptStrategy();
                 break;
         }
+    }
+    
+    bossStrategy() {
+        // Boss AI: Chase ball relentlessly and push it toward opponent goal
+        const ballX = this.ball.x;
+        const ballY = this.ball.y;
+        const playerX = this.player.x;
+        const playerY = this.player.y;
+        const opponentGoalX = this.side === 'right' ? 50 : this.physics.width - 50;
+        
+        const distanceX = Math.abs(ballX - playerX);
+        const distanceY = Math.abs(ballY - playerY);
+        
+        // Always go directly to the ball
+        this.targetX = ballX;
+        
+        // Jump aggressively when near ball
+        const ballInRange = distanceX < 80;
+        const ballHigh = ballY < playerY - 20;
+        const ballLow = ballY > playerY + 20;
+        
+        // Jump if ball is high or if we're close and on the ground
+        this.shouldJump = this.player.isGrounded && (
+            (ballHigh && ballInRange) ||
+            (ballInRange && distanceY < 50 && Math.random() < 0.3) // Random aggressive jumps
+        );
     }
     
     defendStrategy() {
