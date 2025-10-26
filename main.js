@@ -1066,8 +1066,12 @@ class Game {
     }
     
     showDifficultySelection() {
+        document.getElementById('debugDisplay').textContent = 'showDifficultySelection() running! About to show difficultyScreen...';
         console.log('showDifficultySelection called');
         this.ui.showScreen('difficultyScreen');
+        setTimeout(() => {
+            document.getElementById('debugDisplay').textContent = 'After showScreen: currentScreen = ' + this.ui.currentScreen;
+        }, 100);
     }
     
     startQuickPlay() {
