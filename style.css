@@ -282,8 +282,6 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     pointer-events: auto;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(126, 211, 33, 0.3);
     box-shadow: 
         0 6px 0 #1b5e20,
         0 8px 15px rgba(0, 0, 0, 0.5),
@@ -1718,16 +1716,6 @@ input[type="text"]:focus {
 
 /* Small Phone Portrait Mode */
 @media screen and (max-width: 400px) and (orientation: portrait) {
-    .menu-buttons {
-        gap: 20px; /* Increase gap to prevent touch overlap */
-    }
-    
-    .menu-btn {
-        margin: 5px 0; /* Additional spacing */
-        user-select: none;
-        -webkit-user-select: none;
-    }
-    
     .joystick-container {
         left: 15px;
         bottom: calc(15px + env(safe-area-inset-bottom, 0px));
@@ -3045,45 +3033,5 @@ canvas {
     width: 100%;
     height: 100%;
     touch-action: none;
-}
-
-/* Portrait mode specific - prevent button overlap on mobile */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-    .menu-buttons {
-        gap: 25px !important; /* Even larger gap in portrait mode */
-        padding: 10px 0;
-    }
-    
-    .menu-btn {
-        margin: 8px 0 !important; /* More separation */
-        isolation: isolate; /* Create new stacking context */
-        position: relative !important; /* Ensure proper stacking */
-        transform: translate3d(0, 0, 0) !important; /* Force hardware acceleration and fix rendering */
-        -webkit-transform: translate3d(0, 0, 0) !important;
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
-        pointer-events: auto !important; /* Force clickability */
-        z-index: 100 !important; /* Very high z-index */
-        will-change: transform; /* Hint for browser optimization */
-        min-height: 60px; /* Ensure minimum tap target size */
-    }
-    
-    .menu-btn::before,
-    .menu-btn::after {
-        pointer-events: none !important; /* Prevent pseudo-elements from intercepting clicks */
-    }
-    
-    .menu-content {
-        overflow: visible !important; /* Prevent overflow clipping */
-        transform: translate3d(0, 0, 0); /* Force hardware acceleration */
-        -webkit-transform: translate3d(0, 0, 0);
-        position: relative;
-        z-index: 10;
-    }
-    
-    .screen {
-        overflow-y: auto !important; /* Ensure scrolling works */
-        -webkit-overflow-scrolling: touch;
-    }
 }
 
