@@ -106,14 +106,8 @@ export class AI {
             const distanceToBall = Math.abs(this.ball.x - this.player.x);
             const ballSpeed = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
             
-            // Only defend if ball is extremely close to own goal
-            const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
-            const ballDistanceToOwnGoal = Math.abs(this.ball.x - ownGoalX);
-            
-            if (ballDistanceToOwnGoal < 100 && distanceToBall > 150) {
-                this.currentStrategy = 'defend';
-                this.strategyCooldown = 10;
-            } else if (ballSpeed > 2) {
+            // Boss ALWAYS attacks or intercepts - never defends
+            if (ballSpeed > 2) {
                 this.currentStrategy = 'intercept';
                 this.strategyCooldown = 5;
             } else {
