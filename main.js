@@ -1276,30 +1276,29 @@ class Game {
         
         console.log('Starting arcade match:', this.arcadeSettings);
         
-        // Check if left team has human player
-        if (this.arcadeSettings.leftHasHuman) {
-            // Left team has human - select bug for player 1
-            this.ui.showBugSelection((bugId) => {
-                this.selectedBug1 = getBugById(bugId);
-                
-                // If left team has 2 players, select second bug
-                if (this.arcadeSettings.leftTeamCount === 2) {
-                    this.ui.showBugSelection((bugId2) => {
-                        this.selectedBugLeftTeam2 = getBugById(bugId2);
-                        this.selectRightTeamBugs();
-                    }, '🐛 Left Team - Player 2');
-                } else {
-                    this.selectedBugLeftTeam2 = null;
+        // Always show bug selection for left team (even if AI-only)
+        const leftTeamLabel = this.arcadeSettings.leftHasHuman ? 
+            '🐛 Left Team - Player 1' : 
+            '🐛 Left Team - AI 1';
+        
+        this.ui.showBugSelection((bugId) => {
+            this.selectedBug1 = getBugById(bugId);
+            
+            // If left team has 2 players, select second bug
+            if (this.arcadeSettings.leftTeamCount === 2) {
+                const leftTeam2Label = this.arcadeSettings.leftHasHuman ? 
+                    '🐛 Left Team - Player 2' : 
+                    '🐛 Left Team - AI 2';
+                    
+                this.ui.showBugSelection((bugId2) => {
+                    this.selectedBugLeftTeam2 = getBugById(bugId2);
                     this.selectRightTeamBugs();
-                }
-            }, '🐛 Left Team - Player 1');
-        } else {
-            // Left team is all AI (spectator mode) - select random bugs
-            console.log('Left team is AI-only, auto-selecting bugs');
-            this.selectedBug1 = this.getRandomBug();
-            this.selectedBugLeftTeam2 = this.arcadeSettings.leftTeamCount === 2 ? this.getRandomBug() : null;
-            this.selectRightTeamBugs();
-        }
+                }, leftTeam2Label);
+            } else {
+                this.selectedBugLeftTeam2 = null;
+                this.selectRightTeamBugs();
+            }
+        }, leftTeamLabel);
     }
     
     selectRightTeamBugs() {
@@ -1313,35 +1312,34 @@ class Game {
             rightHasHuman: this.arcadeSettings.rightHasHuman
         });
         
-        if (rightHumanCount > 0) {
-            // Human player on right team - let them select
-            this.ui.showBugSelection((bugId) => {
-                this.selectedBug2 = getBugById(bugId);
-                
-                if (this.arcadeSettings.rightTeamCount === 2) {
-                    if (rightHumanCount === 2) {
-                        // Both right team players are human
-                        this.ui.showBugSelection((bugId2) => {
-                            this.selectedBug3 = getBugById(bugId2);
-                            this.selectArenaForArcade();
-                        }, '🐛 Right Team - Player 2');
-                    } else {
-                        // One human, one AI
-                        this.selectedBug3 = this.getRandomBug();
-                        this.selectArenaForArcade();
-                    }
+        // Always show bug selection for right team (even if AI-only)
+        const rightTeam1Label = this.arcadeSettings.rightHasHuman ? 
+            '🐛 Right Team - Player 1' : 
+            '🐛 Right Team - AI 1';
+        
+        this.ui.showBugSelection((bugId) => {
+            this.selectedBug2 = getBugById(bugId);
+            
+            if (this.arcadeSettings.rightTeamCount === 2) {
+                // Determine label for second player
+                let rightTeam2Label;
+                if (rightHumanCount === 2) {
+                    rightTeam2Label = '🐛 Right Team - Player 2';
+                } else if (rightHumanCount === 1) {
+                    rightTeam2Label = '🐛 Right Team - AI 1';
                 } else {
-                    this.selectedBug3 = null;
-                    this.selectArenaForArcade();
+                    rightTeam2Label = '🐛 Right Team - AI 2';
                 }
-            }, '🐛 Right Team - Player 1');
-        } else {
-            // All AI on right team
-            console.log('Right team is AI-only, auto-selecting bugs');
-            this.selectedBug2 = this.getRandomBug();
-            this.selectedBug3 = this.arcadeSettings.rightTeamCount === 2 ? this.getRandomBug() : null;
-            this.selectArenaForArcade();
-        }
+                
+                this.ui.showBugSelection((bugId2) => {
+                    this.selectedBug3 = getBugById(bugId2);
+                    this.selectArenaForArcade();
+                }, rightTeam2Label);
+            } else {
+                this.selectedBug3 = null;
+                this.selectArenaForArcade();
+            }
+        }, rightTeam1Label);
     }
     
     selectArenaForArcade() {
