@@ -337,17 +337,35 @@ class Game {
             this.keys[e.key.toLowerCase()] = false;
         });
         
-        // Menu buttons
+        // Menu buttons - using touchend to prevent scroll conflicts
         const towerCampaignBtn = document.getElementById('towerCampaignBtn');
         let towerCampaignHandled = false;
+        let towerCampaignTouchStart = { x: 0, y: 0 };
         
         towerCampaignBtn.addEventListener('touchstart', (e) => {
+            towerCampaignTouchStart = { 
+                x: e.touches[0].clientX, 
+                y: e.touches[0].clientY 
+            };
+        }, { passive: true });
+        
+        towerCampaignBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            towerCampaignHandled = true;
-            this.audio.playSound('ui_click');
-            this.showTowerLevelSelect();
-            setTimeout(() => { towerCampaignHandled = false; }, 300);
+            
+            // Check if touch moved (scrolling) vs stayed in place (tap)
+            const touch = e.changedTouches[0];
+            const moveDistance = Math.sqrt(
+                Math.pow(touch.clientX - towerCampaignTouchStart.x, 2) + 
+                Math.pow(touch.clientY - towerCampaignTouchStart.y, 2)
+            );
+            
+            if (moveDistance < 10) { // Less than 10px movement = tap, not scroll
+                towerCampaignHandled = true;
+                this.audio.playSound('ui_click');
+                this.showTowerLevelSelect();
+                setTimeout(() => { towerCampaignHandled = false; }, 300);
+            }
         }, { passive: false });
         
         towerCampaignBtn.addEventListener('click', () => {
@@ -369,14 +387,31 @@ class Game {
         
         const quickPlayBtn = document.getElementById('quickPlayBtn');
         let quickPlayHandled = false;
+        let quickPlayTouchStart = { x: 0, y: 0 };
         
         quickPlayBtn.addEventListener('touchstart', (e) => {
+            quickPlayTouchStart = { 
+                x: e.touches[0].clientX, 
+                y: e.touches[0].clientY 
+            };
+        }, { passive: true });
+        
+        quickPlayBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            quickPlayHandled = true;
-            this.audio.playSound('ui_click');
-            this.showDifficultySelection();
-            setTimeout(() => { quickPlayHandled = false; }, 300);
+            
+            const touch = e.changedTouches[0];
+            const moveDistance = Math.sqrt(
+                Math.pow(touch.clientX - quickPlayTouchStart.x, 2) + 
+                Math.pow(touch.clientY - quickPlayTouchStart.y, 2)
+            );
+            
+            if (moveDistance < 10) {
+                quickPlayHandled = true;
+                this.audio.playSound('ui_click');
+                this.showDifficultySelection();
+                setTimeout(() => { quickPlayHandled = false; }, 300);
+            }
         }, { passive: false });
         
         quickPlayBtn.addEventListener('click', () => {
@@ -387,14 +422,31 @@ class Game {
         
         const localMultiplayerBtn = document.getElementById('localMultiplayerBtn');
         let localMultiplayerHandled = false;
+        let localMultiplayerTouchStart = { x: 0, y: 0 };
         
         localMultiplayerBtn.addEventListener('touchstart', (e) => {
+            localMultiplayerTouchStart = { 
+                x: e.touches[0].clientX, 
+                y: e.touches[0].clientY 
+            };
+        }, { passive: true });
+        
+        localMultiplayerBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            localMultiplayerHandled = true;
-            this.audio.playSound('ui_click');
-            this.startMultiplayer();
-            setTimeout(() => { localMultiplayerHandled = false; }, 300);
+            
+            const touch = e.changedTouches[0];
+            const moveDistance = Math.sqrt(
+                Math.pow(touch.clientX - localMultiplayerTouchStart.x, 2) + 
+                Math.pow(touch.clientY - localMultiplayerTouchStart.y, 2)
+            );
+            
+            if (moveDistance < 10) {
+                localMultiplayerHandled = true;
+                this.audio.playSound('ui_click');
+                this.startMultiplayer();
+                setTimeout(() => { localMultiplayerHandled = false; }, 300);
+            }
         }, { passive: false });
         
         localMultiplayerBtn.addEventListener('click', () => {
@@ -406,14 +458,31 @@ class Game {
         // Arcade mode
         const arcadeModeBtn = document.getElementById('arcadeModeBtn');
         let arcadeModeHandled = false;
+        let arcadeModeTouchStart = { x: 0, y: 0 };
         
         arcadeModeBtn.addEventListener('touchstart', (e) => {
+            arcadeModeTouchStart = { 
+                x: e.touches[0].clientX, 
+                y: e.touches[0].clientY 
+            };
+        }, { passive: true });
+        
+        arcadeModeBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            arcadeModeHandled = true;
-            this.audio.playSound('ui_click');
-            this.showArcadeMode();
-            setTimeout(() => { arcadeModeHandled = false; }, 300);
+            
+            const touch = e.changedTouches[0];
+            const moveDistance = Math.sqrt(
+                Math.pow(touch.clientX - arcadeModeTouchStart.x, 2) + 
+                Math.pow(touch.clientY - arcadeModeTouchStart.y, 2)
+            );
+            
+            if (moveDistance < 10) {
+                arcadeModeHandled = true;
+                this.audio.playSound('ui_click');
+                this.showArcadeMode();
+                setTimeout(() => { arcadeModeHandled = false; }, 300);
+            }
         }, { passive: false });
         
         arcadeModeBtn.addEventListener('click', () => {
@@ -714,13 +783,30 @@ class Game {
         // Styles menu
         const stylesBtn = document.getElementById('stylesBtn');
         let stylesBtnHandled = false;
+        let stylesTouchStart = { x: 0, y: 0 };
         
         stylesBtn.addEventListener('touchstart', (e) => {
+            stylesTouchStart = { 
+                x: e.touches[0].clientX, 
+                y: e.touches[0].clientY 
+            };
+        }, { passive: true });
+        
+        stylesBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            stylesBtnHandled = true;
-            this.showStylesMenu();
-            setTimeout(() => { stylesBtnHandled = false; }, 300);
+            
+            const touch = e.changedTouches[0];
+            const moveDistance = Math.sqrt(
+                Math.pow(touch.clientX - stylesTouchStart.x, 2) + 
+                Math.pow(touch.clientY - stylesTouchStart.y, 2)
+            );
+            
+            if (moveDistance < 10) {
+                stylesBtnHandled = true;
+                this.showStylesMenu();
+                setTimeout(() => { stylesBtnHandled = false; }, 300);
+            }
         }, { passive: false });
         
         stylesBtn.addEventListener('click', () => {
@@ -738,13 +824,30 @@ class Game {
         
         const achievementsBtn = document.getElementById('achievementsBtn');
         let achievementsBtnHandled = false;
+        let achievementsTouchStart = { x: 0, y: 0 };
         
         achievementsBtn.addEventListener('touchstart', (e) => {
+            achievementsTouchStart = { 
+                x: e.touches[0].clientX, 
+                y: e.touches[0].clientY 
+            };
+        }, { passive: true });
+        
+        achievementsBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            achievementsBtnHandled = true;
-            this.showAchievementsMenu();
-            setTimeout(() => { achievementsBtnHandled = false; }, 300);
+            
+            const touch = e.changedTouches[0];
+            const moveDistance = Math.sqrt(
+                Math.pow(touch.clientX - achievementsTouchStart.x, 2) + 
+                Math.pow(touch.clientY - achievementsTouchStart.y, 2)
+            );
+            
+            if (moveDistance < 10) {
+                achievementsBtnHandled = true;
+                this.showAchievementsMenu();
+                setTimeout(() => { achievementsBtnHandled = false; }, 300);
+            }
         }, { passive: false });
         
         achievementsBtn.addEventListener('click', () => {
