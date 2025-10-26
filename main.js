@@ -851,20 +851,25 @@ class Game {
         this.difficulty = levelConfig.difficulty;
         
         if (levelConfig.aiCount === 1) {
-            this.selectedBug2 = this.getRandomBug();
+            const baseBug = this.getRandomBug();
             
             // If this is a boss battle, enhance the bug's stats
             if (levelConfig.isBoss) {
                 // Create a boss version with enhanced stats
                 this.selectedBug2 = {
-                    ...this.selectedBug2,
+                    id: baseBug.id,
+                    name: baseBug.name,
+                    color: baseBug.color,
+                    svg: baseBug.svg,
                     stats: {
-                        speed: Math.min(this.selectedBug2.stats.speed * 1.3, 1.0),
-                        jump: Math.min(this.selectedBug2.stats.jump * 1.3, 1.0),
-                        size: this.selectedBug2.stats.size,
-                        power: Math.min(this.selectedBug2.stats.power * 1.3, 1.0)
+                        speed: Math.min(baseBug.stats.speed * 1.3, 1.0),
+                        jump: Math.min(baseBug.stats.jump * 1.3, 1.0),
+                        size: baseBug.stats.size,
+                        power: Math.min(baseBug.stats.power * 1.3, 1.0)
                     }
                 };
+            } else {
+                this.selectedBug2 = baseBug;
             }
             
             this.selectedBug3 = null;
