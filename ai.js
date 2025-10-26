@@ -1,13 +1,14 @@
 // ai.js - AI opponent behavior
 
 export class AI {
-    constructor(difficulty, player, ball, physics, side = 'right', personality = 'balanced') {
+    constructor(difficulty, player, ball, physics, side = 'right', personality = 'balanced', isBoss = false) {
         this.difficulty = difficulty;
         this.player = player;
         this.ball = ball;
         this.physics = physics;
         this.side = side; // 'left' or 'right' - which goal to defend
         this.personality = personality; // 'aggressive', 'defensive', 'balanced'
+        this.isBoss = isBoss; // Boss mode flag
         
         // AI parameters based on difficulty and personality
         this.params = this.getDifficultyParams(difficulty);
@@ -99,6 +100,28 @@ export class AI {
     evaluateStrategy() {
         // Only change strategy if cooldown expired
         if (this.strategyCooldown > 0) return;
+        
+        // BOSS MODE: Always be ultra-aggressive and chase the ball
+        if (this.isBoss) {
+            const distanceToBall = Math.abs(this.ball.x - this.player.x);
+            const ballSpeed = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
+            
+            // Only defend if ball is extremely close to own goal
+            const ownGoalX = this.side === 'right' ? this.physics.width - 50 : 50;
+            const ballDistanceToOwnGoal = Math.abs(this.ball.x - ownGoalX);
+            
+            if (ballDistanceToOwnGoal < 100 && distanceToBall > 150) {
+                this.currentStrategy = 'defend';
+                this.strategyCooldown = 10;
+            } else if (ballSpeed > 2) {
+                this.currentStrategy = 'intercept';
+                this.strategyCooldown = 5;
+            } else {
+                this.currentStrategy = 'attack';
+                this.strategyCooldown = 5;
+            }
+            return;
+        }
         
         const ballX = this.ball.x;
         const playerX = this.player.x;
