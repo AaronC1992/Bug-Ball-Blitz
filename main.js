@@ -852,6 +852,21 @@ class Game {
         
         if (levelConfig.aiCount === 1) {
             this.selectedBug2 = this.getRandomBug();
+            
+            // If this is a boss battle, enhance the bug's stats
+            if (levelConfig.isBoss) {
+                // Create a boss version with enhanced stats
+                this.selectedBug2 = {
+                    ...this.selectedBug2,
+                    stats: {
+                        speed: Math.min(this.selectedBug2.stats.speed * 1.3, 1.0),
+                        jump: Math.min(this.selectedBug2.stats.jump * 1.3, 1.0),
+                        size: this.selectedBug2.stats.size,
+                        power: Math.min(this.selectedBug2.stats.power * 1.3, 1.0)
+                    }
+                };
+            }
+            
             this.selectedBug3 = null;
         } else {
             this.selectedBug2 = this.getRandomBug();
@@ -1000,7 +1015,7 @@ class Game {
         if (level === 17) return { difficulty: 'hard', aiCount: 1, name: 'Elite Solo Hard', weather: 'snow' };
         if (level === 18) return { difficulty: 'pro', aiCount: 1, name: 'Elite Solo Pro', weather: 'wind' };
         if (level === 19) return { difficulty: 'hard', aiCount: 2, name: 'Elite Team Hard', weather: 'rain' };
-        if (level === 20) return { difficulty: 'pro', aiCount: 2, name: 'Final Boss', weather: 'wind' };
+        if (level === 20) return { difficulty: 'pro', aiCount: 1, name: '👑 BOSS BATTLE', weather: 'wind', isBoss: true, bossSize: 1.75 };
         
         // Beyond level 20 - Ultimate challenges repeat
         const cycleLevel = ((level - 21) % 4) + 17;
@@ -1438,7 +1453,11 @@ class Game {
         };
         
         // Initialize player 2
-        const p2Size = 40 * this.selectedBug2.stats.size * sizeMultiplier;
+        // Check if this is a boss battle
+        const bossLevelConfig = this.gameMode === 'tower' ? this.getTowerLevelConfig(this.towerLevel) : null;
+        const bossMultiplier = (bossLevelConfig && bossLevelConfig.isBoss) ? bossLevelConfig.bossSize : 1.0;
+        
+        const p2Size = 40 * this.selectedBug2.stats.size * sizeMultiplier * bossMultiplier;
         this.player2 = {
             x: this.canvas.width * 0.75,
             y: this.physics.groundY - p2Size / 2,
@@ -1450,7 +1469,8 @@ class Game {
             moveLeft: false,
             moveRight: false,
             jump: false,
-            facing: -1
+            facing: -1,
+            isBoss: bossLevelConfig && bossLevelConfig.isBoss // Mark as boss
         };
         
         // Initialize AI or third player
@@ -2262,8 +2282,23 @@ class Game {
         
         this.ctx.restore();
         
-        // Draw "AI" label above AI-controlled players
-        if (isAI) {
+        // Draw "BOSS" or "AI" label above AI-controlled players
+        if (player.isBoss) {
+            // Boss label - larger and golden
+            this.ctx.save();
+            this.ctx.font = 'bold 18px Arial';
+            this.ctx.fillStyle = 'rgba(255, 215, 0, 1)'; // Gold color
+            this.ctx.strokeStyle = 'rgba(139, 69, 19, 0.9)'; // Dark brown outline
+            this.ctx.lineWidth = 4;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'bottom';
+            
+            const labelY = player.y - player.height / 2 - 15;
+            this.ctx.strokeText('👑 BOSS', player.x, labelY);
+            this.ctx.fillText('👑 BOSS', player.x, labelY);
+            this.ctx.restore();
+        } else if (isAI) {
+            // Regular AI label
             this.ctx.save();
             this.ctx.font = 'bold 14px Arial';
             this.ctx.fillStyle = 'rgba(255, 100, 100, 0.9)';
