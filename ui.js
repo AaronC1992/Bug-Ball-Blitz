@@ -514,10 +514,18 @@ export class UIManager {
     }
     
     showBugSelection(callback, customMessage = null) {
+        console.log('showBugSelection called with message:', customMessage);
+        
         const bugGrid = document.getElementById('bugGrid');
+        if (!bugGrid) {
+            console.error('Bug grid not found!');
+            return;
+        }
         bugGrid.innerHTML = '';
         
-        // Update header message if provided
+        // Update header message if provided - show screen first to ensure DOM exists
+        this.showScreen('bugSelectScreen');
+        
         const bugSelectScreen = document.getElementById('bugSelectScreen');
         const existingHeader = bugSelectScreen?.querySelector('h2');
         if (customMessage && existingHeader) {
@@ -598,8 +606,6 @@ export class UIManager {
                 this.showScreen('mainMenu');
             });
         }
-        
-        this.showScreen('bugSelectScreen');
     }
     
     showArenaSelection(callback) {
