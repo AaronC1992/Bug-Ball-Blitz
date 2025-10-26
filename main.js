@@ -1040,7 +1040,7 @@ class Game {
         if (level === 17) return { difficulty: 'hard', aiCount: 1, name: 'Elite Solo Hard', weather: getRandomWeather() };
         if (level === 18) return { difficulty: 'pro', aiCount: 1, name: 'Elite Solo Pro', weather: getRandomWeather() };
         if (level === 19) return { difficulty: 'hard', aiCount: 2, name: 'Elite Team Hard', weather: getRandomWeather() };
-        if (level === 20) return { difficulty: 'pro', aiCount: 1, name: '👑 BOSS BATTLE', weather: getRandomWeather(), isBoss: true, bossSize: 1.75 };
+        if (level === 20) return { difficulty: 'pro', aiCount: 1, name: '👑 BOSS GAUNTLET', weather: getRandomWeather(), isBoss: true, bossSize: 1.75 };
         
         // Beyond level 20 - Ultimate challenges repeat
         const cycleLevel = ((level - 21) % 4) + 17;
