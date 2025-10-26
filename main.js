@@ -1601,7 +1601,9 @@ class Game {
                 this.player2AI = null; // Don't create single AI in 1v2 mode
             } else {
                 // 1v1 mode - Player 2 AI is on the right side, defends right goal
-                this.player2AI = new AI(this.difficulty, this.player2, this.ball, this.physics, 'right', 'balanced');
+                // Use aggressive personality for boss battles
+                const aiPersonality = this.bossGauntletActive ? 'aggressive' : 'balanced';
+                this.player2AI = new AI(this.difficulty, this.player2, this.ball, this.physics, 'right', aiPersonality);
                 this.player2AI_2 = null; // No multi-AI in 1v1 mode
                 this.player3 = null; // No third player in 1v1 mode
             }
