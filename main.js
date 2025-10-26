@@ -339,10 +339,15 @@ class Game {
         
         // Menu buttons
         document.getElementById('towerCampaignBtn').addEventListener('click', (e) => {
-            document.getElementById('debugDisplay').textContent = 'Tower Campaign clicked! Target: ' + e.target.id;
-            console.log('Tower Campaign clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
-            this.audio.playSound('ui_click');
-            this.showTowerLevelSelect();
+            try {
+                document.getElementById('debugDisplay').textContent = 'Tower Campaign clicked! Target: ' + e.target.id;
+                console.log('Tower Campaign clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
+                this.audio.playSound('ui_click');
+                this.showTowerLevelSelect();
+            } catch (error) {
+                document.getElementById('debugDisplay').textContent = 'ERROR in Tower Campaign: ' + error.message;
+                console.error('Tower Campaign error:', error);
+            }
         });
         
         // Tower level select buttons
@@ -357,10 +362,15 @@ class Game {
         });
         
         document.getElementById('quickPlayBtn').addEventListener('click', (e) => {
-            document.getElementById('debugDisplay').textContent = 'Quick Play clicked! Target: ' + e.target.id;
-            console.log('Quick Play clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
-            this.audio.playSound('ui_click');
-            this.showDifficultySelection();
+            try {
+                document.getElementById('debugDisplay').textContent = 'Quick Play clicked! Target: ' + e.target.id;
+                console.log('Quick Play clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
+                this.audio.playSound('ui_click');
+                this.showDifficultySelection();
+            } catch (error) {
+                document.getElementById('debugDisplay').textContent = 'ERROR in Quick Play: ' + error.message;
+                console.error('Quick Play error:', error);
+            }
         });
         
         document.getElementById('localMultiplayerBtn').addEventListener('click', (e) => {
