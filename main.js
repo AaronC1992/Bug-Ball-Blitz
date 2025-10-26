@@ -437,7 +437,21 @@ class Game {
         
         // Difficulty selection
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+            let diffBtnHandled = false;
+            
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                diffBtnHandled = true;
+                this.audio.playSound('ui_click');
+                if (btn.dataset.difficulty) {
+                    this.difficulty = btn.dataset.difficulty;
+                    this.startQuickPlay();
+                }
+                setTimeout(() => { diffBtnHandled = false; }, 300);
+            }, { passive: false });
+            
+            btn.addEventListener('click', (e) => {
+                if (diffBtnHandled) return;
                 this.audio.playSound('ui_click');
                 // Only handle difficulty selection here (match length moved to arena preview)
                 if (btn.dataset.difficulty) {
@@ -822,7 +836,19 @@ class Game {
             card.appendChild(diffBadge);
             
             if (isUnlocked) {
-                card.addEventListener('click', () => {
+                let cardHandled = false;
+                
+                card.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    cardHandled = true;
+                    this.audio.playSound('ui_click');
+                    this.towerLevel = level;
+                    this.startTowerCampaign();
+                    setTimeout(() => { cardHandled = false; }, 300);
+                }, { passive: false });
+                
+                card.addEventListener('click', (e) => {
+                    if (cardHandled) return;
                     this.audio.playSound('ui_click');
                     this.towerLevel = level;
                     this.startTowerCampaign();
