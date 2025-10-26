@@ -1003,35 +1003,44 @@ class Game {
     }
     
     getTowerLevelConfig(level) {
+        // Helper function to get random weather (70% chance of 'none', 10% each for rain/snow/wind)
+        const getRandomWeather = () => {
+            const rand = Math.random();
+            if (rand < 0.7) return 'none';      // 70% chance
+            if (rand < 0.8) return 'rain';      // 10% chance
+            if (rand < 0.9) return 'snow';      // 10% chance
+            return 'wind';                       // 10% chance
+        };
+        
         // Levels 1-4: Single AI - Learn the basics
-        if (level === 1) return { difficulty: 'easy', aiCount: 1, name: 'Tutorial Match', weather: 'none' };
-        if (level === 2) return { difficulty: 'medium', aiCount: 1, name: 'Rookie Challenge', weather: 'none' };
-        if (level === 3) return { difficulty: 'hard', aiCount: 1, name: 'Advanced Opponent', weather: 'none' };
-        if (level === 4) return { difficulty: 'pro', aiCount: 1, name: 'Expert Showdown', weather: 'none' };
+        if (level === 1) return { difficulty: 'easy', aiCount: 1, name: 'Tutorial Match', weather: getRandomWeather() };
+        if (level === 2) return { difficulty: 'medium', aiCount: 1, name: 'Rookie Challenge', weather: getRandomWeather() };
+        if (level === 3) return { difficulty: 'hard', aiCount: 1, name: 'Advanced Opponent', weather: getRandomWeather() };
+        if (level === 4) return { difficulty: 'pro', aiCount: 1, name: 'Expert Showdown', weather: getRandomWeather() };
         
         // Levels 5-8: Two AIs - Team coordination needed
-        if (level === 5) return { difficulty: 'easy', aiCount: 2, name: 'Double Trouble Easy', weather: 'none' };
-        if (level === 6) return { difficulty: 'medium', aiCount: 2, name: 'Double Trouble Medium', weather: 'rain' };
-        if (level === 7) return { difficulty: 'hard', aiCount: 2, name: 'Double Trouble Hard', weather: 'snow' };
-        if (level === 8) return { difficulty: 'pro', aiCount: 2, name: 'Double Trouble Pro', weather: 'wind' };
+        if (level === 5) return { difficulty: 'easy', aiCount: 2, name: 'Double Trouble Easy', weather: getRandomWeather() };
+        if (level === 6) return { difficulty: 'medium', aiCount: 2, name: 'Double Trouble Medium', weather: getRandomWeather() };
+        if (level === 7) return { difficulty: 'hard', aiCount: 2, name: 'Double Trouble Hard', weather: getRandomWeather() };
+        if (level === 8) return { difficulty: 'pro', aiCount: 2, name: 'Double Trouble Pro', weather: getRandomWeather() };
         
         // Levels 9-12: Back to 1v1 but harder
-        if (level === 9) return { difficulty: 'easy', aiCount: 1, name: 'Speed Trial Easy', weather: 'none' };
-        if (level === 10) return { difficulty: 'medium', aiCount: 1, name: 'Speed Trial Medium', weather: 'rain' };
-        if (level === 11) return { difficulty: 'hard', aiCount: 1, name: 'Speed Trial Hard', weather: 'snow' };
-        if (level === 12) return { difficulty: 'pro', aiCount: 1, name: 'Speed Trial Pro', weather: 'wind' };
+        if (level === 9) return { difficulty: 'easy', aiCount: 1, name: 'Speed Trial Easy', weather: getRandomWeather() };
+        if (level === 10) return { difficulty: 'medium', aiCount: 1, name: 'Speed Trial Medium', weather: getRandomWeather() };
+        if (level === 11) return { difficulty: 'hard', aiCount: 1, name: 'Speed Trial Hard', weather: getRandomWeather() };
+        if (level === 12) return { difficulty: 'pro', aiCount: 1, name: 'Speed Trial Pro', weather: getRandomWeather() };
         
         // Levels 13-16: 2v1 again with more challenge
-        if (level === 13) return { difficulty: 'easy', aiCount: 2, name: 'Team Assault Easy', weather: 'rain' };
-        if (level === 14) return { difficulty: 'medium', aiCount: 2, name: 'Team Assault Medium', weather: 'snow' };
-        if (level === 15) return { difficulty: 'hard', aiCount: 2, name: 'Team Assault Hard', weather: 'wind' };
-        if (level === 16) return { difficulty: 'pro', aiCount: 2, name: 'Team Assault Pro', weather: 'rain' };
+        if (level === 13) return { difficulty: 'easy', aiCount: 2, name: 'Team Assault Easy', weather: getRandomWeather() };
+        if (level === 14) return { difficulty: 'medium', aiCount: 2, name: 'Team Assault Medium', weather: getRandomWeather() };
+        if (level === 15) return { difficulty: 'hard', aiCount: 2, name: 'Team Assault Hard', weather: getRandomWeather() };
+        if (level === 16) return { difficulty: 'pro', aiCount: 2, name: 'Team Assault Pro', weather: getRandomWeather() };
         
         // Levels 17-20: Elite challenges
-        if (level === 17) return { difficulty: 'hard', aiCount: 1, name: 'Elite Solo Hard', weather: 'snow' };
-        if (level === 18) return { difficulty: 'pro', aiCount: 1, name: 'Elite Solo Pro', weather: 'wind' };
-        if (level === 19) return { difficulty: 'hard', aiCount: 2, name: 'Elite Team Hard', weather: 'rain' };
-        if (level === 20) return { difficulty: 'pro', aiCount: 1, name: '👑 BOSS BATTLE', weather: 'wind', isBoss: true, bossSize: 1.75 };
+        if (level === 17) return { difficulty: 'hard', aiCount: 1, name: 'Elite Solo Hard', weather: getRandomWeather() };
+        if (level === 18) return { difficulty: 'pro', aiCount: 1, name: 'Elite Solo Pro', weather: getRandomWeather() };
+        if (level === 19) return { difficulty: 'hard', aiCount: 2, name: 'Elite Team Hard', weather: getRandomWeather() };
+        if (level === 20) return { difficulty: 'pro', aiCount: 1, name: '👑 BOSS BATTLE', weather: getRandomWeather(), isBoss: true, bossSize: 1.75 };
         
         // Beyond level 20 - Ultimate challenges repeat
         const cycleLevel = ((level - 21) % 4) + 17;
