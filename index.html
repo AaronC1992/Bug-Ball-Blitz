@@ -12,7 +12,7 @@
 </head>
 <body>
     <!-- Version number - always visible -->
-    <div class="version">v1.9.0</div>
+    <div class="version">v1.10.0</div>
     
     <div id="gameContainer">
         <!-- Title Screen -->
@@ -373,10 +373,16 @@
             <h2>🎨 Celebrations & Animations</h2>
             <p class="styles-subtitle">Customize your victory style!</p>
             
+            <!-- Top Back Button -->
+            <div class="menu-buttons" style="margin-bottom: 15px;">
+                <button class="menu-btn" id="backToMainFromStylesTopBtn">← Back</button>
+            </div>
+            
             <!-- Tab Navigation -->
             <div class="style-tabs">
                 <button class="style-tab active" id="celebrationsTab">Goal Celebrations</button>
                 <button class="style-tab" id="bugAnimationsTab">Bug Animations</button>
+                <button class="style-tab" id="cosmeticsTab">Cosmetics</button>
             </div>
             
             <!-- Celebrations Tab Content -->
@@ -389,6 +395,28 @@
             <div id="bugAnimationsTabContent" class="tab-content">
                 <p class="tab-description">Choose how your bug dances after scoring!</p>
                 <div id="bugAnimationGrid" class="celebration-grid"></div>
+            </div>
+            
+            <!-- Cosmetics Tab Content -->
+            <div id="cosmeticsTabContent" class="tab-content">
+                <p class="tab-description">Equip up to 3 cosmetics! They affect your hitbox!</p>
+                
+                <!-- Equipped Cosmetics Display -->
+                <div class="equipped-cosmetics">
+                    <h3>Equipped (Click to unequip):</h3>
+                    <div id="equippedCosmeticsDisplay" class="equipped-list"></div>
+                </div>
+                
+                <!-- Cosmetic Categories -->
+                <div class="cosmetic-filters">
+                    <button class="filter-btn active" data-category="all">All</button>
+                    <button class="filter-btn" data-category="hat">Hats</button>
+                    <button class="filter-btn" data-category="glasses">Glasses</button>
+                    <button class="filter-btn" data-category="accessory">Accessories</button>
+                    <button class="filter-btn" data-category="special">Special</button>
+                </div>
+                
+                <div id="cosmeticsGrid" class="celebration-grid"></div>
             </div>
             
             <div class="menu-buttons">

@@ -36,6 +36,7 @@ export class SaveSystem {
             },
             selectedCelebration: 'classic',
             selectedBugAnimation: 'none',
+            equippedCosmetics: [], // Array of equipped cosmetic IDs
             // Achievement progress (starts fresh for each profile)
             achievementProgress: {
                 stats: {
@@ -73,6 +74,9 @@ export class SaveSystem {
         }
         if (!profile.selectedBugAnimation) {
             profile.selectedBugAnimation = 'none';
+        }
+        if (!profile.equippedCosmetics) {
+            profile.equippedCosmetics = [];
         }
         if (!profile.tower.highestLevel) {
             profile.tower.highestLevel = profile.tower.levelsCompleted || 0;

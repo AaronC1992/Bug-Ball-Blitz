@@ -8,6 +8,7 @@ import { Physics } from './physics.js';
 import { AI, MultiAI } from './ai.js';
 import { getCelebrationArray, getCelebrationById, checkCelebrationUnlock, drawCelebration } from './celebrations.js';
 import { getBugAnimationArray, getBugAnimationById, checkBugAnimationUnlock, drawBugAnimation } from './bugAnimations.js';
+import { getCosmeticArray, getCosmeticById, getCosmeticsByCategory, checkCosmeticUnlock, drawCosmetic, calculateHitboxModifiers, loadCosmeticImages, getCosmeticImage } from './cosmetics.js';
 import { MenuBackground } from './menuBackground.js';
 import { AudioManager } from './audioManager.js';
 import { ParticleSystem } from './particles.js';
@@ -66,6 +67,7 @@ class Game {
         this.introState = 'idle'; // 'idle', 'teams', 'countdown', 'go'
         this.introStartTime = 0;
         this.introTeamsDuration = 2000; // 2 seconds for team names
+        this.frameCount = 0; // Frame counter for animations
         this.introCountdownDuration = 3000; // 3 seconds for 3-2-1 countdown
         this.introGoDuration = 800; // 0.8 seconds for GO
         
@@ -649,6 +651,10 @@ class Game {
         });
         
         document.getElementById('backToMainFromStylesBtn').addEventListener('click', () => {
+            this.ui.showScreen('mainMenu');
+        });
+        
+        document.getElementById('backToMainFromStylesTopBtn').addEventListener('click', () => {
             this.ui.showScreen('mainMenu');
         });
         
@@ -1466,13 +1472,21 @@ class Game {
         
         // Initialize player 1
         const p1Size = 40 * this.selectedBug1.stats.size * sizeMultiplier;
+        
+        // Apply cosmetic hitbox modifiers for player 1
+        const profile = this.ui.currentProfile;
+        const cosmeticModifiers = (profile && profile.equippedCosmetics) ? 
+            calculateHitboxModifiers(profile.equippedCosmetics) : { width: 0, height: 0 };
+        
         this.player1 = {
             x: this.canvas.width * 0.25,
-            y: this.physics.groundY - p1Size / 2,
+            y: this.physics.groundY - (p1Size + cosmeticModifiers.height) / 2,
             vx: 0,
             vy: 0,
-            width: p1Size,
-            height: p1Size,
+            width: p1Size + cosmeticModifiers.width,
+            height: p1Size + cosmeticModifiers.height,
+            baseWidth: p1Size,  // Store base size for animations
+            baseHeight: p1Size,
             isGrounded: true,
             moveLeft: false,
             moveRight: false,
@@ -1656,6 +1670,9 @@ class Game {
     }
     
     gameLoop() {
+        // Increment frame counter for animations
+        this.frameCount++;
+        
         // Skip updates during rotation but keep rendering
         if (this.isRotating) {
             if (this.gameState === 'playing') {
@@ -2325,6 +2342,18 @@ class Game {
             this.ctx.scale(-1, 1);
         }
         
+        // Draw background cosmetics (accessories like wings) BEFORE player body, in transformed space
+        if (player === this.player1 && this.ui.currentProfile && this.ui.currentProfile.equippedCosmetics) {
+            const equippedCosmetics = this.ui.currentProfile.equippedCosmetics;
+            const gameContext = { ball: this.ball, players: [this.player1, this.player2] };
+            for (const cosmeticId of equippedCosmetics) {
+                const cosmetic = getCosmeticById(cosmeticId);
+                if (cosmetic && cosmetic.category === 'accessory') {
+                    drawCosmetic(this.ctx, cosmeticId, player, bug, this.frameCount, true, gameContext); // true = use relative coords
+                }
+            }
+        }
+        
         // Draw bug SVG (simplified rendering - in reality we'd parse SVG)
         // For now, draw a colored circle with the bug color
         this.ctx.fillStyle = bug.color;
@@ -2345,6 +2374,23 @@ class Game {
         this.ctx.arc(player.width * 0.15, -player.height * 0.1, player.width * 0.08, 0, Math.PI * 2);
         this.ctx.fill();
         
+        // Draw foreground cosmetics (hats, glasses, special) in transformed space
+        if (player === this.player1 && this.ui.currentProfile && this.ui.currentProfile.equippedCosmetics) {
+            const equippedCosmetics = this.ui.currentProfile.equippedCosmetics;
+            const gameContext = { ball: this.ball, players: [this.player1, this.player2] };
+            for (const cosmeticId of equippedCosmetics) {
+                const cosmetic = getCosmeticById(cosmeticId);
+                if (cosmetic && cosmetic.category !== 'accessory') {
+                    drawCosmetic(this.ctx, cosmeticId, player, bug, this.frameCount, true, gameContext); // true = use relative coords
+                }
+            }
+        }
+        
+        // Draw crown on bosses (also in transformed space so it mirrors)
+        if (player.isBoss) {
+            drawCosmetic(this.ctx, 'crown', player, bug, this.frameCount, true);
+        }
+        
         this.ctx.restore();
         
         // Draw "BOSS" or "AI" label above AI-controlled players
@@ -2359,8 +2405,8 @@ class Game {
             this.ctx.textBaseline = 'bottom';
             
             const labelY = player.y - player.height / 2 - 15;
-            this.ctx.strokeText('👑 BOSS', player.x, labelY);
-            this.ctx.fillText('👑 BOSS', player.x, labelY);
+            this.ctx.strokeText('BOSS', player.x, labelY);
+            this.ctx.fillText('BOSS', player.x, labelY);
             this.ctx.restore();
         } else if (isAI) {
             // Regular AI label
@@ -3021,9 +3067,8 @@ class Game {
     }
     
     pauseGame() {
-        // Allow pause during: playing, intro, or when countdown is active after a goal
-        if (this.gameState === 'playing' || this.gameState === 'intro' || 
-            (this.gameState === 'playing' && this.countdownValue > 0)) {
+        // Allow pause during: playing, intro, or countdown state
+        if (this.gameState === 'playing' || this.gameState === 'intro' || this.gameState === 'countdown') {
             const previousState = this.gameState;
             this.gameState = 'paused';
             this.pausedFromState = previousState; // Remember what state we paused from
@@ -3050,15 +3095,15 @@ class Game {
     
     resumeGame() {
         if (this.gameState === 'paused') {
-            // Resume to the previous state (either 'playing' or 'intro')
+            // Resume to the previous state (either 'playing', 'intro', or 'countdown')
             this.gameState = this.pausedFromState || 'playing';
             
             // Restore countdown state if we had one
-            if (this.pausedCountdownValue !== undefined) {
+            if (this.pausedCountdownValue !== undefined && this.gameState === 'countdown') {
                 this.countdownValue = this.pausedCountdownValue;
-                // Adjust countdown start time to account for pause duration
-                const pauseDuration = Date.now() - this.pausedCountdownStartTime;
-                this.countdownStartTime = Date.now() - (this.initialCountdownValue - this.countdownValue) * 1000;
+                // Reset countdown start time to current time minus elapsed countdown time
+                const elapsedCountdown = this.initialCountdownValue - this.countdownValue;
+                this.countdownStartTime = Date.now() - (elapsedCountdown * 1000);
                 this.pausedCountdownValue = undefined;
                 this.pausedCountdownStartTime = undefined;
             }
@@ -3285,7 +3330,189 @@ class Game {
             bugAnimationGrid.appendChild(card);
         });
         
+        // Setup cosmetics tab
+        const cosmeticsTab = document.getElementById('cosmeticsTab');
+        const cosmeticsContent = document.getElementById('cosmeticsTabContent');
+        
+        const cosmeticsTabNew = cosmeticsTab.cloneNode(true);
+        cosmeticsTab.parentNode.replaceChild(cosmeticsTabNew, cosmeticsTab);
+        
+        cosmeticsTabNew.addEventListener('click', () => {
+            cosmeticsTabNew.classList.add('active');
+            celebrationsTabNew.classList.remove('active');
+            bugAnimationsTabNew.classList.remove('active');
+            cosmeticsContent.classList.add('active');
+            celebrationsContent.classList.remove('active');
+            bugAnimationsContent.classList.remove('active');
+        });
+        
+        // Update celebrations and animations tab handlers to deactivate cosmetics
+        const originalCelebClick = celebrationsTabNew.onclick;
+        celebrationsTabNew.addEventListener('click', () => {
+            celebrationsTabNew.classList.add('active');
+            bugAnimationsTabNew.classList.remove('active');
+            cosmeticsTabNew.classList.remove('active');
+            celebrationsContent.classList.add('active');
+            bugAnimationsContent.classList.remove('active');
+            cosmeticsContent.classList.remove('active');
+        });
+        
+        const originalBugClick = bugAnimationsTabNew.onclick;
+        bugAnimationsTabNew.addEventListener('click', () => {
+            bugAnimationsTabNew.classList.add('active');
+            celebrationsTabNew.classList.remove('active');
+            cosmeticsTabNew.classList.remove('active');
+            bugAnimationsContent.classList.add('active');
+            celebrationsContent.classList.remove('active');
+            cosmeticsContent.classList.remove('active');
+        });
+        
+        // Populate cosmetics
+        this.populateCosmetics(profile);
+        
         this.ui.showScreen('stylesScreen');
+    }
+    
+    populateCosmetics(profile) {
+        const MAX_EQUIPPED = 3;
+        
+        // Update equipped display
+        const updateEquippedDisplay = () => {
+            const equippedDisplay = document.getElementById('equippedCosmeticsDisplay');
+            equippedDisplay.innerHTML = '';
+            
+            if (!profile.equippedCosmetics || profile.equippedCosmetics.length === 0) {
+                equippedDisplay.innerHTML = '<div class="equipped-empty">No cosmetics equipped</div>';
+            } else {
+                profile.equippedCosmetics.forEach(id => {
+                    const cosmetic = getCosmeticById(id);
+                    if (cosmetic) {
+                        const item = document.createElement('div');
+                        item.className = 'equipped-item';
+                        
+                        // Check if cosmetic has a PNG image
+                        const cosmeticImage = getCosmeticImage(cosmetic.id);
+                        let iconHTML;
+                        if (cosmeticImage) {
+                            // Use PNG image
+                            iconHTML = `<div class="equipped-item-icon"><img src="${cosmetic.imagePath}" alt="${cosmetic.name}" style="width: 40px; height: 40px; object-fit: contain;"></div>`;
+                        } else {
+                            // Use emoji
+                            iconHTML = `<div class="equipped-item-icon">${cosmetic.icon}</div>`;
+                        }
+                        
+                        item.innerHTML = `
+                            ${iconHTML}
+                            <div class="equipped-item-name">${cosmetic.name}</div>
+                        `;
+                        item.addEventListener('click', () => {
+                            // Unequip
+                            profile.equippedCosmetics = profile.equippedCosmetics.filter(cid => cid !== id);
+                            SaveSystem.saveProfile(profile);
+                            this.ui.currentProfile = profile;
+                            updateEquippedDisplay();
+                            populateGrid('all');
+                        });
+                        equippedDisplay.appendChild(item);
+                    }
+                });
+            }
+        };
+        
+        // Populate cosmetics grid
+        const populateGrid = (category) => {
+            const cosmeticsGrid = document.getElementById('cosmeticsGrid');
+            cosmeticsGrid.innerHTML = '';
+            
+            const cosmetics = category === 'all' ? getCosmeticArray() : getCosmeticsByCategory(category);
+            
+            cosmetics.forEach(cosmetic => {
+                if (cosmetic.id === 'none') return; // Skip "none" option
+                
+                const isUnlocked = checkCosmeticUnlock(cosmetic, profile);
+                const isEquipped = profile.equippedCosmetics && profile.equippedCosmetics.includes(cosmetic.id);
+                
+                const card = document.createElement('div');
+                card.className = `celebration-card ${isUnlocked ? '' : 'locked'} ${isEquipped ? 'equipped-badge' : ''}`;
+                
+                const hitboxInfo = cosmetic.hitboxModifier ? 
+                    `<small>+${cosmetic.hitboxModifier.width}w +${cosmetic.hitboxModifier.height}h</small>` : '';
+                
+                // Check if cosmetic has a PNG image
+                const cosmeticImage = getCosmeticImage(cosmetic.id);
+                let iconHTML;
+                if (cosmeticImage) {
+                    // Create image element for PNG cosmetics
+                    iconHTML = `<div class="celebration-icon"><img src="${cosmetic.imagePath}" alt="${cosmetic.name}" style="width: 60px; height: 60px; object-fit: contain;"></div>`;
+                } else {
+                    // Use emoji for non-PNG cosmetics
+                    iconHTML = `<div class="celebration-icon">${cosmetic.icon}</div>`;
+                }
+                
+                card.innerHTML = `
+                    ${iconHTML}
+                    <h3>${cosmetic.name}</h3>
+                    <p class="celebration-description">${cosmetic.description}</p>
+                    ${hitboxInfo}
+                    <p class="unlock-condition">${isUnlocked ? '✓ Unlocked' : '🔒 ' + cosmetic.unlockCondition}</p>
+                `;
+                
+                if (isUnlocked) {
+                    card.addEventListener('click', () => {
+                        if (isEquipped) {
+                            // Unequip
+                            profile.equippedCosmetics = profile.equippedCosmetics.filter(id => id !== cosmetic.id);
+                        } else {
+                            // Equip
+                            if (!profile.equippedCosmetics) profile.equippedCosmetics = [];
+                            
+                            // Check if trying to equip a hat
+                            if (cosmetic.category === 'hat') {
+                                // Remove any existing hat before equipping new one
+                                const existingHat = profile.equippedCosmetics.find(id => {
+                                    const equipped = getCosmeticById(id);
+                                    return equipped && equipped.category === 'hat';
+                                });
+                                
+                                if (existingHat) {
+                                    profile.equippedCosmetics = profile.equippedCosmetics.filter(id => id !== existingHat);
+                                }
+                                
+                                profile.equippedCosmetics.push(cosmetic.id);
+                            } else {
+                                // For non-hat items, check max limit
+                                if (profile.equippedCosmetics.length < MAX_EQUIPPED) {
+                                    profile.equippedCosmetics.push(cosmetic.id);
+                                } else {
+                                    alert(`You can only equip ${MAX_EQUIPPED} cosmetics at once! Unequip one first.`);
+                                    return;
+                                }
+                            }
+                        }
+                        SaveSystem.saveProfile(profile);
+                        this.ui.currentProfile = profile;
+                        updateEquippedDisplay();
+                        populateGrid(category);
+                    });
+                }
+                
+                cosmeticsGrid.appendChild(card);
+            });
+        };
+        
+        // Filter buttons
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const category = btn.getAttribute('data-category');
+                populateGrid(category);
+            });
+        });
+        
+        updateEquippedDisplay();
+        populateGrid('all');
     }
     
     showAchievementsMenu() {
@@ -3367,11 +3594,15 @@ class Game {
 }
 
 // Initialize game when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Clean up old global achievement data (migration from older version)
     if (localStorage.getItem('achievementProgress')) {
         localStorage.removeItem('achievementProgress');
     }
+    
+    // Load cosmetic images (PNG assets)
+    console.log('Loading cosmetic images...');
+    await loadCosmeticImages();
     
     const game = new Game();
     // Make game accessible globally for mode change detection
