@@ -1613,7 +1613,7 @@ class Game {
         this.updateTimerDisplay();
         
         // Initialize weather effects
-        const levelConfig = this.gameMode === 'tower' ? this.towerLevels[this.currentTowerLevel] : null;
+        const levelConfig = this.gameMode === 'tower' ? this.getTowerLevelConfig(this.towerLevel) : null;
         this.currentWeather = this.gameMode === 'arcade' ? (this.arcadeSettings?.weather || 'none') : (levelConfig?.weather || 'none');
         this.initWeatherParticles();
         
