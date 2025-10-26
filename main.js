@@ -43,6 +43,12 @@ class Game {
         this.difficulty = 'medium';
         this.towerLevel = 1;
         
+        // Boss gauntlet state
+        this.bossGauntletActive = false;
+        this.bossGauntletBugs = []; // Array of bugs to face
+        this.bossGauntletCurrentIndex = 0; // Current bug index
+        this.bossGauntletWins = 0; // Wins against bosses
+        
         // Rotation handling
         this.isRotating = false;
         this.wasPlaying = false;
@@ -850,30 +856,35 @@ class Game {
         const levelConfig = this.getTowerLevelConfig(this.towerLevel);
         this.difficulty = levelConfig.difficulty;
         
-        if (levelConfig.aiCount === 1) {
+        // If this is a boss battle, set up gauntlet mode
+        if (levelConfig.isBoss) {
+            this.bossGauntletActive = true;
+            this.bossGauntletBugs = getBugArray(); // Get all bugs
+            this.bossGauntletCurrentIndex = 0;
+            this.bossGauntletWins = 0;
+            
+            // Set up first boss
+            const baseBug = this.bossGauntletBugs[0];
+            this.selectedBug2 = {
+                id: baseBug.id,
+                name: baseBug.name,
+                color: baseBug.color,
+                svg: baseBug.svg,
+                stats: {
+                    speed: Math.min(baseBug.stats.speed * 1.3, 1.0),
+                    jump: Math.min(baseBug.stats.jump * 1.3, 1.0),
+                    size: baseBug.stats.size,
+                    power: Math.min(baseBug.stats.power * 1.3, 1.0)
+                }
+            };
+            this.selectedBug3 = null;
+        } else if (levelConfig.aiCount === 1) {
+            this.bossGauntletActive = false;
             const baseBug = this.getRandomBug();
-            
-            // If this is a boss battle, enhance the bug's stats
-            if (levelConfig.isBoss) {
-                // Create a boss version with enhanced stats
-                this.selectedBug2 = {
-                    id: baseBug.id,
-                    name: baseBug.name,
-                    color: baseBug.color,
-                    svg: baseBug.svg,
-                    stats: {
-                        speed: Math.min(baseBug.stats.speed * 1.3, 1.0),
-                        jump: Math.min(baseBug.stats.jump * 1.3, 1.0),
-                        size: baseBug.stats.size,
-                        power: Math.min(baseBug.stats.power * 1.3, 1.0)
-                    }
-                };
-            } else {
-                this.selectedBug2 = baseBug;
-            }
-            
+            this.selectedBug2 = baseBug;
             this.selectedBug3 = null;
         } else {
+            this.bossGauntletActive = false;
             this.selectedBug2 = this.getRandomBug();
             this.selectedBug3 = this.getRandomBug();
         }
@@ -2615,6 +2626,25 @@ class Game {
         const playerWon = this.score1 > this.score2;
         const isDraw = this.score1 === this.score2;
         
+        // Check if this is boss gauntlet mode
+        if (this.bossGauntletActive && playerWon) {
+            this.bossGauntletWins++;
+            this.bossGauntletCurrentIndex++;
+            
+            // Check if there are more bugs to face
+            if (this.bossGauntletCurrentIndex < this.bossGauntletBugs.length) {
+                // Continue to next bug in gauntlet
+                this.advanceGauntlet();
+                return;
+            } else {
+                // Gauntlet complete!
+                this.bossGauntletActive = false;
+            }
+        } else if (this.bossGauntletActive && !playerWon) {
+            // Player lost during gauntlet - end the match
+            this.bossGauntletActive = false;
+        }
+        
         // Track match achievements
         this.achievements.updateStat('totalMatches', 1);
         
@@ -2693,8 +2723,14 @@ class Game {
             // Show level completion if in tower mode
             if (this.gameMode === 'tower') {
                 const config = this.getTowerLevelConfig(this.towerLevel);
-                titleEl.textContent = `🏆 Level ${this.towerLevel} Complete! 🏆`;
-                titleEl.style.fontSize = '32px';
+                // Check if this was the final boss gauntlet victory
+                if (this.towerLevel === 20 && this.bossGauntletWins === this.bossGauntletBugs.length) {
+                    titleEl.textContent = `👑 BOSS GAUNTLET COMPLETE! 👑`;
+                    titleEl.style.fontSize = '28px';
+                } else {
+                    titleEl.textContent = `🏆 Level ${this.towerLevel} Complete! 🏆`;
+                    titleEl.style.fontSize = '32px';
+                }
             } else {
                 titleEl.textContent = 'Victory!';
             }
@@ -2704,12 +2740,25 @@ class Game {
             titleEl.style.color = '#ff4444';
         }
         
-        statsEl.innerHTML = `
+        // Show gauntlet stats if applicable
+        let statsHTML = `
             <div class="stat-row">
                 <span>Final Score:</span>
                 <span style="color: #7ed321; font-size: 24px;">${this.score1} - ${this.score2}</span>
             </div>
         `;
+        
+        // Add gauntlet progress if in boss gauntlet
+        if (this.towerLevel === 20 && this.bossGauntletWins > 0) {
+            statsHTML += `
+                <div class="stat-row">
+                    <span>Bosses Defeated:</span>
+                    <span style="color: #FFD700; font-size: 20px;">${this.bossGauntletWins}/${this.bossGauntletBugs.length}</span>
+                </div>
+            `;
+        }
+        
+        statsEl.innerHTML = statsHTML;
         
         // Show continue button if tower mode, won, and not at final level (20)
         const continueBtn = document.getElementById('continueBtn');
@@ -2743,6 +2792,42 @@ class Game {
         `;
         
         this.ui.showOverlay('towerVictoryScreen');
+    }
+    
+    advanceGauntlet() {
+        // Get the next bug in the gauntlet
+        const baseBug = this.bossGauntletBugs[this.bossGauntletCurrentIndex];
+        
+        // Create enhanced boss version
+        this.selectedBug2 = {
+            id: baseBug.id,
+            name: baseBug.name,
+            color: baseBug.color,
+            svg: baseBug.svg,
+            stats: {
+                speed: Math.min(baseBug.stats.speed * 1.3, 1.0),
+                jump: Math.min(baseBug.stats.jump * 1.3, 1.0),
+                size: baseBug.stats.size,
+                power: Math.min(baseBug.stats.power * 1.3, 1.0)
+            }
+        };
+        
+        // Reset scores for next round
+        this.score1 = 0;
+        this.score2 = 0;
+        
+        // Show brief transition message
+        const gauntletProgress = `Boss ${this.bossGauntletCurrentIndex + 1}/${this.bossGauntletBugs.length}`;
+        document.getElementById('loadingLevelName').textContent = `👑 ${gauntletProgress}: ${baseBug.name}`;
+        document.getElementById('loadingLevelDifficulty').textContent = `🔴 BOSS GAUNTLET`;
+        
+        // Show loading screen briefly before next match
+        document.getElementById('loadingScreen').style.display = 'flex';
+        
+        setTimeout(() => {
+            document.getElementById('loadingScreen').style.display = 'none';
+            this.startMatch();
+        }, 2000);
     }
     
     handleMatchContinue() {
