@@ -1460,7 +1460,13 @@ class Game {
         // Initialize player 2
         // Check if this is a boss battle
         const bossLevelConfig = this.gameMode === 'tower' ? this.getTowerLevelConfig(this.towerLevel) : null;
-        const bossMultiplier = (bossLevelConfig && bossLevelConfig.isBoss) ? bossLevelConfig.bossSize : 1.0;
+        const bossMultiplier = (bossLevelConfig && bossLevelConfig.isBoss) ? (bossLevelConfig.bossSize || 1.0) : 1.0;
+        
+        // Safety check for bug stats
+        if (!this.selectedBug2 || !this.selectedBug2.stats) {
+            console.error('selectedBug2 or stats is undefined', this.selectedBug2);
+            this.selectedBug2 = this.getRandomBug();
+        }
         
         const p2Size = 40 * this.selectedBug2.stats.size * sizeMultiplier * bossMultiplier;
         this.player2 = {
@@ -2227,6 +2233,12 @@ class Game {
     }
     
     drawPlayer(player, bug) {
+        // Safety check
+        if (!player || !bug || !bug.color) {
+            console.error('Invalid player or bug data', player, bug);
+            return;
+        }
+        
         // Determine if this player is AI-controlled
         const isAI = (player === this.player2 && (this.player2AI || this.player2AI_2)) ||
                      (player === this.player3 && (this.player3AI || this.player2AI_2)) ||
