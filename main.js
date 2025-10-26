@@ -339,6 +339,7 @@ class Game {
         
         // Menu buttons
         document.getElementById('towerCampaignBtn').addEventListener('click', (e) => {
+            alert('Tower Campaign button clicked!');
             console.log('Tower Campaign clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
             this.audio.playSound('ui_click');
             this.showTowerLevelSelect();
@@ -356,6 +357,7 @@ class Game {
         });
         
         document.getElementById('quickPlayBtn').addEventListener('click', (e) => {
+            alert('Quick Play button clicked!');
             console.log('Quick Play clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
             this.audio.playSound('ui_click');
             this.showDifficultySelection();
@@ -651,6 +653,7 @@ class Game {
         
         // Styles menu
         document.getElementById('stylesBtn').addEventListener('click', (e) => {
+            alert('STYLES button clicked!');
             console.log('Styles clicked', 'Target ID:', e.target.id, 'CurrentTarget ID:', e.currentTarget.id);
             this.showStylesMenu();
         });
@@ -3230,6 +3233,7 @@ class Game {
     }
     
     showStylesMenu() {
+        alert('showStylesMenu function called!');
         console.log('showStylesMenu called from:', new Error().stack);
         const profile = this.ui.currentProfile;
         if (!profile) {
