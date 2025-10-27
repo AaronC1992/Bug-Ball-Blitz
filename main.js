@@ -130,6 +130,9 @@ class Game {
         this.dragOffset = { x: 0, y: 0 };
         this.editorPreviewBackground = null;
         
+    // Debug flags
+    this.debugDragLogs = false;
+        
         // Animation
         this.animationId = null;
         
@@ -750,6 +753,7 @@ class Game {
         
         // Joystick touch - use targetTouches instead of touches
         joystick.addEventListener('touchstart', (e) => {
+            if (this.controlsEditorActive) return; // allow editor drag to receive events
             e.preventDefault();
             e.stopPropagation();
             this.mobileControls.joystickActive = true;
@@ -757,6 +761,7 @@ class Game {
         });
         
         joystick.addEventListener('touchmove', (e) => {
+            if (this.controlsEditorActive) return;
             e.preventDefault();
             e.stopPropagation();
             if (this.mobileControls.joystickActive && e.targetTouches.length > 0) {
@@ -765,6 +770,7 @@ class Game {
         });
         
         joystick.addEventListener('touchend', (e) => {
+            if (this.controlsEditorActive) return;
             e.stopPropagation();
             this.mobileControls.joystickActive = false;
             this.mobileControls.joystickX = 0;
@@ -773,6 +779,7 @@ class Game {
         });
         
         joystick.addEventListener('touchcancel', (e) => {
+            if (this.controlsEditorActive) return;
             e.stopPropagation();
             this.mobileControls.joystickActive = false;
             this.mobileControls.joystickX = 0;
@@ -782,11 +789,13 @@ class Game {
         
         // Jump button
         jumpBtn.addEventListener('touchstart', (e) => {
+            if (this.controlsEditorActive) return;
             e.preventDefault();
             this.mobileControls.jumpPressed = true;
         });
         
         jumpBtn.addEventListener('touchend', (e) => {
+            if (this.controlsEditorActive) return;
             e.preventDefault();
             this.mobileControls.jumpPressed = false;
         });
@@ -798,6 +807,7 @@ class Game {
         
         // Joystick touch P2 - use targetTouches instead of touches
         joystickP2.addEventListener('touchstart', (e) => {
+            if (this.controlsEditorActive) return;
             e.preventDefault();
             e.stopPropagation();
             this.mobileControlsP2.joystickActive = true;
@@ -805,6 +815,7 @@ class Game {
         });
         
         joystickP2.addEventListener('touchmove', (e) => {
+            if (this.controlsEditorActive) return;
             e.preventDefault();
             e.stopPropagation();
             if (this.mobileControlsP2.joystickActive && e.targetTouches.length > 0) {
@@ -813,6 +824,7 @@ class Game {
         });
         
         joystickP2.addEventListener('touchend', (e) => {
+            if (this.controlsEditorActive) return;
             e.stopPropagation();
             this.mobileControlsP2.joystickActive = false;
             this.mobileControlsP2.joystickX = 0;
@@ -821,6 +833,7 @@ class Game {
         });
         
         joystickP2.addEventListener('touchcancel', (e) => {
+            if (this.controlsEditorActive) return;
             e.stopPropagation();
             this.mobileControlsP2.joystickActive = false;
             this.mobileControlsP2.joystickX = 0;
@@ -830,11 +843,13 @@ class Game {
         
         // Jump button P2
         jumpBtnP2.addEventListener('touchstart', (e) => {
+            if (this.controlsEditorActive) return;
             e.preventDefault();
             this.mobileControlsP2.jumpPressed = true;
         });
         
         jumpBtnP2.addEventListener('touchend', (e) => {
+            if (this.controlsEditorActive) return;
             e.preventDefault();
             this.mobileControlsP2.jumpPressed = false;
         });
@@ -4124,7 +4139,8 @@ class Game {
                 // Use selected arena, or default to grass field
                 let arenaToUse = this.selectedArena;
                 if (!arenaToUse) {
-                    arenaToUse = getArenaById('grass_field');
+                    // Default to valid arena id
+                    arenaToUse = getArenaById('grassField');
                 }
                 
                 // Initialize mock physics for realistic arena dimensions
@@ -4146,11 +4162,7 @@ class Game {
                     console.error('Cannot draw arena - missing requirements');
                 }
                 
-                // Draw mock players to show scale
-                this.drawMockPlayers();
-                
-                // Draw mock ball
-                this.drawMockBall();
+                // Remove mock players/ball in editor preview per request
                 
                 // Show game HUD with mock data
                 this.showMockHUD();
@@ -4591,8 +4603,10 @@ class Game {
         // Force a reflow to ensure styles are applied
         void element.offsetHeight;
         
-        // Get the rect AFTER all positioning is finalized
+    // Get the rect AFTER all positioning is finalized
         const rectAfterPositioning = element.getBoundingClientRect();
+    // Cache element size to avoid layout thrash during drag
+    this.dragElementSize = { width: rectAfterPositioning.width, height: rectAfterPositioning.height };
         
         // Calculate offset from touch/click point to element's ACTUAL top-left corner
         const offsetX = touch.clientX - rectAfterPositioning.left;
@@ -4611,7 +4625,7 @@ class Game {
             y: offsetY
         };
         
-        console.log('startDrag:', {
+        if (this.debugDragLogs) console.log('startDrag:', {
             elementId: element.id,
             touchX: touch.clientX,
             touchY: touch.clientY,
@@ -4652,7 +4666,7 @@ class Game {
         let newLeft = touch.clientX - containerRect.left - this.dragOffset.x;
         let newTop = touch.clientY - containerRect.top - this.dragOffset.y;
         
-        console.log('handleDragMove:', {
+        if (this.debugDragLogs) console.log('handleDragMove:', {
             elementId: this.draggingElement.id,
             touchX: touch.clientX,
             touchY: touch.clientY,
@@ -4663,9 +4677,8 @@ class Game {
         });
         
         // Get element dimensions
-        const elementRect = this.draggingElement.getBoundingClientRect();
-        const elementWidth = elementRect.width;
-        const elementHeight = elementRect.height;
+    const elementWidth = this.dragElementSize?.width ?? this.draggingElement.getBoundingClientRect().width;
+    const elementHeight = this.dragElementSize?.height ?? this.draggingElement.getBoundingClientRect().height;
         
         // Constrain to container bounds (with 10px minimum visible on each edge)
         const minVisible = 10;

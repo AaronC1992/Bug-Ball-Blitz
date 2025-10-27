@@ -3326,6 +3326,12 @@ body {
     transform: none !important;
 }
 
+/* Disable animations/transitions while dragging to avoid laggy movement */
+.editable-element.dragging,
+.mock-hud-element.dragging {
+    transition: none !important;
+}
+
 .editable-element::before {
     content: attr(data-editable-name);
     position: absolute;
