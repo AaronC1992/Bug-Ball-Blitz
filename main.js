@@ -4383,12 +4383,13 @@ class Game {
         
         newSaveBtn.addEventListener('click', () => {
             this.audio.playSound('ui_click');
-            // Button animation state
-            newSaveBtn.classList.add('saving');
-            setTimeout(() => newSaveBtn.classList.remove('saving'), 800);
             
-            // Persist
+                // CRITICAL: Save positions FIRST before any animations that might shift layout
             this.saveCurrentPositions();
+            
+                // Then do visual feedback
+                newSaveBtn.classList.add('saving');
+                setTimeout(() => newSaveBtn.classList.remove('saving'), 800);
             
             // Toast confirmation
             this.showEditorToast('✓ Layout Saved');
