@@ -714,6 +714,11 @@ class Game {
             this.ui.showScreen('mainMenu');
         });
         
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.openSettingsFromMainMenu();
+        });
+        
         document.getElementById('saveProgressBtn').addEventListener('click', () => {
             // Progress is auto-saved, but provide visual feedback
             SaveSystem.saveProfile(this.ui.currentProfile);
@@ -3100,6 +3105,7 @@ class Game {
     }
     
     openSettings() {
+        this.settingsOpenedFrom = 'pause'; // Track where settings was opened from
         // Hide pause menu while showing settings
         this.ui.hideOverlay('pauseMenu');
         
@@ -3130,6 +3136,35 @@ class Game {
         this.ui.showOverlay('settingsMenu');
     }
     
+    openSettingsFromMainMenu() {
+        this.settingsOpenedFrom = 'mainMenu'; // Track where settings was opened from
+        
+        // Load and display current audio settings
+        const soundVolume = Math.round(this.audio.soundVolume * 100);
+        const musicVolume = Math.round(this.audio.musicVolume * 100);
+        
+        document.getElementById('soundVolumeSlider').value = soundVolume;
+        document.getElementById('soundVolumeValue').textContent = soundVolume + '%';
+        
+        document.getElementById('musicVolumeSlider').value = musicVolume;
+        document.getElementById('musicVolumeValue').textContent = musicVolume + '%';
+        
+        document.getElementById('hapticToggle').checked = this.audio.hapticEnabled;
+        
+        // Load quality setting from profile preferences
+        const quality = this.ui.currentProfile?.preferences?.graphicsQuality || 'medium';
+        this.quality.setQuality(quality);
+        document.getElementById('qualitySelect').value = quality;
+        
+        // Update toggle to reflect current preference
+        const shouldBeChecked = this.touchControlsEnabled !== null 
+            ? this.touchControlsEnabled 
+            : (this.ui.isMobile || this.ui.isTablet);
+        document.getElementById('touchControlsToggle').checked = shouldBeChecked;
+        
+        this.ui.showOverlay('settingsMenu');
+    }
+    
     closeSettings() {
         // Blur any focused element (like the toggle switch) to prevent accidental re-clicks
         if (document.activeElement) {
@@ -3141,8 +3176,15 @@ class Game {
         // Update controls visibility based on preference
         this.updateTouchControlsVisibility();
         
-        // Return to pause menu (game stays paused)
-        this.ui.showOverlay('pauseMenu');
+        // Return to where settings was opened from
+        if (this.settingsOpenedFrom === 'mainMenu') {
+            // Just hide overlay, main menu is still visible
+            this.settingsOpenedFrom = null;
+        } else {
+            // Return to pause menu (game stays paused)
+            this.ui.showOverlay('pauseMenu');
+            this.settingsOpenedFrom = null;
+        }
     }
     
     loadTouchControlsPreference() {
@@ -3742,18 +3784,35 @@ class Game {
         const editor = document.getElementById('controlsEditor');
         editor.classList.add('active');
         
+        // Track where we opened from
+        this.editorOpenedFrom = this.settingsOpenedFrom || 'mainMenu';
+        
         // Hide settings menu
         this.ui.hideOverlay('settingsMenu');
         
-        // If in a match, keep it paused
+        // If in a match, keep it paused and show game UI
         const wasInMatch = (this.gameState === 'playing' || this.gameState === 'paused');
-        if (wasInMatch && this.gameState === 'playing') {
-            this.pauseGame();
-        }
-        
-        // If in menu, show preview background
-        if (!wasInMatch) {
+        if (wasInMatch) {
+            if (this.gameState === 'playing') {
+                this.pauseGame();
+            }
+            // Hide pause menu so we can see the game UI elements
+            this.ui.hideOverlay('pauseMenu');
+            
+            // Make sure game UI is visible
+            const gameInfo = document.getElementById('gameInfo');
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (gameInfo) gameInfo.style.display = 'flex';
+            if (pauseBtn) pauseBtn.style.display = 'block';
+        } else {
+            // If in menu, show preview background
             this.startEditorPreview();
+            
+            // Also show game UI elements for editing
+            const gameInfo = document.getElementById('gameInfo');
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (gameInfo) gameInfo.style.display = 'flex';
+            if (pauseBtn) pauseBtn.style.display = 'block';
         }
         
         // Make on-screen elements editable
@@ -3782,6 +3841,15 @@ class Game {
             this.editorPreviewBackground.stop();
             this.editorPreviewBackground = null;
             this.menuBackgroundCtx.clearRect(0, 0, this.menuBackgroundCanvas.width, this.menuBackgroundCanvas.height);
+            
+            // Hide game UI if we're in menu
+            const gameInfo = document.getElementById('gameInfo');
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (gameInfo) gameInfo.style.display = 'none';
+            if (pauseBtn) pauseBtn.style.display = 'none';
+        } else {
+            // If we were in a match, show pause menu again
+            this.ui.showOverlay('pauseMenu');
         }
         
         // Apply custom layout
