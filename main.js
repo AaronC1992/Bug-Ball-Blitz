@@ -3878,23 +3878,23 @@ class Game {
         this.ui.hideOverlay('settingsMenu');
         
         // Set up a mock match environment for editing
+        // This will handle showing controls and applying layout at the right time
         this.startEditorPreview();
         
         // Show the editor overlay
         const editor = document.getElementById('controlsEditor');
         editor.classList.add('active');
         
-        // Apply the current mode's layout
-        this.applyEditorLayout();
-        
-        // Update visibility based on mode
-        this.updateEditorControlsVisibility();
-        
-        // Make on-screen elements editable
-        this.setupEditableElements();
-        
-        // Setup editor controls
-        this.setupEditorControls();
+        // Update visibility based on mode (must happen after startEditorPreview sets up controls)
+        setTimeout(() => {
+            this.updateEditorControlsVisibility();
+            
+            // Make on-screen elements editable
+            this.setupEditableElements();
+            
+            // Setup editor controls
+            this.setupEditorControls();
+        }, 200); // Wait for startEditorPreview to complete
     }
     
     updateEditorControlsVisibility() {
@@ -4037,17 +4037,12 @@ class Game {
             
             // Wait another frame for resize to complete
             setTimeout(() => {
-                // Log canvas dimensions for debugging
-                console.log('Canvas size:', this.canvas.width, 'x', this.canvas.height);
-                
                 // Ensure we have an arena to draw
                 // Use selected arena, or default to grass field
                 let arenaToUse = this.selectedArena;
                 if (!arenaToUse) {
                     arenaToUse = getArenaById('grass_field');
-                    console.log('No arena selected, using default grass_field');
                 }
-                console.log('Arena to draw:', arenaToUse);
                 
                 // Initialize mock physics for realistic arena dimensions
                 if (!this.physics) {
@@ -4059,20 +4054,13 @@ class Game {
                 
                 // Draw arena background with all required parameters
                 if (arenaToUse && this.ctx && this.canvas.width > 0) {
-                    console.log('Drawing arena with dimensions:', this.canvas.width, this.canvas.height);
                     try {
                         drawArenaBackground(this.ctx, arenaToUse, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
-                        console.log('Arena drawn successfully');
                     } catch (error) {
                         console.error('Error drawing arena:', error);
                     }
                 } else {
-                    console.error('Cannot draw arena - missing requirements:', {
-                        arena: !!arenaToUse,
-                        ctx: !!this.ctx,
-                        width: this.canvas.width,
-                        height: this.canvas.height
-                    });
+                    console.error('Cannot draw arena - missing requirements');
                 }
                 
                 // Draw mock players to show scale
@@ -4379,8 +4367,18 @@ class Game {
         const gameScreenRect = gameScreen.getBoundingClientRect();
         
         // Calculate new position relative to game screen
-        const newLeft = touch.clientX - gameScreenRect.left - this.dragOffset.x;
-        const newTop = touch.clientY - gameScreenRect.top - this.dragOffset.y;
+        let newLeft = touch.clientX - gameScreenRect.left - this.dragOffset.x;
+        let newTop = touch.clientY - gameScreenRect.top - this.dragOffset.y;
+        
+        // Get element dimensions
+        const elementRect = this.draggingElement.getBoundingClientRect();
+        const elementWidth = elementRect.width;
+        const elementHeight = elementRect.height;
+        
+        // Constrain to game screen bounds (with 10px minimum visible on each edge)
+        const minVisible = 10;
+        newLeft = Math.max(-elementWidth + minVisible, Math.min(newLeft, gameScreenRect.width - minVisible));
+        newTop = Math.max(-elementHeight + minVisible, Math.min(newTop, gameScreenRect.height - minVisible));
         
         // Apply new position
         this.draggingElement.style.left = newLeft + 'px';
@@ -4432,15 +4430,23 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
+        // Get game screen for relative positioning
+        const gameScreen = document.getElementById('gameScreen');
+        const gameScreenRect = gameScreen.getBoundingClientRect();
+        
         this.editableElements.forEach(({ element }) => {
             const id = element.id;
             const rect = element.getBoundingClientRect();
             
+            // Calculate position relative to game screen
+            const relativeLeft = rect.left - gameScreenRect.left;
+            const relativeTop = rect.top - gameScreenRect.top;
+            
             if (!layout[id]) layout[id] = {};
-            // Save as absolute positioning
+            // Save as absolute positioning relative to game screen
             layout[id].position = 'absolute';
-            layout[id].left = rect.left;
-            layout[id].top = rect.top;
+            layout[id].left = relativeLeft;
+            layout[id].top = relativeTop;
         });
         
         this.saveCustomLayout(this.editorLayoutMode);
@@ -4517,7 +4523,8 @@ class Game {
                     if (isVisible) {
                         const layoutData = layout[id];
                         
-                        // Apply absolute positioning for gameplay (same as editor)
+                        // Apply absolute positioning for gameplay
+                        // Positions are already relative to game screen from the editor
                         if (layoutData.position) {
                             element.style.position = layoutData.position;
                         }
