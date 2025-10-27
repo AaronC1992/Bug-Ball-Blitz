@@ -4054,10 +4054,12 @@ class Game {
                 if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
                 if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
                 
-                // Preserve transform if it exists in saved layout
-                if (layoutData.transform !== undefined) {
-                    element.style.transform = layoutData.transform;
-                }
+                        // Ensure CSS transforms don't offset custom absolute positions
+                        if (layoutData.transform !== undefined) {
+                            element.style.transform = layoutData.transform || 'none';
+                        } else {
+                            element.style.transform = 'none';
+                        }
             }
         });
     }
@@ -4766,8 +4768,8 @@ class Game {
                 layout[realId].position = 'absolute';
                 layout[realId].left = currentLeftGame;
                 layout[realId].top = currentTopGame;
-                // Clear transform since we're using absolute positioning
-                layout[realId].transform = '';
+                // Neutralize transform explicitly for absolute positioning
+                layout[realId].transform = 'none';
             } else {
                 // Element didn't move significantly - restore its original position
                 // This handles accidental clicks
@@ -4851,8 +4853,8 @@ class Game {
                 layout[realId].position = 'absolute';
                 layout[realId].left = relativeLeft;
                 layout[realId].top = relativeTop;
-                // Clear transform since we're using absolute positioning
-                layout[realId].transform = '';
+                // Neutralize transform explicitly for absolute positioning
+                layout[realId].transform = 'none';
                 
                 console.log(`[SAVE] ${realId}: left=${relativeLeft.toFixed(1)}, top=${relativeTop.toFixed(1)}`);
             }
