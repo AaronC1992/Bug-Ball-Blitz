@@ -4585,6 +4585,9 @@ class Game {
         element.style.bottom = 'auto';
         element.style.transform = ''; // Clear transform when starting drag
         
+        // Force a reflow to ensure styles are applied before getting the new rect
+        void element.offsetHeight;
+        
         // IMPORTANT: Get the rect AGAIN after clearing transform to get accurate position
         // This ensures the offset calculation matches the actual rendered position
         const rectAfterTransformClear = element.getBoundingClientRect();
@@ -4610,12 +4613,16 @@ class Game {
             elementId: element.id,
             touchX: touch.clientX,
             touchY: touch.clientY,
-            rectBeforeClear: { left: rectWithTransform.left, top: rectWithTransform.top, width: rectWithTransform.width, height: rectWithTransform.height },
-            rectAfterClear: { left: rectAfterTransformClear.left, top: rectAfterTransformClear.top, width: rectAfterTransformClear.width, height: rectAfterTransformClear.height },
+            beforeLeft: rectWithTransform.left,
+            beforeTop: rectWithTransform.top,
+            beforeWidth: rectWithTransform.width,
+            afterLeft: rectAfterTransformClear.left,
+            afterTop: rectAfterTransformClear.top,
+            afterWidth: rectAfterTransformClear.width,
+            leftShift: rectAfterTransformClear.left - rectWithTransform.left,
+            topShift: rectAfterTransformClear.top - rectWithTransform.top,
             offsetX: offsetX,
-            offsetY: offsetY,
-            containerLeft: containerRect.left,
-            containerTop: containerRect.top
+            offsetY: offsetY
         });
         
         element.classList.add('dragging');
