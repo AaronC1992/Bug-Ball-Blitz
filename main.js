@@ -3994,19 +3994,40 @@ class Game {
         // Clear the canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Hide mobile controls
+        // Hide mobile controls and restore their original container styles
         const mobileControls = document.getElementById('mobileControls');
         const mobileControlsP2 = document.getElementById('mobileControlsP2');
-        if (mobileControls) mobileControls.classList.remove('active');
-        if (mobileControlsP2) mobileControlsP2.classList.remove('active');
+        
+        if (mobileControls) {
+            mobileControls.classList.remove('active');
+            // Restore original container styles
+            mobileControls.style.position = mobileControls.dataset.originalPosition || '';
+            mobileControls.style.bottom = mobileControls.dataset.originalBottom || '';
+            mobileControls.style.height = mobileControls.dataset.originalHeight || '';
+            mobileControls.style.top = '';
+            delete mobileControls.dataset.originalPosition;
+            delete mobileControls.dataset.originalBottom;
+            delete mobileControls.dataset.originalHeight;
+        }
+        
+        if (mobileControlsP2) {
+            mobileControlsP2.classList.remove('active');
+            // Restore original container styles
+            mobileControlsP2.style.position = mobileControlsP2.dataset.originalPosition || '';
+            mobileControlsP2.style.bottom = mobileControlsP2.dataset.originalBottom || '';
+            mobileControlsP2.style.height = mobileControlsP2.dataset.originalHeight || '';
+            mobileControlsP2.style.top = '';
+            delete mobileControlsP2.dataset.originalPosition;
+            delete mobileControlsP2.dataset.originalBottom;
+            delete mobileControlsP2.dataset.originalHeight;
+        }
         
         // Restore pause button functionality
         const pauseBtn = document.getElementById('pauseBtn');
         if (pauseBtn) {
             pauseBtn.style.display = 'none';
-            pauseBtn.style.pointerEvents = 'auto'; // Always restore to 'auto', not empty string
-            pauseBtn.style.opacity = '1'; // Always restore to full opacity
-            delete pauseBtn.dataset.originalPointerEvents; // Clean up
+            pauseBtn.style.pointerEvents = 'auto';
+            pauseBtn.style.opacity = '1';
         }
         
         // Return to main menu
@@ -4074,28 +4095,56 @@ class Game {
                 // Show game HUD with mock data
                 this.showMockHUD();
                 
-                // Show mobile controls based on mode
+                // Show mobile controls
                 const mobileControls = document.getElementById('mobileControls');
                 const mobileControlsP2 = document.getElementById('mobileControlsP2');
-                if (mobileControls) mobileControls.classList.add('active');
-                if (mobileControlsP2) mobileControlsP2.classList.add('active');
+                
+                // CRITICAL FIX: Override container positioning for editor
+                // This allows absolute positioning to work correctly
+                if (mobileControls) {
+                    mobileControls.classList.add('active');
+                    // Store original styles
+                    mobileControls.dataset.originalPosition = mobileControls.style.position || '';
+                    mobileControls.dataset.originalBottom = mobileControls.style.bottom || '';
+                    mobileControls.dataset.originalHeight = mobileControls.style.height || '';
+                    // Override to make it work like a normal container
+                    mobileControls.style.position = 'absolute';
+                    mobileControls.style.bottom = '0';
+                    mobileControls.style.left = '0';
+                    mobileControls.style.right = '0';
+                    mobileControls.style.top = '0';
+                    mobileControls.style.height = 'auto';
+                }
+                
+                if (mobileControlsP2) {
+                    mobileControlsP2.classList.add('active');
+                    // Store original styles  
+                    mobileControlsP2.dataset.originalPosition = mobileControlsP2.style.position || '';
+                    mobileControlsP2.dataset.originalBottom = mobileControlsP2.style.bottom || '';
+                    mobileControlsP2.dataset.originalHeight = mobileControlsP2.style.height || '';
+                    // Override to make it work like a normal container
+                    mobileControlsP2.style.position = 'absolute';
+                    mobileControlsP2.style.bottom = '0';
+                    mobileControlsP2.style.left = '0';
+                    mobileControlsP2.style.right = '0';
+                    mobileControlsP2.style.top = '0';
+                    mobileControlsP2.style.height = 'auto';
+                }
                 
                 // Show pause button but disable its normal functionality
                 const pauseBtn = document.getElementById('pauseBtn');
                 if (pauseBtn) {
                     pauseBtn.style.display = 'block';
-                    // Store original pointerEvents to restore later
-                    pauseBtn.dataset.originalPointerEvents = pauseBtn.style.pointerEvents || '';
-                    pauseBtn.style.pointerEvents = 'none'; // Disable clicks in editor
-                    pauseBtn.style.opacity = '0.5'; // Show it's disabled
+                    pauseBtn.style.pointerEvents = 'none';
+                    pauseBtn.style.opacity = '0.5';
                 }
                 
-                // Apply the editor layout AFTER controls are visible
+                // Apply the editor layout AFTER controls are visible and containers are set up
                 setTimeout(() => {
                     this.applyEditorLayout();
                 }, 50);
-            }, 50); // Inner setTimeout
-        }, 100); // Outer setTimeout
+            }, 50);
+        }, 100);
     }
     
     drawMockPlayers() {
@@ -4490,13 +4539,38 @@ class Game {
     applyCustomLayout() {
         const layout = this.getCurrentLayout();
         
-        // First clear all positioning for touch controls only (not HUD elements)
+        // If no custom layout exists, don't do anything
+        if (Object.keys(layout).length === 0) {
+            return;
+        }
+        
+        // Override mobile controls container positioning to match editor environment
+        const mobileControls = document.getElementById('mobileControls');
+        const mobileControlsP2 = document.getElementById('mobileControlsP2');
+        
+        if (mobileControls && mobileControls.offsetParent !== null) {
+            mobileControls.style.position = 'absolute';
+            mobileControls.style.bottom = '0';
+            mobileControls.style.left = '0';
+            mobileControls.style.right = '0';
+            mobileControls.style.top = '0';
+            mobileControls.style.height = 'auto';
+        }
+        
+        if (mobileControlsP2 && mobileControlsP2.offsetParent !== null) {
+            mobileControlsP2.style.position = 'absolute';
+            mobileControlsP2.style.bottom = '0';
+            mobileControlsP2.style.left = '0';
+            mobileControlsP2.style.right = '0';
+            mobileControlsP2.style.top = '0';
+            mobileControlsP2.style.height = 'auto';
+        }
+        
+        // First clear all positioning for touch controls only
         const elementIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer'];
         elementIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                // Only clear positioning if the element is currently visible
-                // This prevents issues with hidden elements
                 const isVisible = element.offsetParent !== null;
                 if (isVisible) {
                     // Clear all positioning styles first to reset to CSS defaults
@@ -4512,21 +4586,18 @@ class Game {
         });
         
         // Small delay to ensure CSS defaults have been applied
-        // before applying custom layout
         requestAnimationFrame(() => {
-            // Then apply saved layout if it exists (only for touch controls)
+            // Then apply saved layout (only for touch controls)
             Object.keys(layout).forEach(id => {
                 if (id === 'pauseBtn' || id === 'gameHUD') return; // Skip HUD elements
                 
                 const element = document.getElementById(id);
                 if (element) {
                     const isVisible = element.offsetParent !== null;
-                    // Only apply layout to visible elements
                     if (isVisible) {
                         const layoutData = layout[id];
                         
                         // Apply absolute positioning for gameplay
-                        // Positions are already relative to game screen from the editor
                         if (layoutData.position) {
                             element.style.position = layoutData.position;
                         }
