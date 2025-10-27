@@ -4111,25 +4111,37 @@ class Game {
     }
     
     setupDragAndResize(element) {
-        // Remove any existing listeners by cloning and replacing
-        const newElement = element.cloneNode(true);
-        element.parentNode.replaceChild(newElement, element);
-        
-        // Update the reference in editableElements
-        const editableIndex = this.editableElements.findIndex(e => e.element === element);
-        if (editableIndex !== -1) {
-            this.editableElements[editableIndex].element = newElement;
+        // Store references to bound functions so we can remove them later
+        if (!element._dragHandlers) {
+            element._dragHandlers = {
+                mousedown: (e) => this.startDrag(e, element),
+                touchstart: (e) => this.startDrag(e, element)
+            };
         }
         
-        // Drag on element itself (but not on resize handles)
-        newElement.addEventListener('mousedown', (e) => this.startDrag(e, newElement));
-        newElement.addEventListener('touchstart', (e) => this.startDrag(e, newElement), { passive: false });
+        // Remove existing listeners if they exist
+        element.removeEventListener('mousedown', element._dragHandlers.mousedown);
+        element.removeEventListener('touchstart', element._dragHandlers.touchstart);
         
-        // Resize on handles
-        const handles = newElement.querySelectorAll('.resize-handle');
+        // Add fresh listeners
+        element.addEventListener('mousedown', element._dragHandlers.mousedown);
+        element.addEventListener('touchstart', element._dragHandlers.touchstart, { passive: false });
+        
+        // Setup resize handles
+        const handles = element.querySelectorAll('.resize-handle');
         handles.forEach(handle => {
-            handle.addEventListener('mousedown', (e) => this.startResize(e, newElement, handle));
-            handle.addEventListener('touchstart', (e) => this.startResize(e, newElement, handle), { passive: false });
+            if (!handle._resizeHandlers) {
+                handle._resizeHandlers = {
+                    mousedown: (e) => this.startResize(e, element, handle),
+                    touchstart: (e) => this.startResize(e, element, handle)
+                };
+            }
+            
+            handle.removeEventListener('mousedown', handle._resizeHandlers.mousedown);
+            handle.removeEventListener('touchstart', handle._resizeHandlers.touchstart);
+            
+            handle.addEventListener('mousedown', handle._resizeHandlers.mousedown);
+            handle.addEventListener('touchstart', handle._resizeHandlers.touchstart, { passive: false });
         });
     }
     
