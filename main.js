@@ -3941,9 +3941,9 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
-        // First, ensure all elements are at their CSS defaults
-        const allIds = ['scoreDisplay', 'timerDisplay', 'pauseBtn', 'p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer'];
-        allIds.forEach(id => {
+        // First, ensure all MOCK elements are at their CSS defaults
+        const mockIds = ['mockScoreDisplay', 'mockTimerDisplay', 'mockPauseBtn', 'p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer'];
+        mockIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 // Clear inline styles to restore CSS defaults
@@ -3959,12 +3959,19 @@ class Game {
         });
         
         // Then apply saved layout if it exists
-        Object.keys(layout).forEach(id => {
-            if (id === 'gameHUD') return; // Skip old gameHUD reference
+        // Layout is stored by REAL IDs, but we apply to MOCK elements in editor
+        Object.keys(layout).forEach(realId => {
+            if (realId === 'gameHUD') return; // Skip old gameHUD reference
             
-            const element = document.getElementById(id);
-            if (element && layout[id]) {
-                const layoutData = layout[id];
+            // Map real IDs to mock IDs for HUD elements
+            let elementId = realId;
+            if (realId === 'scoreDisplay') elementId = 'mockScoreDisplay';
+            if (realId === 'timerDisplay') elementId = 'mockTimerDisplay';
+            if (realId === 'pauseBtn') elementId = 'mockPauseBtn';
+            
+            const element = document.getElementById(elementId);
+            if (element && layout[realId]) {
+                const layoutData = layout[realId];
                 
                 // Use absolute positioning in editor
                 if (layoutData.position) {
@@ -4048,19 +4055,8 @@ class Game {
             delete mobileControlsP2.dataset.originalHeight;
         }
         
-        // Restore pause button functionality
-        const pauseBtn = document.getElementById('pauseBtn');
-        if (pauseBtn) {
-            pauseBtn.style.display = 'none';
-            pauseBtn.style.pointerEvents = 'auto';
-            pauseBtn.style.opacity = '1';
-        }
-        
-        // Hide HUD elements
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const timerDisplay = document.getElementById('timerDisplay');
-        if (scoreDisplay) scoreDisplay.style.display = 'none';
-        if (timerDisplay) timerDisplay.style.display = 'none';
+        // Real HUD elements remain hidden - they're not touched by the editor anymore
+        // Mock elements will be hidden automatically by CSS when editor closes
         
         // Return to main menu
         this.ui.showScreen('mainMenu');
@@ -4163,13 +4159,8 @@ class Game {
                     mobileControlsP2.style.height = 'auto';
                 }
                 
-                // Show pause button but disable its normal functionality
-                const pauseBtn = document.getElementById('pauseBtn');
-                if (pauseBtn) {
-                    pauseBtn.style.display = 'block';
-                    pauseBtn.style.pointerEvents = 'none';
-                    pauseBtn.style.opacity = '0.5';
-                }
+                // Mock HUD elements are shown automatically by CSS
+                // Real HUD elements remain hidden during editing
                 
                 // Apply the editor layout AFTER controls are visible and containers are set up
                 setTimeout(() => {
@@ -4223,27 +4214,9 @@ class Game {
     }
     
     showMockHUD() {
-        // Show individual HUD elements
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const pauseBtn = document.getElementById('pauseBtn');
-        
-        if (scoreDisplay) scoreDisplay.style.display = 'block';
-        if (timerDisplay) timerDisplay.style.display = 'block';
-        if (pauseBtn) {
-            pauseBtn.style.display = 'flex';
-            pauseBtn.style.pointerEvents = 'none'; // Disable during editor
-            pauseBtn.style.opacity = '0.7'; // Slightly transparent to indicate disabled
-        }
-        
-        // Update HUD with mock data
-        const score1El = document.getElementById('score1');
-        const score2El = document.getElementById('score2');
-        const timerEl = document.getElementById('timer');
-        
-        if (score1El) score1El.textContent = '0';
-        if (score2El) score2El.textContent = '0';
-        if (timerEl) timerEl.textContent = '3:00';
+        // The mock HUD elements will be shown by CSS when editor is active
+        // We just need to position them to match the real HUD defaults
+        // This happens automatically through CSS, no need to manually show/hide
     }
     
     setupEditableElements() {
@@ -4252,11 +4225,11 @@ class Game {
         // Define editable elements based on current mode
         const elements = [];
         
-        // Always include HUD elements - individually customizable
+        // Use MOCK HUD elements for editing (not the real game elements)
         elements.push(
-            { id: 'scoreDisplay', name: 'Score Display', allowResize: false },
-            { id: 'timerDisplay', name: 'Timer Display', allowResize: false },
-            { id: 'pauseBtn', name: 'Pause Button', allowResize: false }
+            { id: 'mockScoreDisplay', realId: 'scoreDisplay', name: 'Score Display', allowResize: false },
+            { id: 'mockTimerDisplay', realId: 'timerDisplay', name: 'Timer Display', allowResize: false },
+            { id: 'mockPauseBtn', realId: 'pauseBtn', name: 'Pause Button', allowResize: false }
         );
         
         // Always include P1 controls
@@ -4280,7 +4253,10 @@ class Game {
                 element.classList.add('editable-element');
                 element.dataset.editableName = config.name;
                 
-                // No longer adding resize handles
+                // Store the real element ID if this is a mock element
+                if (config.realId) {
+                    element.dataset.realId = config.realId;
+                }
                 
                 this.editableElements.push({
                     element: element,
@@ -4596,26 +4572,27 @@ class Game {
             
             // Only save if element actually moved
             if (movedDistance > 5) {
-                // Mark this element as customized
-                this.customizedElements.add(this.draggingElement.id);
+                // Get the real ID (for mock elements) or use the element's own ID
+                const realId = this.draggingElement.dataset.realId || this.draggingElement.id;
+                
+                // Mark this element as customized (using real ID)
+                this.customizedElements.add(realId);
                 
                 // Save position to the current mode's layout
                 const layout = this.editorLayoutMode === 'singleplayer' 
                     ? this.customLayoutSingleplayer 
                     : this.customLayoutMultiplayer;
                 
-                const id = this.draggingElement.id;
-                
                 const relativeLeft = currentLeft;
                 const relativeTop = currentTop;
                 
-                if (!layout[id]) layout[id] = {};
-                // Save absolute position coordinates relative to game screen
-                layout[id].position = 'absolute';
-                layout[id].left = relativeLeft;
-                layout[id].top = relativeTop;
+                if (!layout[realId]) layout[realId] = {};
+                // Save absolute position coordinates relative to game screen (using real ID)
+                layout[realId].position = 'absolute';
+                layout[realId].left = relativeLeft;
+                layout[realId].top = relativeTop;
                 // Clear transform since we're using absolute positioning
-                layout[id].transform = '';
+                layout[realId].transform = '';
             } else {
                 // Element didn't move significantly - restore its original position
                 // This handles accidental clicks
@@ -4651,24 +4628,25 @@ class Game {
         const gameScreenRect = gameScreen.getBoundingClientRect();
         
         // Only save positions for elements that were actually customized
-        this.editableElements.forEach(({ element }) => {
-            const id = element.id;
+        this.editableElements.forEach(({ element, config }) => {
+            // Get the real ID (for mock elements) or use the element's own ID
+            const realId = config.realId || element.id;
             
             // Only save if this element was customized (moved from default)
-            if (this.customizedElements.has(id)) {
+            if (this.customizedElements.has(realId)) {
                 const rect = element.getBoundingClientRect();
                 
                 // Calculate position relative to game screen
                 const relativeLeft = rect.left - gameScreenRect.left;
                 const relativeTop = rect.top - gameScreenRect.top;
                 
-                if (!layout[id]) layout[id] = {};
-                // Save as absolute positioning relative to game screen
-                layout[id].position = 'absolute';
-                layout[id].left = relativeLeft;
-                layout[id].top = relativeTop;
+                if (!layout[realId]) layout[realId] = {};
+                // Save as absolute positioning relative to game screen (using real ID)
+                layout[realId].position = 'absolute';
+                layout[realId].left = relativeLeft;
+                layout[realId].top = relativeTop;
                 // Clear transform since we're using absolute positioning
-                layout[id].transform = '';
+                layout[realId].transform = '';
             }
             // If not customized, don't save anything - let CSS defaults apply
         });

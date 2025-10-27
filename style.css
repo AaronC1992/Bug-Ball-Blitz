@@ -3278,6 +3278,20 @@ body {
     position: relative;
 }
 
+/* Mock HUD elements - only visible in editor */
+.mock-hud-element {
+    display: none;
+    pointer-events: auto; /* Allow interaction in editor */
+}
+
+.controls-editor.active .mock-hud-element {
+    display: block; /* Show only when editor is active */
+}
+
+.controls-editor.active #mockPauseBtn {
+    display: flex; /* Pause button needs flex for centering */
+}
+
 .editable-element::before {
     content: attr(data-editable-name);
     position: absolute;
