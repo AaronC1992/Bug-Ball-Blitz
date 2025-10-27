@@ -1616,6 +1616,13 @@ input[type="text"]:focus {
     height: 200px;
     z-index: 10;
     padding-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for notched phones */
+    pointer-events: none; /* Allow clicks to pass through the container */
+}
+
+/* Re-enable pointer events on actual controls */
+.mobile-controls .joystick-container,
+.mobile-controls .action-buttons {
+    pointer-events: auto;
 }
 
 /* Player 1 - Blue controls ALL on LEFT side */
@@ -2345,6 +2352,21 @@ input[type="text"]:focus {
 /* Player 2 Mobile Controls (mirrored on right side) */
 .mobile-controls-p2 {
     display: none;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: auto; /* Don't span full width */
+    width: auto; /* Only as wide as needed for controls */
+    height: 200px;
+    z-index: 10;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    pointer-events: none; /* Allow clicks to pass through the container */
+}
+
+/* Re-enable pointer events on actual controls */
+.mobile-controls-p2 .joystick-container,
+.mobile-controls-p2 .action-buttons {
+    pointer-events: auto;
 }
 
 /* Player 2 - Neon Red Theme ALL on RIGHT Side */
