@@ -3856,15 +3856,16 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
-        // Get all element IDs that can be customized
-        const elementIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD', 'pauseBtn'];
+        console.log('applyEditorLayout - mode:', this.editorLayoutMode, 'layout:', layout);
         
-        // For each element, either apply saved layout OR clear inline styles to use CSS defaults
-        elementIds.forEach(id => {
+        // Only apply saved layout if it exists - DON'T clear styles if no layout
+        // This preserves CSS default positioning
+        Object.keys(layout).forEach(id => {
             const element = document.getElementById(id);
-            if (element && layout[id]) {
-                // This element HAS a saved layout - apply it
+            if (element) {
                 const layoutData = layout[id];
+                console.log(`Applying layout for ${id}:`, layoutData);
+                
                 if (layoutData.left !== undefined) {
                     element.style.left = layoutData.left + 'px';
                     element.style.right = 'auto';
@@ -3875,14 +3876,6 @@ class Game {
                 }
                 if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
                 if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
-            } else if (element) {
-                // No saved layout - clear inline styles so CSS defaults apply
-                element.style.left = '';
-                element.style.top = '';
-                element.style.right = '';
-                element.style.bottom = '';
-                element.style.width = '';
-                element.style.height = '';
             }
         });
     }
@@ -3930,6 +3923,9 @@ class Game {
             
             // Clear the canvas
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Show the main menu screen so settings overlay has something behind it
+            this.ui.showScreen('mainMenu');
         } else {
             // If we were in a match, show pause menu again
             this.ui.showOverlay('pauseMenu');
