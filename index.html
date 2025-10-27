@@ -7,13 +7,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a0033">
-        <title>Bug Ball Blitz v1.15.7</title>
+        <title>Bug Ball Blitz v1.15.8</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Version number - always visible -->
-    <div class="version">v1.15.7</div>
+    <div class="version">v1.15.8</div>
     
     <div id="gameContainer">
         <!-- Title Screen -->
@@ -585,23 +585,23 @@
             </div>
             <!-- Mobile Controls -->
             <div id="mobileControls" class="mobile-controls">
-                <div class="joystick-container">
+                <div class="joystick-container" id="p1JoystickContainer">
                     <div class="joystick" id="joystick">
                         <div class="joystick-stick"></div>
                     </div>
                 </div>
-                <div class="action-buttons">
+                <div class="action-buttons" id="p1JumpContainer">
                     <button class="action-btn" id="jumpBtn">JUMP</button>
                 </div>
             </div>
             <!-- Player 2 Mobile Controls (Tablets Only) -->
             <div id="mobileControlsP2" class="mobile-controls mobile-controls-p2">
-                <div class="joystick-container">
+                <div class="joystick-container" id="p2JoystickContainer">
                     <div class="joystick" id="joystickP2">
                         <div class="joystick-stick"></div>
                     </div>
                 </div>
-                <div class="action-buttons">
+                <div class="action-buttons" id="p2JumpContainer">
                     <button class="action-btn" id="jumpBtnP2">JUMP</button>
                 </div>
             </div>

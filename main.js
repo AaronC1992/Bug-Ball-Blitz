@@ -3950,8 +3950,8 @@ class Game {
         
         // Always include P1 controls and UI
         elements.push(
-            { id: 'joystick', parentSelector: '.mobile-controls .joystick-container', name: 'P1 Joystick', allowResize: true },
-            { id: 'jumpBtn', parentSelector: '.mobile-controls .action-buttons', name: 'P1 Jump Button', allowResize: true },
+            { id: 'p1JoystickContainer', name: 'P1 Joystick', allowResize: true },
+            { id: 'p1JumpContainer', name: 'P1 Jump Button', allowResize: true },
             { id: 'gameHUD', name: 'Score/Timer', allowResize: true },
             { id: 'pauseBtn', name: 'Pause Button', allowResize: true }
         );
@@ -3959,21 +3959,13 @@ class Game {
         // Include P2 controls only in multiplayer mode
         if (this.editorLayoutMode === 'multiplayer') {
             elements.push(
-                { id: 'joystickP2', parentSelector: '.mobile-controls-p2 .joystick-container', name: 'P2 Joystick', allowResize: true },
-                { id: 'jumpBtnP2', parentSelector: '.mobile-controls-p2 .action-buttons', name: 'P2 Jump Button', allowResize: true }
+                { id: 'p2JoystickContainer', name: 'P2 Joystick', allowResize: true },
+                { id: 'p2JumpContainer', name: 'P2 Jump Button', allowResize: true }
             );
         }
         
         elements.forEach(config => {
-            let element = document.getElementById(config.id);
-            
-            // For nested elements, we need to make the parent draggable
-            if (config.parentSelector && element) {
-                const parent = element.closest(config.parentSelector);
-                if (parent) {
-                    element = parent;
-                }
-            }
+            const element = document.getElementById(config.id);
             
             if (element) {
                 element.classList.add('editable-element');
