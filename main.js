@@ -1534,6 +1534,14 @@ class Game {
             this.resizeCanvas();
             this.physics = new Physics(this.canvas.width, this.canvas.height);
         
+        // Ensure pause button is functional for actual gameplay
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (pauseBtn) {
+            pauseBtn.style.pointerEvents = 'auto';
+            pauseBtn.style.opacity = '1';
+            pauseBtn.style.display = 'block';
+        }
+        
         // Apply arcade gravity modifiers if in arcade mode
         if (this.gameMode === 'arcade' && this.arcadeSettings) {
             this.physics.gravityPlayer = this.physics.gravity * this.arcadeSettings.playerGravity;
@@ -3994,8 +4002,9 @@ class Game {
         const pauseBtn = document.getElementById('pauseBtn');
         if (pauseBtn) {
             pauseBtn.style.display = 'none';
-            pauseBtn.style.pointerEvents = pauseBtn.dataset.originalPointerEvents || '';
-            pauseBtn.style.opacity = '';
+            pauseBtn.style.pointerEvents = 'auto'; // Always restore to 'auto', not empty string
+            pauseBtn.style.opacity = '1'; // Always restore to full opacity
+            delete pauseBtn.dataset.originalPointerEvents; // Clean up
         }
         
         // Return to main menu
