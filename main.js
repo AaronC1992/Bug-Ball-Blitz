@@ -3922,27 +3922,37 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
-        // Only apply saved layout if it exists - DON'T clear styles if no layout
-        // This preserves CSS default positioning
-        Object.keys(layout).forEach(id => {
+        // First, ensure all elements are at their CSS defaults
+        const allIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD', 'pauseBtn'];
+        allIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                // Only apply to visible elements in the current mode
-                const isVisible = element.offsetParent !== null;
-                if (isVisible) {
-                    const layoutData = layout[id];
-                    
-                    if (layoutData.left !== undefined) {
-                        element.style.left = layoutData.left + 'px';
-                        element.style.right = 'auto';
-                    }
-                    if (layoutData.top !== undefined) {
-                        element.style.top = layoutData.top + 'px';
-                        element.style.bottom = 'auto';
-                    }
-                    if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
-                    if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
+                // Clear inline styles to restore CSS defaults
+                element.style.left = '';
+                element.style.top = '';
+                element.style.right = '';
+                element.style.bottom = '';
+                element.style.width = '';
+                element.style.height = '';
+            }
+        });
+        
+        // Then apply saved layout if it exists
+        Object.keys(layout).forEach(id => {
+            const element = document.getElementById(id);
+            if (element && layout[id]) {
+                const layoutData = layout[id];
+                
+                if (layoutData.left !== undefined) {
+                    element.style.left = layoutData.left + 'px';
+                    element.style.right = 'auto';
                 }
+                if (layoutData.top !== undefined) {
+                    element.style.top = layoutData.top + 'px';
+                    element.style.bottom = 'auto';
+                }
+                if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
+                if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
             }
         });
     }
@@ -4004,6 +4014,9 @@ class Game {
         // Show the game screen to display arena and UI elements
         this.ui.showScreen('gameScreen');
         
+        // Resize canvas to ensure proper rendering
+        this.resizeCanvas();
+        
         // Draw a sample arena background on the game canvas
         if (this.selectedArena) {
             drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
@@ -4034,17 +4047,17 @@ class Game {
         
         // Always include P1 controls and UI
         elements.push(
-            { id: 'p1JoystickContainer', name: 'P1 Joystick', allowResize: true },
-            { id: 'p1JumpContainer', name: 'P1 Jump Button', allowResize: true },
-            { id: 'gameHUD', name: 'Score/Timer', allowResize: true },
-            { id: 'pauseBtn', name: 'Pause Button', allowResize: true }
+            { id: 'p1JoystickContainer', name: 'P1 Joystick', allowResize: false },
+            { id: 'p1JumpContainer', name: 'P1 Jump Button', allowResize: false },
+            { id: 'gameHUD', name: 'Score/Timer', allowResize: false },
+            { id: 'pauseBtn', name: 'Pause Button', allowResize: false }
         );
         
         // Include P2 controls only in multiplayer mode
         if (this.editorLayoutMode === 'multiplayer') {
             elements.push(
-                { id: 'p2JoystickContainer', name: 'P2 Joystick', allowResize: true },
-                { id: 'p2JumpContainer', name: 'P2 Jump Button', allowResize: true }
+                { id: 'p2JoystickContainer', name: 'P2 Joystick', allowResize: false },
+                { id: 'p2JumpContainer', name: 'P2 Jump Button', allowResize: false }
             );
         }
         
@@ -4055,26 +4068,13 @@ class Game {
                 element.classList.add('editable-element');
                 element.dataset.editableName = config.name;
                 
-                // Add resize handles if allowed
-                if (config.allowResize) {
-                    this.addResizeHandles(element);
-                }
+                // No longer adding resize handles
                 
                 this.editableElements.push({
                     element: element,
                     config: config
                 });
             }
-        });
-    }
-    
-    addResizeHandles(element) {
-        const positions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-        positions.forEach(pos => {
-            const handle = document.createElement('div');
-            handle.className = `resize-handle ${pos}`;
-            handle.dataset.position = pos;
-            element.appendChild(handle);
         });
     }
     
@@ -4186,22 +4186,7 @@ class Game {
         element.addEventListener('mousedown', element._dragHandlers.mousedown);
         element.addEventListener('touchstart', element._dragHandlers.touchstart, { passive: false });
         
-        // Setup resize handles
-        const handles = element.querySelectorAll('.resize-handle');
-        handles.forEach(handle => {
-            if (!handle._resizeHandlers) {
-                handle._resizeHandlers = {
-                    mousedown: (e) => this.startResize(e, element, handle),
-                    touchstart: (e) => this.startResize(e, element, handle)
-                };
-            }
-            
-            handle.removeEventListener('mousedown', handle._resizeHandlers.mousedown);
-            handle.removeEventListener('touchstart', handle._resizeHandlers.touchstart);
-            
-            handle.addEventListener('mousedown', handle._resizeHandlers.mousedown);
-            handle.addEventListener('touchstart', handle._resizeHandlers.touchstart, { passive: false });
-        });
+        // No longer setting up resize handles
     }
     
     startDrag(e, element) {
@@ -4213,30 +4198,16 @@ class Game {
         
         const touch = e.touches ? e.touches[0] : e;
         
-        // Get current visual position BEFORE making any changes
-        const initialRect = element.getBoundingClientRect();
+        // Get the element's current position
+        const rect = element.getBoundingClientRect();
         
-        // Store the visual position explicitly to prevent jumping
-        const visualLeft = initialRect.left;
-        const visualTop = initialRect.top;
-        
-        // Now convert to top/left positioning if needed
-        const hasLeft = element.style.left && element.style.left !== '' && element.style.left !== 'auto';
-        const hasTop = element.style.top && element.style.top !== '' && element.style.top !== 'auto';
-        
-        if (!hasLeft || !hasTop) {
-            // Set position based on VISUAL location to prevent jump
-            element.style.left = visualLeft + 'px';
-            element.style.top = visualTop + 'px';
-            element.style.right = 'auto';
-            element.style.bottom = 'auto';
-        }
-        
+        // Store the element we're dragging
         this.draggingElement = element;
-        // Calculate offset from touch point to element's visual position
+        
+        // Calculate offset from touch/click point to element's top-left corner
         this.dragOffset = {
-            x: touch.clientX - visualLeft,
-            y: touch.clientY - visualTop
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
         };
         
         element.classList.add('dragging');
@@ -4260,12 +4231,13 @@ class Game {
         e.preventDefault();
         const touch = e.touches ? e.touches[0] : e;
         
-        // Use the stored offset to maintain relative position
-        const newX = touch.clientX - this.dragOffset.x;
-        const newY = touch.clientY - this.dragOffset.y;
+        // Calculate new position based on touch/mouse position and stored offset
+        const newLeft = touch.clientX - this.dragOffset.x;
+        const newTop = touch.clientY - this.dragOffset.y;
         
-        this.draggingElement.style.left = newX + 'px';
-        this.draggingElement.style.top = newY + 'px';
+        // Apply new position
+        this.draggingElement.style.left = newLeft + 'px';
+        this.draggingElement.style.top = newTop + 'px';
         this.draggingElement.style.right = 'auto';
         this.draggingElement.style.bottom = 'auto';
     }
@@ -4283,6 +4255,7 @@ class Game {
             const rect = this.draggingElement.getBoundingClientRect();
             
             if (!layout[id]) layout[id] = {};
+            // Only save position, not size
             layout[id].left = rect.left;
             layout[id].top = rect.top;
             
@@ -4294,106 +4267,6 @@ class Game {
         document.removeEventListener('touchmove', this.handleDragMove);
         document.removeEventListener('mouseup', this.endDrag);
         document.removeEventListener('touchend', this.endDrag);
-    }
-    
-    startResize(e, element, handle) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        this.resizingElement = {
-            element: element,
-            handle: handle,
-            startRect: element.getBoundingClientRect(),
-            startTouch: e.touches ? e.touches[0] : e
-        };
-        
-        element.classList.add('dragging');
-        
-        // Remove any existing listeners first
-        document.removeEventListener('mousemove', this.handleResizeMove);
-        document.removeEventListener('touchmove', this.handleResizeMove);
-        document.removeEventListener('mouseup', this.endResize);
-        document.removeEventListener('touchend', this.endResize);
-        
-        // Add global move and end listeners
-        document.addEventListener('mousemove', this.handleResizeMove);
-        document.addEventListener('touchmove', this.handleResizeMove, { passive: false });
-        document.addEventListener('mouseup', this.endResize);
-        document.addEventListener('touchend', this.endResize);
-    }
-    
-    handleResizeMove = (e) => {
-        if (!this.resizingElement) return;
-        
-        e.preventDefault();
-        const touch = e.touches ? e.touches[0] : e;
-        const { element, handle, startRect, startTouch } = this.resizingElement;
-        
-        const deltaX = touch.clientX - startTouch.clientX;
-        const deltaY = touch.clientY - startTouch.clientY;
-        
-        const position = handle.dataset.position;
-        
-        // Calculate new size based on handle position
-        let newWidth = startRect.width;
-        let newHeight = startRect.height;
-        let newLeft = startRect.left;
-        let newTop = startRect.top;
-        
-        if (position.includes('right')) {
-            newWidth = startRect.width + deltaX;
-        } else if (position.includes('left')) {
-            newWidth = startRect.width - deltaX;
-            newLeft = startRect.left + deltaX;
-        }
-        
-        if (position.includes('bottom')) {
-            newHeight = startRect.height + deltaY;
-        } else if (position.includes('top')) {
-            newHeight = startRect.height - deltaY;
-            newTop = startRect.top + deltaY;
-        }
-        
-        // Apply minimum size
-        newWidth = Math.max(50, newWidth);
-        newHeight = Math.max(50, newHeight);
-        
-        // Apply new dimensions
-        element.style.width = newWidth + 'px';
-        element.style.height = newHeight + 'px';
-        element.style.left = newLeft + 'px';
-        element.style.top = newTop + 'px';
-        element.style.right = 'auto';
-        element.style.bottom = 'auto';
-    }
-    
-    endResize = () => {
-        if (this.resizingElement) {
-            const { element } = this.resizingElement;
-            element.classList.remove('dragging');
-            
-            // Save dimensions to the current mode's layout
-            const layout = this.editorLayoutMode === 'singleplayer' 
-                ? this.customLayoutSingleplayer 
-                : this.customLayoutMultiplayer;
-            
-            const id = element.id;
-            const rect = element.getBoundingClientRect();
-            
-            if (!layout[id]) layout[id] = {};
-            layout[id].width = rect.width;
-            layout[id].height = rect.height;
-            layout[id].left = rect.left;
-            layout[id].top = rect.top;
-            
-            this.resizingElement = null;
-        }
-        
-        // Remove global listeners
-        document.removeEventListener('mousemove', this.handleResizeMove);
-        document.removeEventListener('touchmove', this.handleResizeMove);
-        document.removeEventListener('mouseup', this.endResize);
-        document.removeEventListener('touchend', this.endResize);
     }
     
     saveLayoutAndExit() {
@@ -4411,8 +4284,7 @@ class Game {
             const rect = element.getBoundingClientRect();
             
             if (!layout[id]) layout[id] = {};
-            layout[id].width = rect.width;
-            layout[id].height = rect.height;
+            // Only save position, not size
             layout[id].left = rect.left;
             layout[id].top = rect.top;
         });
@@ -4421,7 +4293,7 @@ class Game {
     }
     
     resetLayoutToDefault() {
-        if (confirm(`Reset ${this.editorLayoutMode} layout to default positions and sizes?`)) {
+        if (confirm(`Reset ${this.editorLayoutMode} layout to default positions?`)) {
             // Clear the current mode's layout
             if (this.editorLayoutMode === 'singleplayer') {
                 this.customLayoutSingleplayer = {};
@@ -4431,7 +4303,7 @@ class Game {
                 this.saveCustomLayout('multiplayer');
             }
             
-            // Remove inline styles
+            // Remove ALL inline styles to restore CSS defaults
             this.editableElements.forEach(({ element }) => {
                 element.style.left = '';
                 element.style.top = '';
@@ -4439,7 +4311,19 @@ class Game {
                 element.style.bottom = '';
                 element.style.width = '';
                 element.style.height = '';
+                element.style.transform = '';
+                element.style.position = '';
             });
+            
+            // Show confirmation
+            const modeInfo = document.getElementById('editorModeInfo');
+            if (modeInfo) {
+                const originalText = modeInfo.textContent;
+                modeInfo.textContent = '✓ Reset to Default!';
+                setTimeout(() => {
+                    modeInfo.textContent = originalText;
+                }, 1500);
+            }
         }
     }
     
