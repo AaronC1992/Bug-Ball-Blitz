@@ -2902,8 +2902,8 @@ class Game {
         if (this.gameMode === 'tower' && playerWon) {
             SaveSystem.updateTowerProgress(this.ui.currentProfile, this.towerLevel);
             
-            // Check if tower is complete
-            if (this.towerLevel >= 8) {
+            // Check if tower is complete (level 20 boss gauntlet completed)
+            if (this.towerLevel === 20 && this.bossGauntletWins === this.bossGauntletBugs.length) {
                 SaveSystem.completeTower(this.ui.currentProfile);
                 this.showTowerVictory();
                 return;
@@ -2962,9 +2962,15 @@ class Game {
         
         statsEl.innerHTML = statsHTML;
         
-        // Show continue button if tower mode, won, and not at final level (20)
+        // Show continue button if tower mode, won, and not at final level
+        // For level 20 (boss gauntlet), only show if still have bosses to fight
         const continueBtn = document.getElementById('continueBtn');
-        if (this.gameMode === 'tower' && playerWon && this.towerLevel < 20) {
+        const canContinue = this.gameMode === 'tower' && playerWon && (
+            this.towerLevel < 20 || 
+            (this.towerLevel === 20 && this.bossGauntletWins < this.bossGauntletBugs.length)
+        );
+        
+        if (canContinue) {
             continueBtn.style.display = 'block';
         } else {
             continueBtn.style.display = 'none';
