@@ -4060,6 +4060,24 @@ class Game {
                         } else {
                             element.style.transform = 'none';
                         }
+
+                // Apply scale to inner child for joystick/jump in editor preview too
+                if (layoutData.scale !== undefined) {
+                    const scale = layoutData.scale;
+                    if (elementId.includes('Joystick') || realId.includes('Joystick')) {
+                        const joy = element.querySelector('.joystick');
+                        if (joy) {
+                            joy.style.transformOrigin = 'center center';
+                            joy.style.transform = `scale(${scale})`;
+                        }
+                    } else if (elementId.includes('Jump') || realId.includes('Jump')) {
+                        const btn = element.querySelector('.action-btn');
+                        if (btn) {
+                            btn.style.transformOrigin = 'center center';
+                            btn.style.transform = `scale(${scale})`;
+                        }
+                    }
+                }
             }
         });
     }
@@ -4317,15 +4335,15 @@ class Game {
         
         // Always include P1 controls
         elements.push(
-            { id: 'p1JoystickContainer', name: 'P1 Joystick', allowResize: false },
-            { id: 'p1JumpContainer', name: 'P1 Jump Button', allowResize: false }
+            { id: 'p1JoystickContainer', name: 'P1 Joystick', allowResize: true },
+            { id: 'p1JumpContainer', name: 'P1 Jump Button', allowResize: true }
         );
         
         // Include P2 controls only in multiplayer mode
         if (this.editorLayoutMode === 'multiplayer') {
             elements.push(
-                { id: 'p2JoystickContainer', name: 'P2 Joystick', allowResize: false },
-                { id: 'p2JumpContainer', name: 'P2 Jump Button', allowResize: false }
+                { id: 'p2JoystickContainer', name: 'P2 Joystick', allowResize: true },
+                { id: 'p2JumpContainer', name: 'P2 Jump Button', allowResize: true }
             );
         }
         
@@ -4598,7 +4616,100 @@ class Game {
         element.addEventListener('mousedown', element._dragHandlers.mousedown);
         element.addEventListener('touchstart', element._dragHandlers.touchstart, { passive: false });
         
-        // No longer setting up resize handles
+        // Setup resize handle for resizable controls (joystick/jump containers)
+        const resizableIds = new Set(['p1JoystickContainer','p1JumpContainer','p2JoystickContainer','p2JumpContainer']);
+        const isResizable = resizableIds.has(element.id);
+        // Clean up existing handles
+        const existingHandles = element.querySelectorAll('.resize-handle');
+        existingHandles.forEach(h => h.remove());
+        if (isResizable) {
+            const handle = document.createElement('div');
+            handle.className = 'resize-handle bottom-right';
+            // Prevent dragging when starting resize
+            const startResize = (e) => this.startResize(e, element);
+            handle.addEventListener('mousedown', startResize);
+            handle.addEventListener('touchstart', startResize, { passive: false });
+            element.appendChild(handle);
+        }
+    }
+
+    // Begin resize logic
+    startResize(e, element) {
+        e.preventDefault();
+        e.stopPropagation();
+        const touch = e.touches ? e.touches[0] : e;
+
+        // Determine inner target to scale
+        let targetChild = null;
+        let baseSize = 100; // default for joystick
+        let type = 'joystick';
+        if (element.id.includes('Jump')) {
+            type = 'jump';
+            targetChild = element.querySelector('.action-btn');
+            baseSize = 70;
+        } else {
+            targetChild = element.querySelector('.joystick');
+            baseSize = 100;
+        }
+
+        if (!targetChild) return; // safety
+
+        const existingScale = parseFloat(element.dataset.scale || '1') || 1;
+        const startWidth = (targetChild.getBoundingClientRect().width) || (baseSize * existingScale);
+
+        this._resizing = {
+            element,
+            targetChild,
+            type,
+            baseSize,
+            startScale: existingScale,
+            startWidth,
+            startX: touch.clientX,
+            minScale: 0.6,
+            maxScale: 1.8
+        };
+
+        // Attach move/end listeners
+        document.addEventListener('mousemove', this.handleResizeMove);
+        document.addEventListener('touchmove', this.handleResizeMove, { passive: false });
+        document.addEventListener('mouseup', this.endResize);
+        document.addEventListener('touchend', this.endResize);
+    }
+
+    handleResizeMove = (e) => {
+        if (!this._resizing) return;
+        e.preventDefault();
+        const touch = e.touches ? e.touches[0] : e;
+
+        const dx = touch.clientX - this._resizing.startX;
+        const newWidth = Math.max(10, this._resizing.startWidth + dx);
+        let newScale = newWidth / this._resizing.baseSize;
+        newScale = Math.max(this._resizing.minScale, Math.min(newScale, this._resizing.maxScale));
+
+        // Apply preview scale to child only (not the container)
+        this._resizing.targetChild.style.transformOrigin = 'center center';
+        this._resizing.targetChild.style.transform = `scale(${newScale})`;
+        // Stash live value for end
+        this._resizing.liveScale = newScale;
+    }
+
+    endResize = () => {
+        if (!this._resizing) return;
+        const { element, targetChild, liveScale } = this._resizing;
+        // Persist chosen scale to element dataset
+        if (typeof liveScale === 'number' && !Number.isNaN(liveScale)) {
+            element.dataset.scale = String(liveScale);
+            // Mark as customized so save picks up scale even if not moved
+            const realId = element.dataset.realId || element.id;
+            this.customizedElements.add(realId);
+        }
+
+        // Cleanup listeners
+        document.removeEventListener('mousemove', this.handleResizeMove);
+        document.removeEventListener('touchmove', this.handleResizeMove);
+        document.removeEventListener('mouseup', this.endResize);
+        document.removeEventListener('touchend', this.endResize);
+        this._resizing = null;
     }
     
     startDrag(e, element) {
@@ -4855,6 +4966,11 @@ class Game {
                 layout[realId].top = relativeTop;
                 // Neutralize transform explicitly for absolute positioning
                 layout[realId].transform = 'none';
+                // Save scale if present (for joystick/jump)
+                const scale = parseFloat(element.dataset.scale || '');
+                if (!Number.isNaN(scale)) {
+                    layout[realId].scale = scale;
+                }
                 
                 console.log(`[SAVE] ${realId}: left=${relativeLeft.toFixed(1)}, top=${relativeTop.toFixed(1)}`);
             }
@@ -4889,6 +5005,12 @@ class Game {
                 element.style.width = '';
                 element.style.height = '';
                 element.style.transform = '';
+                // Clear any resize scale on inner children
+                const joy = element.querySelector('.joystick');
+                const btn = element.querySelector('.action-btn');
+                if (joy) joy.style.transform = '';
+                if (btn) btn.style.transform = '';
+                delete element.dataset.scale;
             });
             
             // Show confirmation
@@ -4966,9 +5088,29 @@ class Game {
                     if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
                     if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
                     
-                    // Preserve transform if it exists in saved layout
+                    // Ensure transforms don't offset custom absolute positions unless explicitly saved
                     if (layoutData.transform !== undefined) {
-                        element.style.transform = layoutData.transform;
+                        element.style.transform = layoutData.transform || 'none';
+                    } else {
+                        element.style.transform = 'none';
+                    }
+
+                    // Apply scale to inner child for joystick/jump if present
+                    if (layoutData.scale !== undefined) {
+                        const scale = layoutData.scale;
+                        if (id.includes('Joystick')) {
+                            const joy = element.querySelector('.joystick');
+                            if (joy) {
+                                joy.style.transformOrigin = 'center center';
+                                joy.style.transform = `scale(${scale})`;
+                            }
+                        } else if (id.includes('Jump')) {
+                            const btn = element.querySelector('.action-btn');
+                            if (btn) {
+                                btn.style.transformOrigin = 'center center';
+                                btn.style.transform = `scale(${scale})`;
+                            }
+                        }
                     }
                 }
             }
