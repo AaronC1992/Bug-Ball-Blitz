@@ -2247,7 +2247,7 @@ class Game {
         // Check if touch controls are enabled for player 2
         const useTouchControls = this.touchControlsEnabled !== null 
             ? (this.touchControlsEnabled && this.gameMode === 'multiplayer')
-            : (this.ui.isTablet && this.gameMode === 'multiplayer');
+            : ((this.ui.isMobile || this.ui.isTablet) && this.gameMode === 'multiplayer');
             
         if (useTouchControls) {
             // Touch controls for player 2
