@@ -3928,6 +3928,7 @@ class Game {
             const element = document.getElementById(id);
             if (element) {
                 // Clear inline styles to restore CSS defaults
+                element.style.position = '';
                 element.style.left = '';
                 element.style.top = '';
                 element.style.right = '';
@@ -3942,6 +3943,11 @@ class Game {
             const element = document.getElementById(id);
             if (element && layout[id]) {
                 const layoutData = layout[id];
+                
+                // Use fixed positioning for editor
+                if (layoutData.position) {
+                    element.style.position = layoutData.position;
+                }
                 
                 if (layoutData.left !== undefined) {
                     element.style.left = layoutData.left + 'px';
@@ -4198,7 +4204,7 @@ class Game {
         
         const touch = e.touches ? e.touches[0] : e;
         
-        // Get the element's current position
+        // Get the element's current position relative to viewport
         const rect = element.getBoundingClientRect();
         
         // Store the element we're dragging
@@ -4209,6 +4215,14 @@ class Game {
             x: touch.clientX - rect.left,
             y: touch.clientY - rect.top
         };
+        
+        // Force element to use fixed positioning relative to viewport
+        // This makes drag behavior consistent
+        element.style.position = 'fixed';
+        element.style.left = rect.left + 'px';
+        element.style.top = rect.top + 'px';
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
         
         element.classList.add('dragging');
         
@@ -4235,7 +4249,8 @@ class Game {
         const newLeft = touch.clientX - this.dragOffset.x;
         const newTop = touch.clientY - this.dragOffset.y;
         
-        // Apply new position
+        // Apply new position using fixed positioning
+        this.draggingElement.style.position = 'fixed';
         this.draggingElement.style.left = newLeft + 'px';
         this.draggingElement.style.top = newTop + 'px';
         this.draggingElement.style.right = 'auto';
@@ -4255,7 +4270,8 @@ class Game {
             const rect = this.draggingElement.getBoundingClientRect();
             
             if (!layout[id]) layout[id] = {};
-            // Only save position, not size
+            // Save fixed position coordinates
+            layout[id].position = 'fixed';
             layout[id].left = rect.left;
             layout[id].top = rect.top;
             
@@ -4284,7 +4300,8 @@ class Game {
             const rect = element.getBoundingClientRect();
             
             if (!layout[id]) layout[id] = {};
-            // Only save position, not size
+            // Save as fixed positioning for consistency
+            layout[id].position = 'fixed';
             layout[id].left = rect.left;
             layout[id].top = rect.top;
         });
@@ -4305,6 +4322,7 @@ class Game {
             
             // Remove ALL inline styles to restore CSS defaults
             this.editableElements.forEach(({ element }) => {
+                element.style.position = '';
                 element.style.left = '';
                 element.style.top = '';
                 element.style.right = '';
@@ -4312,7 +4330,6 @@ class Game {
                 element.style.width = '';
                 element.style.height = '';
                 element.style.transform = '';
-                element.style.position = '';
             });
             
             // Show confirmation
@@ -4340,6 +4357,7 @@ class Game {
                 const isVisible = element.offsetParent !== null;
                 if (isVisible) {
                     // Clear all positioning styles first to reset to CSS defaults
+                    element.style.position = '';
                     element.style.left = '';
                     element.style.top = '';
                     element.style.right = '';
@@ -4361,6 +4379,12 @@ class Game {
                     // Only apply layout to visible elements
                     if (isVisible) {
                         const layoutData = layout[id];
+                        
+                        // Apply fixed positioning for consistency
+                        if (layoutData.position) {
+                            element.style.position = layoutData.position;
+                        }
+                        
                         if (layoutData.left !== undefined) {
                             element.style.left = layoutData.left + 'px';
                             element.style.right = 'auto';
