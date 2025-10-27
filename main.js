@@ -3990,6 +3990,14 @@ class Game {
         if (mobileControls) mobileControls.classList.remove('active');
         if (mobileControlsP2) mobileControlsP2.classList.remove('active');
         
+        // Restore pause button functionality
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (pauseBtn) {
+            pauseBtn.style.display = 'none';
+            pauseBtn.style.pointerEvents = pauseBtn.dataset.originalPointerEvents || '';
+            pauseBtn.style.opacity = '';
+        }
+        
         // Return to main menu
         this.ui.showScreen('mainMenu');
         
@@ -4015,15 +4023,22 @@ class Game {
         // Ensure canvas is properly sized
         this.resizeCanvas();
         
-        // IMPORTANT: Wait for next frame to ensure canvas is fully sized
-        requestAnimationFrame(() => {
+        // Wait for screen to be visible and canvas to be sized
+        setTimeout(() => {
+            // Log canvas dimensions for debugging
+            console.log('Canvas size:', this.canvas.width, 'x', this.canvas.height);
+            
             // Initialize mock physics for realistic arena dimensions
             if (!this.physics) {
                 this.physics = new Physics(this.canvas.width, this.canvas.height);
             }
             
+            // Clear canvas first
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
             // Draw arena background
             const arenaToUse = this.selectedArena || getArenaById('grass_field');
+            console.log('Drawing arena:', arenaToUse);
             if (arenaToUse) {
                 drawArenaBackground(this.ctx, arenaToUse, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
             }
@@ -4043,16 +4058,21 @@ class Game {
             if (mobileControls) mobileControls.classList.add('active');
             if (mobileControlsP2) mobileControlsP2.classList.add('active');
             
-            // Show pause button
+            // Show pause button but disable its normal functionality
             const pauseBtn = document.getElementById('pauseBtn');
-            if (pauseBtn) pauseBtn.style.display = 'block';
+            if (pauseBtn) {
+                pauseBtn.style.display = 'block';
+                // Store original pointerEvents to restore later
+                pauseBtn.dataset.originalPointerEvents = pauseBtn.style.pointerEvents || '';
+                pauseBtn.style.pointerEvents = 'none'; // Disable clicks in editor
+                pauseBtn.style.opacity = '0.5'; // Show it's disabled
+            }
             
-            // CRITICAL: Apply the editor layout AFTER controls are visible
-            // This prevents the jump-down issue
-            requestAnimationFrame(() => {
+            // Apply the editor layout AFTER controls are visible
+            setTimeout(() => {
                 this.applyEditorLayout();
-            });
-        });
+            }, 50);
+        }, 100);
     }
     
     drawMockPlayers() {
@@ -4273,6 +4293,10 @@ class Game {
         
         const touch = e.touches ? e.touches[0] : e;
         
+        // Get the game screen container
+        const gameScreen = document.getElementById('gameScreen');
+        const gameScreenRect = gameScreen.getBoundingClientRect();
+        
         // Get the element's current position
         const rect = element.getBoundingClientRect();
         
@@ -4285,11 +4309,14 @@ class Game {
             y: touch.clientY - rect.top
         };
         
+        // Convert current position to be relative to game screen
+        const relativeLeft = rect.left - gameScreenRect.left;
+        const relativeTop = rect.top - gameScreenRect.top;
+        
         // Ensure element uses absolute positioning for smooth dragging
-        // This works because we're now in the game screen environment
         element.style.position = 'absolute';
-        element.style.left = rect.left + 'px';
-        element.style.top = rect.top + 'px';
+        element.style.left = relativeLeft + 'px';
+        element.style.top = relativeTop + 'px';
         element.style.right = 'auto';
         element.style.bottom = 'auto';
         
@@ -4314,9 +4341,13 @@ class Game {
         e.preventDefault();
         const touch = e.touches ? e.touches[0] : e;
         
-        // Calculate new position based on touch/mouse position and stored offset
-        const newLeft = touch.clientX - this.dragOffset.x;
-        const newTop = touch.clientY - this.dragOffset.y;
+        // Get the game screen container for relative positioning
+        const gameScreen = document.getElementById('gameScreen');
+        const gameScreenRect = gameScreen.getBoundingClientRect();
+        
+        // Calculate new position relative to game screen
+        const newLeft = touch.clientX - gameScreenRect.left - this.dragOffset.x;
+        const newTop = touch.clientY - gameScreenRect.top - this.dragOffset.y;
         
         // Apply new position
         this.draggingElement.style.left = newLeft + 'px';
@@ -4333,13 +4364,20 @@ class Game {
                 : this.customLayoutMultiplayer;
             
             const id = this.draggingElement.id;
+            
+            // Get position relative to game screen
+            const gameScreen = document.getElementById('gameScreen');
+            const gameScreenRect = gameScreen.getBoundingClientRect();
             const rect = this.draggingElement.getBoundingClientRect();
             
+            const relativeLeft = rect.left - gameScreenRect.left;
+            const relativeTop = rect.top - gameScreenRect.top;
+            
             if (!layout[id]) layout[id] = {};
-            // Save absolute position coordinates
+            // Save absolute position coordinates relative to game screen
             layout[id].position = 'absolute';
-            layout[id].left = rect.left;
-            layout[id].top = rect.top;
+            layout[id].left = relativeLeft;
+            layout[id].top = relativeTop;
             
             this.draggingElement = null;
         }
