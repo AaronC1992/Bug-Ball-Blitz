@@ -4020,31 +4020,54 @@ class Game {
         // Switch to game screen to show full match environment
         this.ui.showScreen('gameScreen');
         
-        // Ensure canvas is properly sized
-        this.resizeCanvas();
-        
-        // Wait for screen to be visible and canvas to be sized
+        // CRITICAL: Wait for screen transition to complete before sizing canvas
+        // This ensures the gameScreen container has proper dimensions
         setTimeout(() => {
-            // Log canvas dimensions for debugging
-            console.log('Canvas size:', this.canvas.width, 'x', this.canvas.height);
+            // Ensure canvas is properly sized NOW that screen is visible
+            this.resizeCanvas();
             
-            // Initialize mock physics for realistic arena dimensions
-            if (!this.physics) {
-                this.physics = new Physics(this.canvas.width, this.canvas.height);
-            }
-            
-            // Clear canvas first
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            
-            // Draw arena background
-            const arenaToUse = this.selectedArena || getArenaById('grass_field');
-            console.log('Drawing arena:', arenaToUse);
-            if (arenaToUse) {
-                drawArenaBackground(this.ctx, arenaToUse, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
-            }
-            
-            // Draw mock players to show scale
-            this.drawMockPlayers();
+            // Wait another frame for resize to complete
+            setTimeout(() => {
+                // Log canvas dimensions for debugging
+                console.log('Canvas size:', this.canvas.width, 'x', this.canvas.height);
+                
+                // Ensure we have an arena to draw
+                // Use selected arena, or default to grass field
+                let arenaToUse = this.selectedArena;
+                if (!arenaToUse) {
+                    arenaToUse = getArenaById('grass_field');
+                    console.log('No arena selected, using default grass_field');
+                }
+                console.log('Arena to draw:', arenaToUse);
+                
+                // Initialize mock physics for realistic arena dimensions
+                if (!this.physics) {
+                    this.physics = new Physics(this.canvas.width, this.canvas.height);
+                }
+                
+                // Clear canvas first
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw arena background with all required parameters
+                if (arenaToUse && this.ctx && this.canvas.width > 0) {
+                    console.log('Drawing arena with dimensions:', this.canvas.width, this.canvas.height);
+                    try {
+                        drawArenaBackground(this.ctx, arenaToUse, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
+                        console.log('Arena drawn successfully');
+                    } catch (error) {
+                        console.error('Error drawing arena:', error);
+                    }
+                } else {
+                    console.error('Cannot draw arena - missing requirements:', {
+                        arena: !!arenaToUse,
+                        ctx: !!this.ctx,
+                        width: this.canvas.width,
+                        height: this.canvas.height
+                    });
+                }
+                
+                // Draw mock players to show scale
+                this.drawMockPlayers();
             
             // Draw mock ball
             this.drawMockBall();
