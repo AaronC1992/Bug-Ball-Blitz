@@ -4559,9 +4559,15 @@ class Game {
         
         const touch = e.touches ? e.touches[0] : e;
         
-        // Get the game screen container
-        const gameScreen = document.getElementById('gameScreen');
-        const gameScreenRect = gameScreen.getBoundingClientRect();
+        // Determine which container to use based on element type
+        if (element.classList.contains('mock-hud-element')) {
+            // Mock HUD elements are positioned relative to the controls editor overlay
+            this.draggingContainer = document.getElementById('controlsEditor');
+        } else {
+            // Real touch controls are positioned relative to the game screen
+            this.draggingContainer = document.getElementById('gameScreen');
+        }
+        const containerRect = this.draggingContainer.getBoundingClientRect();
         
         // Get the element's current position
         const rect = element.getBoundingClientRect();
@@ -4569,8 +4575,8 @@ class Game {
         // Store the element we're dragging and its initial position
         this.draggingElement = element;
         this.dragStartPosition = {
-            left: rect.left - gameScreenRect.left,
-            top: rect.top - gameScreenRect.top
+            left: rect.left - containerRect.left,
+            top: rect.top - containerRect.top
         };
         
         // Calculate offset from touch/click point to element's top-left corner
@@ -4579,9 +4585,9 @@ class Game {
             y: touch.clientY - rect.top
         };
         
-        // Convert current position to be relative to game screen
-        const relativeLeft = rect.left - gameScreenRect.left;
-        const relativeTop = rect.top - gameScreenRect.top;
+        // Convert current position to be relative to container
+        const relativeLeft = rect.left - containerRect.left;
+        const relativeTop = rect.top - containerRect.top;
         
         // Ensure element uses absolute positioning for smooth dragging
         // Clear transform since getBoundingClientRect() already accounts for it
@@ -4608,28 +4614,27 @@ class Game {
     }
     
     handleDragMove = (e) => {
-        if (!this.draggingElement) return;
+        if (!this.draggingElement || !this.draggingContainer) return;
         
         e.preventDefault();
         const touch = e.touches ? e.touches[0] : e;
         
-        // Get the game screen container for relative positioning
-        const gameScreen = document.getElementById('gameScreen');
-        const gameScreenRect = gameScreen.getBoundingClientRect();
+        // Use the container determined during startDrag
+        const containerRect = this.draggingContainer.getBoundingClientRect();
         
-        // Calculate new position relative to game screen
-        let newLeft = touch.clientX - gameScreenRect.left - this.dragOffset.x;
-        let newTop = touch.clientY - gameScreenRect.top - this.dragOffset.y;
+        // Calculate new position relative to container
+        let newLeft = touch.clientX - containerRect.left - this.dragOffset.x;
+        let newTop = touch.clientY - containerRect.top - this.dragOffset.y;
         
         // Get element dimensions
         const elementRect = this.draggingElement.getBoundingClientRect();
         const elementWidth = elementRect.width;
         const elementHeight = elementRect.height;
         
-        // Constrain to game screen bounds (with 10px minimum visible on each edge)
+        // Constrain to container bounds (with 10px minimum visible on each edge)
         const minVisible = 10;
-        newLeft = Math.max(-elementWidth + minVisible, Math.min(newLeft, gameScreenRect.width - minVisible));
-        newTop = Math.max(-elementHeight + minVisible, Math.min(newTop, gameScreenRect.height - minVisible));
+        newLeft = Math.max(-elementWidth + minVisible, Math.min(newLeft, containerRect.width - minVisible));
+        newTop = Math.max(-elementHeight + minVisible, Math.min(newTop, containerRect.height - minVisible));
         
         // Apply new position
         this.draggingElement.style.left = newLeft + 'px';
@@ -4637,16 +4642,15 @@ class Game {
     }
     
     endDrag = () => {
-        if (this.draggingElement) {
+        if (this.draggingElement && this.draggingContainer) {
             this.draggingElement.classList.remove('dragging');
             
             // Check if element actually moved (more than 5px threshold to avoid accidental clicks)
-            const gameScreen = document.getElementById('gameScreen');
-            const gameScreenRect = gameScreen.getBoundingClientRect();
+            const containerRect = this.draggingContainer.getBoundingClientRect();
             const rect = this.draggingElement.getBoundingClientRect();
             
-            const currentLeft = rect.left - gameScreenRect.left;
-            const currentTop = rect.top - gameScreenRect.top;
+            const currentLeft = rect.left - containerRect.left;
+            const currentTop = rect.top - containerRect.top;
             
             const movedDistance = Math.sqrt(
                 Math.pow(currentLeft - this.dragStartPosition.left, 2) +
@@ -4670,7 +4674,7 @@ class Game {
                 const relativeTop = currentTop;
                 
                 if (!layout[realId]) layout[realId] = {};
-                // Save absolute position coordinates relative to game screen (using real ID)
+                // Save absolute position coordinates relative to container (using real ID)
                 layout[realId].position = 'absolute';
                 layout[realId].left = relativeLeft;
                 layout[realId].top = relativeTop;
@@ -4687,6 +4691,7 @@ class Game {
             
             this.draggingElement = null;
             this.dragStartPosition = null;
+            this.draggingContainer = null;
         }
         
         // Remove global listeners
