@@ -4062,15 +4062,25 @@ class Game {
     }
     
     setupDragAndResize(element) {
-        // Drag on element itself
-        element.addEventListener('mousedown', (e) => this.startDrag(e, element));
-        element.addEventListener('touchstart', (e) => this.startDrag(e, element), { passive: false });
+        // Remove any existing listeners by cloning and replacing
+        const newElement = element.cloneNode(true);
+        element.parentNode.replaceChild(newElement, element);
+        
+        // Update the reference in editableElements
+        const editableIndex = this.editableElements.findIndex(e => e.element === element);
+        if (editableIndex !== -1) {
+            this.editableElements[editableIndex].element = newElement;
+        }
+        
+        // Drag on element itself (but not on resize handles)
+        newElement.addEventListener('mousedown', (e) => this.startDrag(e, newElement));
+        newElement.addEventListener('touchstart', (e) => this.startDrag(e, newElement), { passive: false });
         
         // Resize on handles
-        const handles = element.querySelectorAll('.resize-handle');
+        const handles = newElement.querySelectorAll('.resize-handle');
         handles.forEach(handle => {
-            handle.addEventListener('mousedown', (e) => this.startResize(e, element, handle));
-            handle.addEventListener('touchstart', (e) => this.startResize(e, element, handle), { passive: false });
+            handle.addEventListener('mousedown', (e) => this.startResize(e, newElement, handle));
+            handle.addEventListener('touchstart', (e) => this.startResize(e, newElement, handle), { passive: false });
         });
     }
     
@@ -4091,6 +4101,12 @@ class Game {
         };
         
         element.classList.add('dragging');
+        
+        // Remove any existing listeners first
+        document.removeEventListener('mousemove', this.handleDragMove);
+        document.removeEventListener('touchmove', this.handleDragMove);
+        document.removeEventListener('mouseup', this.endDrag);
+        document.removeEventListener('touchend', this.endDrag);
         
         // Add global move and end listeners
         document.addEventListener('mousemove', this.handleDragMove);
@@ -4118,13 +4134,17 @@ class Game {
         if (this.draggingElement) {
             this.draggingElement.classList.remove('dragging');
             
-            // Save position
+            // Save position to the current mode's layout
+            const layout = this.editorLayoutMode === 'singleplayer' 
+                ? this.customLayoutSingleplayer 
+                : this.customLayoutMultiplayer;
+            
             const id = this.draggingElement.id;
             const rect = this.draggingElement.getBoundingClientRect();
             
-            if (!this.customLayout[id]) this.customLayout[id] = {};
-            this.customLayout[id].left = rect.left;
-            this.customLayout[id].top = rect.top;
+            if (!layout[id]) layout[id] = {};
+            layout[id].left = rect.left;
+            layout[id].top = rect.top;
             
             this.draggingElement = null;
         }
@@ -4148,6 +4168,12 @@ class Game {
         };
         
         element.classList.add('dragging');
+        
+        // Remove any existing listeners first
+        document.removeEventListener('mousemove', this.handleResizeMove);
+        document.removeEventListener('touchmove', this.handleResizeMove);
+        document.removeEventListener('mouseup', this.endResize);
+        document.removeEventListener('touchend', this.endResize);
         
         // Add global move and end listeners
         document.addEventListener('mousemove', this.handleResizeMove);
@@ -4206,15 +4232,19 @@ class Game {
             const { element } = this.resizingElement;
             element.classList.remove('dragging');
             
-            // Save dimensions
+            // Save dimensions to the current mode's layout
+            const layout = this.editorLayoutMode === 'singleplayer' 
+                ? this.customLayoutSingleplayer 
+                : this.customLayoutMultiplayer;
+            
             const id = element.id;
             const rect = element.getBoundingClientRect();
             
-            if (!this.customLayout[id]) this.customLayout[id] = {};
-            this.customLayout[id].width = rect.width;
-            this.customLayout[id].height = rect.height;
-            this.customLayout[id].left = rect.left;
-            this.customLayout[id].top = rect.top;
+            if (!layout[id]) layout[id] = {};
+            layout[id].width = rect.width;
+            layout[id].height = rect.height;
+            layout[id].left = rect.left;
+            layout[id].top = rect.top;
             
             this.resizingElement = null;
         }
