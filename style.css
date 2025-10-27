@@ -3078,6 +3078,172 @@ body {
     }
 }
 
+/* Customize Controls Button */
+.customize-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #00bfff 0%, #0099cc 100%);
+    border: 2px solid #00d4ff;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 191, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+.customize-btn:hover {
+    background: linear-gradient(135deg, #00d4ff 0%, #00bfff 100%);
+    box-shadow: 0 6px 16px rgba(0, 191, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+.customize-btn:active {
+    transform: translateY(0);
+}
+
+/* Controls Editor */
+.controls-editor {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+}
+
+.controls-editor.active {
+    display: block;
+}
+
+.editor-header {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    border: 3px solid #00bfff;
+    border-radius: 12px;
+    padding: 15px 30px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0, 191, 255, 0.6);
+}
+
+.editor-header h2 {
+    margin: 0 0 10px 0;
+    color: #00bfff;
+    font-size: 24px;
+    text-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
+}
+
+.editor-instructions {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.editor-instructions p {
+    margin: 5px 0;
+}
+
+.editor-toolbar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+}
+
+.editor-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #444 0%, #222 100%);
+    border: 2px solid #666;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.editor-btn:hover {
+    background: linear-gradient(135deg, #555 0%, #333 100%);
+    border-color: #888;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
+    transform: translateY(-2px);
+}
+
+.editor-btn.primary-btn {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+    border: 2px solid #00ff88;
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+}
+
+.editor-btn.primary-btn:hover {
+    background: linear-gradient(135deg, #00ffaa 0%, #00dd77 100%);
+    box-shadow: 0 6px 16px rgba(0, 255, 136, 0.6);
+}
+
+/* Editable Elements */
+.editable-element {
+    outline: 2px dashed rgba(255, 255, 0, 0.6);
+    cursor: move;
+    position: relative;
+}
+
+.editable-element::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 0, 0.1);
+    pointer-events: none;
+}
+
+.editable-element.dragging {
+    opacity: 0.8;
+    outline-color: rgba(0, 255, 136, 0.8);
+    z-index: 10001;
+}
+
+/* Resize Handles */
+.resize-handle {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: #00bfff;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: nwse-resize;
+    box-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
+    z-index: 10002;
+}
+
+.resize-handle.top-left {
+    top: -15px;
+    left: -15px;
+}
+
+.resize-handle.top-right {
+    top: -15px;
+    right: -15px;
+}
+
+.resize-handle.bottom-left {
+    bottom: -15px;
+    left: -15px;
+}
+
+.resize-handle.bottom-right {
+    bottom: -15px;
+    right: -15px;
+}
+
 /* Prevent text selection on mobile */
 .mobile-controls, .mobile-controls * {
     -webkit-user-select: none;

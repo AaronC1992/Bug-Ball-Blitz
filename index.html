@@ -12,7 +12,7 @@
 </head>
 <body>
     <!-- Version number - always visible -->
-    <div class="version">v1.14.6</div>
+    <div class="version">v1.15.0</div>
     
     <div id="gameContainer">
         <!-- Title Screen -->
@@ -656,6 +656,14 @@
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
+                        
+                        <div class="setting-item">
+                            <label>
+                                <span>Customize Controls</span>
+                                <small>Drag and resize on-screen elements</small>
+                            </label>
+                            <button class="customize-btn" id="editControlsBtn">✏️ Edit Layout</button>
+                        </div>
                     </div>
                     
                     <!-- Graphics -->
@@ -789,6 +797,20 @@
                 <div class="menu-buttons">
                     <button class="menu-btn" id="towerDoneBtn">Main Menu</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Controls Editor -->
+        <div id="controlsEditor" class="controls-editor">
+            <div class="editor-header">
+                <h2>🎮 Customize Controls</h2>
+                <div class="editor-instructions">
+                    <p>Drag elements to move • Pinch handles to resize</p>
+                </div>
+            </div>
+            <div class="editor-toolbar">
+                <button class="editor-btn" id="resetLayoutBtn">🔄 Reset to Default</button>
+                <button class="editor-btn primary-btn" id="saveLayoutBtn">✓ Save & Exit</button>
             </div>
         </div>
     </div>

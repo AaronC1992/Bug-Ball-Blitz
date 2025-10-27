@@ -119,6 +119,15 @@ class Game {
         // Settings
         this.touchControlsEnabled = this.loadTouchControlsPreference();
         
+        // Controls Editor
+        this.controlsEditorActive = false;
+        this.customLayout = this.loadCustomLayout();
+        this.editableElements = [];
+        this.draggingElement = null;
+        this.resizingElement = null;
+        this.dragOffset = { x: 0, y: 0 };
+        this.editorPreviewBackground = null;
+        
         // Animation
         this.animationId = null;
         
@@ -126,6 +135,7 @@ class Game {
         this.setupEventListeners();
         this.setupMobileControls();
         this.initializeSettings();
+        this.applyCustomLayout(); // Apply saved custom layout
     }
     
     initializeSettings() {
@@ -536,6 +546,11 @@ class Game {
         document.getElementById('touchControlsToggle').addEventListener('change', (e) => {
             e.stopPropagation(); // Prevent event bubbling
             this.setTouchControlsPreference(e.target.checked);
+        });
+        
+        document.getElementById('editControlsBtn').addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.openControlsEditor();
         });
         
         document.getElementById('qualitySelect').addEventListener('change', (e) => {
@@ -3703,6 +3718,366 @@ class Game {
         if (this.touchControlsEnabled === null) {
             this.updateTouchControlsVisibility();
         }
+    }
+    
+    // Controls Editor Methods
+    loadCustomLayout() {
+        const saved = localStorage.getItem('customControlsLayout');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error('Failed to load custom layout:', e);
+            }
+        }
+        return {};
+    }
+    
+    saveCustomLayout() {
+        localStorage.setItem('customControlsLayout', JSON.stringify(this.customLayout));
+    }
+    
+    openControlsEditor() {
+        this.controlsEditorActive = true;
+        const editor = document.getElementById('controlsEditor');
+        editor.classList.add('active');
+        
+        // Hide settings menu
+        this.ui.hideOverlay('settingsMenu');
+        
+        // If in a match, keep it paused
+        const wasInMatch = (this.gameState === 'playing' || this.gameState === 'paused');
+        if (wasInMatch && this.gameState === 'playing') {
+            this.pauseGame();
+        }
+        
+        // If in menu, show preview background
+        if (!wasInMatch) {
+            this.startEditorPreview();
+        }
+        
+        // Make on-screen elements editable
+        this.setupEditableElements();
+        
+        // Setup editor controls
+        this.setupEditorControls();
+    }
+    
+    closeControlsEditor() {
+        this.controlsEditorActive = false;
+        const editor = document.getElementById('controlsEditor');
+        editor.classList.remove('active');
+        
+        // Clean up editable elements
+        this.editableElements.forEach(el => {
+            el.element.classList.remove('editable-element');
+            // Remove resize handles
+            const handles = el.element.querySelectorAll('.resize-handle');
+            handles.forEach(handle => handle.remove());
+        });
+        this.editableElements = [];
+        
+        // Stop editor preview if running
+        if (this.editorPreviewBackground) {
+            this.editorPreviewBackground.stop();
+            this.editorPreviewBackground = null;
+            this.menuBackgroundCtx.clearRect(0, 0, this.menuBackgroundCanvas.width, this.menuBackgroundCanvas.height);
+        }
+        
+        // Apply custom layout
+        this.applyCustomLayout();
+        
+        // Show settings menu again
+        this.ui.showOverlay('settingsMenu');
+    }
+    
+    startEditorPreview() {
+        // Start background match for preview
+        if (!this.editorPreviewBackground) {
+            this.editorPreviewBackground = new MenuBackground(
+                this.menuBackgroundCanvas,
+                this.menuBackgroundCtx,
+                this.audio
+            );
+        }
+        this.editorPreviewBackground.start();
+        
+        // Show mobile controls
+        const mobileControls = document.getElementById('mobileControls');
+        const mobileControlsP2 = document.getElementById('mobileControlsP2');
+        if (mobileControls) mobileControls.classList.add('active');
+        if (mobileControlsP2) mobileControlsP2.classList.add('active');
+    }
+    
+    setupEditableElements() {
+        this.editableElements = [];
+        
+        // Define editable elements
+        const elements = [
+            { id: 'mobileControls', name: 'P1 Controls', allowResize: true },
+            { id: 'mobileControlsP2', name: 'P2 Controls', allowResize: true },
+            { id: 'gameInfo', name: 'Score/Timer', allowResize: true },
+            { id: 'pauseBtn', name: 'Pause Button', allowResize: true }
+        ];
+        
+        elements.forEach(config => {
+            const element = document.getElementById(config.id);
+            if (element) {
+                element.classList.add('editable-element');
+                
+                // Add resize handles if allowed
+                if (config.allowResize) {
+                    this.addResizeHandles(element);
+                }
+                
+                this.editableElements.push({
+                    element: element,
+                    config: config
+                });
+            }
+        });
+    }
+    
+    addResizeHandles(element) {
+        const positions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+        positions.forEach(pos => {
+            const handle = document.createElement('div');
+            handle.className = `resize-handle ${pos}`;
+            handle.dataset.position = pos;
+            element.appendChild(handle);
+        });
+    }
+    
+    setupEditorControls() {
+        const saveBtn = document.getElementById('saveLayoutBtn');
+        const resetBtn = document.getElementById('resetLayoutBtn');
+        
+        // Remove old listeners
+        saveBtn.replaceWith(saveBtn.cloneNode(true));
+        resetBtn.replaceWith(resetBtn.cloneNode(true));
+        
+        // Get fresh references
+        const newSaveBtn = document.getElementById('saveLayoutBtn');
+        const newResetBtn = document.getElementById('resetLayoutBtn');
+        
+        newSaveBtn.addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.saveLayoutAndExit();
+        });
+        
+        newResetBtn.addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.resetLayoutToDefault();
+        });
+        
+        // Setup drag and resize for all editable elements
+        this.editableElements.forEach(({ element }) => {
+            this.setupDragAndResize(element);
+        });
+    }
+    
+    setupDragAndResize(element) {
+        // Drag on element itself
+        element.addEventListener('mousedown', (e) => this.startDrag(e, element));
+        element.addEventListener('touchstart', (e) => this.startDrag(e, element), { passive: false });
+        
+        // Resize on handles
+        const handles = element.querySelectorAll('.resize-handle');
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => this.startResize(e, element, handle));
+            handle.addEventListener('touchstart', (e) => this.startResize(e, element, handle), { passive: false });
+        });
+    }
+    
+    startDrag(e, element) {
+        // Don't drag if clicking on a resize handle
+        if (e.target.classList.contains('resize-handle')) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const touch = e.touches ? e.touches[0] : e;
+        const rect = element.getBoundingClientRect();
+        
+        this.draggingElement = element;
+        this.dragOffset = {
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
+        };
+        
+        element.classList.add('dragging');
+        
+        // Add global move and end listeners
+        document.addEventListener('mousemove', this.handleDragMove);
+        document.addEventListener('touchmove', this.handleDragMove, { passive: false });
+        document.addEventListener('mouseup', this.endDrag);
+        document.addEventListener('touchend', this.endDrag);
+    }
+    
+    handleDragMove = (e) => {
+        if (!this.draggingElement) return;
+        
+        e.preventDefault();
+        const touch = e.touches ? e.touches[0] : e;
+        
+        const newX = touch.clientX - this.dragOffset.x;
+        const newY = touch.clientY - this.dragOffset.y;
+        
+        this.draggingElement.style.left = newX + 'px';
+        this.draggingElement.style.top = newY + 'px';
+        this.draggingElement.style.right = 'auto';
+        this.draggingElement.style.bottom = 'auto';
+    }
+    
+    endDrag = () => {
+        if (this.draggingElement) {
+            this.draggingElement.classList.remove('dragging');
+            
+            // Save position
+            const id = this.draggingElement.id;
+            const rect = this.draggingElement.getBoundingClientRect();
+            
+            if (!this.customLayout[id]) this.customLayout[id] = {};
+            this.customLayout[id].left = rect.left;
+            this.customLayout[id].top = rect.top;
+            
+            this.draggingElement = null;
+        }
+        
+        // Remove global listeners
+        document.removeEventListener('mousemove', this.handleDragMove);
+        document.removeEventListener('touchmove', this.handleDragMove);
+        document.removeEventListener('mouseup', this.endDrag);
+        document.removeEventListener('touchend', this.endDrag);
+    }
+    
+    startResize(e, element, handle) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        this.resizingElement = {
+            element: element,
+            handle: handle,
+            startRect: element.getBoundingClientRect(),
+            startTouch: e.touches ? e.touches[0] : e
+        };
+        
+        element.classList.add('dragging');
+        
+        // Add global move and end listeners
+        document.addEventListener('mousemove', this.handleResizeMove);
+        document.addEventListener('touchmove', this.handleResizeMove, { passive: false });
+        document.addEventListener('mouseup', this.endResize);
+        document.addEventListener('touchend', this.endResize);
+    }
+    
+    handleResizeMove = (e) => {
+        if (!this.resizingElement) return;
+        
+        e.preventDefault();
+        const touch = e.touches ? e.touches[0] : e;
+        const { element, handle, startRect, startTouch } = this.resizingElement;
+        
+        const deltaX = touch.clientX - startTouch.clientX;
+        const deltaY = touch.clientY - startTouch.clientY;
+        
+        const position = handle.dataset.position;
+        
+        // Calculate new size based on handle position
+        let newWidth = startRect.width;
+        let newHeight = startRect.height;
+        let newLeft = startRect.left;
+        let newTop = startRect.top;
+        
+        if (position.includes('right')) {
+            newWidth = startRect.width + deltaX;
+        } else if (position.includes('left')) {
+            newWidth = startRect.width - deltaX;
+            newLeft = startRect.left + deltaX;
+        }
+        
+        if (position.includes('bottom')) {
+            newHeight = startRect.height + deltaY;
+        } else if (position.includes('top')) {
+            newHeight = startRect.height - deltaY;
+            newTop = startRect.top + deltaY;
+        }
+        
+        // Apply minimum size
+        newWidth = Math.max(50, newWidth);
+        newHeight = Math.max(50, newHeight);
+        
+        // Apply new dimensions
+        element.style.width = newWidth + 'px';
+        element.style.height = newHeight + 'px';
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
+    }
+    
+    endResize = () => {
+        if (this.resizingElement) {
+            const { element } = this.resizingElement;
+            element.classList.remove('dragging');
+            
+            // Save dimensions
+            const id = element.id;
+            const rect = element.getBoundingClientRect();
+            
+            if (!this.customLayout[id]) this.customLayout[id] = {};
+            this.customLayout[id].width = rect.width;
+            this.customLayout[id].height = rect.height;
+            this.customLayout[id].left = rect.left;
+            this.customLayout[id].top = rect.top;
+            
+            this.resizingElement = null;
+        }
+        
+        // Remove global listeners
+        document.removeEventListener('mousemove', this.handleResizeMove);
+        document.removeEventListener('touchmove', this.handleResizeMove);
+        document.removeEventListener('mouseup', this.endResize);
+        document.removeEventListener('touchend', this.endResize);
+    }
+    
+    saveLayoutAndExit() {
+        this.saveCustomLayout();
+        this.closeControlsEditor();
+    }
+    
+    resetLayoutToDefault() {
+        if (confirm('Reset all controls to default positions and sizes?')) {
+            this.customLayout = {};
+            this.saveCustomLayout();
+            
+            // Remove inline styles
+            this.editableElements.forEach(({ element }) => {
+                element.style.left = '';
+                element.style.top = '';
+                element.style.right = '';
+                element.style.bottom = '';
+                element.style.width = '';
+                element.style.height = '';
+            });
+        }
+    }
+    
+    applyCustomLayout() {
+        Object.keys(this.customLayout).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                const layout = this.customLayout[id];
+                if (layout.left !== undefined) element.style.left = layout.left + 'px';
+                if (layout.top !== undefined) element.style.top = layout.top + 'px';
+                if (layout.width !== undefined) element.style.width = layout.width + 'px';
+                if (layout.height !== undefined) element.style.height = layout.height + 'px';
+                
+                // Clear right/bottom if we set left/top
+                if (layout.left !== undefined) element.style.right = 'auto';
+                if (layout.top !== undefined) element.style.bottom = 'auto';
+            }
+        });
     }
 }
 
