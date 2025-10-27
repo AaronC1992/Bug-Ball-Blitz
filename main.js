@@ -133,6 +133,9 @@ class Game {
         // Animation
         this.animationId = null;
         
+        // Debounce timeout IDs for button handlers
+        this.buttonTimeouts = {};
+        
         this.initializeCanvas();
         this.setupEventListeners();
         this.setupMobileControls();
@@ -505,7 +508,8 @@ class Game {
             e.preventDefault();
             settingsBtnHandled = true;
             this.openSettings();
-            setTimeout(() => { settingsBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.pauseSettings) clearTimeout(this.buttonTimeouts.pauseSettings);
+            this.buttonTimeouts.pauseSettings = setTimeout(() => { settingsBtnHandled = false; }, 300);
         }, { passive: false });
         
         pauseSettingsBtn.addEventListener('click', (e) => {
@@ -520,7 +524,8 @@ class Game {
             e.preventDefault();
             closeSettingsBtnHandled = true;
             this.closeSettings();
-            setTimeout(() => { closeSettingsBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.closeSettings) clearTimeout(this.buttonTimeouts.closeSettings);
+            this.buttonTimeouts.closeSettings = setTimeout(() => { closeSettingsBtnHandled = false; }, 300);
         }, { passive: false });
         
         closeSettingsBtn.addEventListener('click', (e) => {
@@ -570,7 +575,8 @@ class Game {
             e.preventDefault();
             pauseBtnHandled = true;
             this.pauseGame();
-            setTimeout(() => { pauseBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.pause) clearTimeout(this.buttonTimeouts.pause);
+            this.buttonTimeouts.pause = setTimeout(() => { pauseBtnHandled = false; }, 300);
         }, { passive: false });
         
         pauseBtn.addEventListener('click', () => {
@@ -585,7 +591,8 @@ class Game {
             e.preventDefault();
             fullscreenBtnHandled = true;
             this.toggleFullscreen();
-            setTimeout(() => { fullscreenBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.fullscreen) clearTimeout(this.buttonTimeouts.fullscreen);
+            this.buttonTimeouts.fullscreen = setTimeout(() => { fullscreenBtnHandled = false; }, 300);
         }, { passive: false });
         
         fullscreenBtn.addEventListener('click', () => {
@@ -601,7 +608,8 @@ class Game {
             resumeBtnHandled = true;
             this.audio.playSound('ui_click');
             this.resumeGame();
-            setTimeout(() => { resumeBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.resume) clearTimeout(this.buttonTimeouts.resume);
+            this.buttonTimeouts.resume = setTimeout(() => { resumeBtnHandled = false; }, 300);
         }, { passive: false });
         
         resumeBtn.addEventListener('click', () => {
@@ -618,7 +626,8 @@ class Game {
             restartMatchBtnHandled = true;
             this.audio.playSound('ui_click');
             this.restartMatch();
-            setTimeout(() => { restartMatchBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.restart) clearTimeout(this.buttonTimeouts.restart);
+            this.buttonTimeouts.restart = setTimeout(() => { restartMatchBtnHandled = false; }, 300);
         }, { passive: false });
         
         restartMatchBtn.addEventListener('click', () => {
@@ -652,7 +661,8 @@ class Game {
             e.preventDefault();
             continueBtnHandled = true;
             this.handleMatchContinue();
-            setTimeout(() => { continueBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.continue) clearTimeout(this.buttonTimeouts.continue);
+            this.buttonTimeouts.continue = setTimeout(() => { continueBtnHandled = false; }, 300);
         }, { passive: false });
         
         continueBtn.addEventListener('click', () => {
@@ -667,7 +677,8 @@ class Game {
             e.preventDefault();
             rematchBtnHandled = true;
             this.rematch();
-            setTimeout(() => { rematchBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.rematch) clearTimeout(this.buttonTimeouts.rematch);
+            this.buttonTimeouts.rematch = setTimeout(() => { rematchBtnHandled = false; }, 300);
         }, { passive: false });
         
         rematchBtn.addEventListener('click', () => {
@@ -682,7 +693,8 @@ class Game {
             e.preventDefault();
             endToMenuBtnHandled = true;
             this.quitToMenu();
-            setTimeout(() => { endToMenuBtnHandled = false; }, 300);
+            if (this.buttonTimeouts.endToMenu) clearTimeout(this.buttonTimeouts.endToMenu);
+            this.buttonTimeouts.endToMenu = setTimeout(() => { endToMenuBtnHandled = false; }, 300);
         }, { passive: false });
         
         endToMenuBtn.addEventListener('click', () => {
@@ -1511,10 +1523,16 @@ class Game {
     }
     
     startMatch() {
-        this.ui.showScreen('gameScreen');
-        
-        this.resizeCanvas();
-        this.physics = new Physics(this.canvas.width, this.canvas.height);
+        try {
+            // Validate critical objects exist
+            if (!this.selectedBug1 || !this.selectedBug2 || !this.selectedArena) {
+                throw new Error('Missing required game objects: bug1=' + !!this.selectedBug1 + ', bug2=' + !!this.selectedBug2 + ', arena=' + !!this.selectedArena);
+            }
+            
+            this.ui.showScreen('gameScreen');
+            
+            this.resizeCanvas();
+            this.physics = new Physics(this.canvas.width, this.canvas.height);
         
         // Apply arcade gravity modifiers if in arcade mode
         if (this.gameMode === 'arcade' && this.arcadeSettings) {
@@ -1745,9 +1763,21 @@ class Game {
         this.updateTouchControlsVisibility();
         
         this.gameLoop();
+        } catch (error) {
+            console.error('Failed to start match:', error);
+            // Return to main menu on error
+            this.gameState = 'menu';
+            this.ui.showScreen('mainMenu');
+            alert('Failed to start match. Please try again.');
+        }
     }
     
     gameLoop() {
+        // Prevent multiple game loops from running
+        if (this.animationId !== null) {
+            cancelAnimationFrame(this.animationId);
+        }
+        
         // Increment frame counter for animations
         this.frameCount++;
         
@@ -1773,6 +1803,7 @@ class Game {
             // Just render the celebration, don't update game logic
             this.renderCountdown(); // Reuse countdown render which includes celebration
         } else {
+            this.animationId = null;
             return;
         }
         
@@ -2098,6 +2129,13 @@ class Game {
     }
     
     update() {
+        // Safety check: Ensure critical game objects exist
+        if (!this.player1 || !this.player2 || !this.ball || !this.physics) {
+            console.error('Critical game objects missing in update()');
+            this.gameState = 'ended';
+            return;
+        }
+        
         // Update particles
         this.particles.update();
         
@@ -2839,12 +2877,22 @@ class Game {
     applyWeatherEffects() {
         if (this.currentWeather === 'none') return;
         
+        // Update weather direction timer (changes every 2 seconds)
+        if (this.currentWeather === 'rain' || this.currentWeather === 'wind') {
+            this.weatherDirectionTimer++;
+            // At 60fps, 120 frames = 2 seconds
+            if (this.weatherDirectionTimer >= 120) {
+                this.weatherDirection *= -1; // Reverse direction
+                this.weatherDirectionTimer = 0;
+            }
+        }
+        
         // Apply effects to all balls
         for (let ball of this.balls) {
             if (!ball) continue;
             
             if (this.currentWeather === 'rain') {
-                // Rain adds horizontal drift (changes direction every 5 seconds)
+                // Rain adds horizontal drift (changes direction every 2 seconds)
                 ball.vx += 0.2 * this.weatherDirection;
                 ball.vy += 0.08; // Slight downward push
             } else if (this.currentWeather === 'snow') {
@@ -2852,8 +2900,8 @@ class Game {
                 ball.vx *= 1.008; // Less friction slowdown for ball
                 ball.vy *= 1.003;
             } else if (this.currentWeather === 'wind') {
-                // Wind pushes ball horizontally (changes direction every 5 seconds)
-                ball.vx += 0.2 * this.weatherDirection; // Reduced from 0.4
+                // Wind pushes ball horizontally (changes direction every 2 seconds)
+                ball.vx += 0.2 * this.weatherDirection;
             }
         }
         
@@ -3200,7 +3248,11 @@ class Game {
     
     setTouchControlsPreference(enabled) {
         this.touchControlsEnabled = enabled;
-        localStorage.setItem('touchControlsEnabled', enabled.toString());
+        try {
+            localStorage.setItem('touchControlsEnabled', enabled.toString());
+        } catch (e) {
+            console.error('Failed to save touch controls preference:', e);
+        }
         this.updateTouchControlsVisibility();
     }
     
@@ -3781,7 +3833,11 @@ class Game {
     saveCustomLayout(mode) {
         const key = `customControlsLayout_${mode}`;
         const layout = mode === 'singleplayer' ? this.customLayoutSingleplayer : this.customLayoutMultiplayer;
-        localStorage.setItem(key, JSON.stringify(layout));
+        try {
+            localStorage.setItem(key, JSON.stringify(layout));
+        } catch (e) {
+            console.error(`Failed to save custom layout for ${mode}:`, e);
+        }
     }
     
     getCurrentLayout() {
@@ -3856,15 +3912,12 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
-        console.log('applyEditorLayout - mode:', this.editorLayoutMode, 'layout:', layout);
-        
         // Only apply saved layout if it exists - DON'T clear styles if no layout
         // This preserves CSS default positioning
         Object.keys(layout).forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 const layoutData = layout[id];
-                console.log(`Applying layout for ${id}:`, layoutData);
                 
                 if (layoutData.left !== undefined) {
                     element.style.left = layoutData.left + 'px';
@@ -4038,10 +4091,8 @@ class Game {
         });
         
         newExitBtn.addEventListener('click', () => {
-            console.log('Done button clicked - closing editor');
             this.audio.playSound('ui_click');
             this.closeControlsEditor();
-            console.log('closeControlsEditor() completed');
         });
         
         newResetBtn.addEventListener('click', () => {

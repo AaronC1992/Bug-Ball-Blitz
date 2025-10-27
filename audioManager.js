@@ -36,11 +36,15 @@ export class AudioManager {
     }
     
     savePreferences() {
-        localStorage.setItem('soundVolume', this.soundVolume.toString());
-        localStorage.setItem('musicVolume', this.musicVolume.toString());
-        localStorage.setItem('soundEnabled', this.soundEnabled.toString());
-        localStorage.setItem('musicEnabled', this.musicEnabled.toString());
-        localStorage.setItem('hapticEnabled', this.hapticEnabled.toString());
+        try {
+            localStorage.setItem('soundVolume', this.soundVolume.toString());
+            localStorage.setItem('musicVolume', this.musicVolume.toString());
+            localStorage.setItem('soundEnabled', this.soundEnabled.toString());
+            localStorage.setItem('musicEnabled', this.musicEnabled.toString());
+            localStorage.setItem('hapticEnabled', this.hapticEnabled.toString());
+        } catch (e) {
+            console.error('Failed to save audio preferences:', e);
+        }
     }
     
     generateSounds() {
