@@ -7,13 +7,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a0033">
-        <title>Bug Ball Blitz v1.15.9</title>
+        <title>Bug Ball Blitz v1.16.0</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Version number - always visible -->
-    <div class="version">v1.15.9</div>
+    <div class="version">v1.16.0</div>
     
     <div id="gameContainer">
         <!-- Title Screen -->
@@ -807,13 +807,15 @@
             <div class="editor-header">
                 <h2>🎮 Customize Controls</h2>
                 <div class="editor-instructions">
-                    <p>Drag elements to move • Pinch handles to resize</p>
+                    <p>Drag elements to move • Use corner handles to resize</p>
+                    <p class="mode-info" id="editorModeInfo">Editing: Singleplayer Layout</p>
                 </div>
             </div>
             <div class="editor-toolbar">
                 <button class="editor-btn" id="toggleLayoutModeBtn">🎮 Switch to Multiplayer</button>
                 <button class="editor-btn" id="resetLayoutBtn">🔄 Reset to Default</button>
-                <button class="editor-btn primary-btn" id="saveLayoutBtn">✓ Save & Exit</button>
+                <button class="editor-btn" id="saveLayoutBtn">💾 Save</button>
+                <button class="editor-btn primary-btn" id="exitEditorBtn">✓ Done</button>
             </div>
         </div>
     </div>

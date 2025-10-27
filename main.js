@@ -3836,15 +3836,18 @@ class Game {
         const mobileControls = document.getElementById('mobileControls');
         const mobileControlsP2 = document.getElementById('mobileControlsP2');
         const toggleBtn = document.getElementById('toggleLayoutModeBtn');
+        const modeInfo = document.getElementById('editorModeInfo');
         
         if (this.editorLayoutMode === 'singleplayer') {
             if (mobileControls) mobileControls.classList.add('active');
             if (mobileControlsP2) mobileControlsP2.classList.remove('active');
             if (toggleBtn) toggleBtn.textContent = '🎮 Switch to Multiplayer';
+            if (modeInfo) modeInfo.textContent = 'Editing: Singleplayer Layout';
         } else {
             if (mobileControls) mobileControls.classList.add('active');
             if (mobileControlsP2) mobileControlsP2.classList.add('active');
             if (toggleBtn) toggleBtn.textContent = '👤 Switch to Singleplayer';
+            if (modeInfo) modeInfo.textContent = 'Editing: Multiplayer Layout';
         }
     }
     
@@ -3853,25 +3856,14 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
-        // First, clear any saved layout positions to reset to CSS defaults
+        // Get all element IDs that can be customized
         const elementIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD', 'pauseBtn'];
+        
+        // For each element, either apply saved layout OR clear inline styles to use CSS defaults
         elementIds.forEach(id => {
             const element = document.getElementById(id);
-            if (element) {
-                // Clear all positioning styles first
-                element.style.left = '';
-                element.style.top = '';
-                element.style.right = '';
-                element.style.bottom = '';
-                element.style.width = '';
-                element.style.height = '';
-            }
-        });
-        
-        // Then apply saved layout if it exists
-        Object.keys(layout).forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
+            if (element && layout[id]) {
+                // This element HAS a saved layout - apply it
                 const layoutData = layout[id];
                 if (layoutData.left !== undefined) {
                     element.style.left = layoutData.left + 'px';
@@ -3883,6 +3875,14 @@ class Game {
                 }
                 if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
                 if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
+            } else if (element) {
+                // No saved layout - clear inline styles so CSS defaults apply
+                element.style.left = '';
+                element.style.top = '';
+                element.style.right = '';
+                element.style.bottom = '';
+                element.style.width = '';
+                element.style.height = '';
             }
         });
     }
@@ -4014,22 +4014,39 @@ class Game {
     
     setupEditorControls() {
         const saveBtn = document.getElementById('saveLayoutBtn');
+        const exitBtn = document.getElementById('exitEditorBtn');
         const resetBtn = document.getElementById('resetLayoutBtn');
         const toggleBtn = document.getElementById('toggleLayoutModeBtn');
         
-        // Remove old listeners
+        // Remove old listeners by cloning
         saveBtn.replaceWith(saveBtn.cloneNode(true));
+        exitBtn.replaceWith(exitBtn.cloneNode(true));
         resetBtn.replaceWith(resetBtn.cloneNode(true));
         toggleBtn.replaceWith(toggleBtn.cloneNode(true));
         
         // Get fresh references
         const newSaveBtn = document.getElementById('saveLayoutBtn');
+        const newExitBtn = document.getElementById('exitEditorBtn');
         const newResetBtn = document.getElementById('resetLayoutBtn');
         const newToggleBtn = document.getElementById('toggleLayoutModeBtn');
         
         newSaveBtn.addEventListener('click', () => {
             this.audio.playSound('ui_click');
-            this.saveLayoutAndExit();
+            this.saveCurrentPositions();
+            // Show confirmation
+            const modeInfo = document.getElementById('editorModeInfo');
+            if (modeInfo) {
+                const originalText = modeInfo.textContent;
+                modeInfo.textContent = '✓ Layout Saved!';
+                setTimeout(() => {
+                    modeInfo.textContent = originalText;
+                }, 1500);
+            }
+        });
+        
+        newExitBtn.addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.closeControlsEditor();
         });
         
         newResetBtn.addEventListener('click', () => {
