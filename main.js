@@ -3890,6 +3890,11 @@ class Game {
     closeControlsEditor() {
         this.controlsEditorActive = false;
         const editor = document.getElementById('controlsEditor');
+        if (!editor) {
+            console.error('Controls editor element not found!');
+            return;
+        }
+        
         editor.classList.remove('active');
         
         // Clean up editable elements
@@ -4045,8 +4050,10 @@ class Game {
         });
         
         newExitBtn.addEventListener('click', () => {
+            console.log('Done button clicked - closing editor');
             this.audio.playSound('ui_click');
             this.closeControlsEditor();
+            console.log('closeControlsEditor() completed');
         });
         
         newResetBtn.addEventListener('click', () => {
