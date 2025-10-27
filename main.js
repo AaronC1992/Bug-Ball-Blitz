@@ -4054,13 +4054,28 @@ class Game {
         
         editor.classList.remove('active');
         
-        // Clean up editable elements
+        // Clean up editable elements and detach drag listeners so gameplay touches don't move UI
         this.editableElements.forEach(el => {
-            el.element.classList.remove('editable-element');
+            const elem = el.element;
+            elem.classList.remove('editable-element');
             // Remove resize handles (if any were added)
-            const handles = el.element.querySelectorAll('.resize-handle');
+            const handles = elem.querySelectorAll('.resize-handle');
             handles.forEach(handle => handle.remove());
+            // Detach drag listeners if present
+            if (elem._dragHandlers) {
+                elem.removeEventListener('mousedown', elem._dragHandlers.mousedown);
+                elem.removeEventListener('touchstart', elem._dragHandlers.touchstart);
+                delete elem._dragHandlers;
+            }
         });
+        
+        // Ensure any in-progress drag is fully canceled
+        document.removeEventListener('mousemove', this.handleDragMove);
+        document.removeEventListener('touchmove', this.handleDragMove);
+        document.removeEventListener('mouseup', this.endDrag);
+        document.removeEventListener('touchend', this.endDrag);
+        this.draggingElement = null;
+        this.draggingContainer = null;
         
         this.editableElements = [];
         
