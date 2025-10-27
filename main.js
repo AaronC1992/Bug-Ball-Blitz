@@ -4094,7 +4094,18 @@ class Game {
         const touch = e.touches ? e.touches[0] : e;
         const rect = element.getBoundingClientRect();
         
+        // If element doesn't have explicit left/top, set them now based on current position
+        if (!element.style.left || element.style.left === '') {
+            element.style.left = rect.left + 'px';
+            element.style.right = 'auto';
+        }
+        if (!element.style.top || element.style.top === '') {
+            element.style.top = rect.top + 'px';
+            element.style.bottom = 'auto';
+        }
+        
         this.draggingElement = element;
+        // Calculate offset from touch point to element's current position
         this.dragOffset = {
             x: touch.clientX - rect.left,
             y: touch.clientY - rect.top
@@ -4121,6 +4132,7 @@ class Game {
         e.preventDefault();
         const touch = e.touches ? e.touches[0] : e;
         
+        // Use the stored offset to maintain relative position
         const newX = touch.clientX - this.dragOffset.x;
         const newY = touch.clientY - this.dragOffset.y;
         
