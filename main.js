@@ -2311,18 +2311,21 @@ class Game {
         const useTouchControls = this.touchControlsEnabled !== null 
             ? this.touchControlsEnabled 
             : (this.ui.isMobile || this.ui.isTablet);
-            
-        if (useTouchControls) {
-            // Mobile/Touch controls
-            this.player1.moveLeft = this.mobileControls.joystickX < -0.3;
-            this.player1.moveRight = this.mobileControls.joystickX > 0.3;
-            this.player1.jump = this.mobileControls.jumpPressed;
-        } else {
-            // Keyboard controls (WASD)
-            this.player1.moveLeft = this.keys['a'];
-            this.player1.moveRight = this.keys['d'];
-            this.player1.jump = this.keys['w'] || this.keys[' '];
-        }
+        
+        // Keyboard controls (WASD) - always check, even if touch is enabled
+        const keyboardLeft = this.keys['a'] || false;
+        const keyboardRight = this.keys['d'] || false;
+        const keyboardJump = this.keys['w'] || this.keys[' '] || false;
+        
+        // Touch controls
+        const touchLeft = useTouchControls && this.mobileControls.joystickX < -0.3;
+        const touchRight = useTouchControls && this.mobileControls.joystickX > 0.3;
+        const touchJump = useTouchControls && this.mobileControls.jumpPressed;
+        
+        // Use OR logic - either keyboard OR touch can activate controls
+        this.player1.moveLeft = keyboardLeft || touchLeft;
+        this.player1.moveRight = keyboardRight || touchRight;
+        this.player1.jump = keyboardJump || touchJump;
     }
     
     updatePlayer2Input() {
@@ -2330,18 +2333,21 @@ class Game {
         const useTouchControls = this.touchControlsEnabled !== null 
             ? (this.touchControlsEnabled && this.gameMode === 'multiplayer')
             : ((this.ui.isMobile || this.ui.isTablet) && this.gameMode === 'multiplayer');
-            
-        if (useTouchControls) {
-            // Touch controls for player 2
-            this.player2.moveLeft = this.mobileControlsP2.joystickX < -0.3;
-            this.player2.moveRight = this.mobileControlsP2.joystickX > 0.3;
-            this.player2.jump = this.mobileControlsP2.jumpPressed;
-        } else {
-            // Arrow keys for player 2
-            this.player2.moveLeft = this.keys['arrowleft'];
-            this.player2.moveRight = this.keys['arrowright'];
-            this.player2.jump = this.keys['arrowup'];
-        }
+        
+        // Keyboard controls (Arrow keys) - always check
+        const keyboardLeft = this.keys['arrowleft'] || false;
+        const keyboardRight = this.keys['arrowright'] || false;
+        const keyboardJump = this.keys['arrowup'] || false;
+        
+        // Touch controls for player 2
+        const touchLeft = useTouchControls && this.mobileControlsP2.joystickX < -0.3;
+        const touchRight = useTouchControls && this.mobileControlsP2.joystickX > 0.3;
+        const touchJump = useTouchControls && this.mobileControlsP2.jumpPressed;
+        
+        // Use OR logic - either keyboard OR touch can activate controls
+        this.player2.moveLeft = keyboardLeft || touchLeft;
+        this.player2.moveRight = keyboardRight || touchRight;
+        this.player2.jump = keyboardJump || touchJump;
     }
     
     render() {
