@@ -1534,7 +1534,7 @@ class Game {
             this.resizeCanvas();
             this.physics = new Physics(this.canvas.width, this.canvas.height);
         
-        // Show and ensure HUD elements are functional for actual gameplay
+    // Show and ensure HUD elements are functional for actual gameplay
         const pauseBtn = document.getElementById('pauseBtn');
         const scoreDisplay = document.getElementById('scoreDisplay');
         const timerDisplay = document.getElementById('timerDisplay');
@@ -1552,6 +1552,8 @@ class Game {
         if (timerDisplay) {
             timerDisplay.style.display = 'block';
         }
+        // Apply orientation-specific custom layout for gameplay
+        this.applyCustomLayout();
         
         // Apply arcade gravity modifiers if in arcade mode
         if (this.gameMode === 'arcade' && this.arcadeSettings) {
@@ -3350,6 +3352,8 @@ class Game {
         if (this.gameState === 'paused') {
             // Resume to the previous state (either 'playing', 'intro', or 'countdown')
             this.gameState = this.pausedFromState || 'playing';
+            // Ensure game screen is visible when resuming
+            this.ui.showScreen('gameScreen');
             
             // Restore countdown state if we had one
             if (this.pausedCountdownValue !== undefined && this.gameState === 'countdown') {
@@ -3846,46 +3850,67 @@ class Game {
     }
     
     // Controls Editor Methods
-    loadCustomLayout(mode) {
-        const key = `customControlsLayout_${mode}`;
-        const saved = localStorage.getItem(key);
-        if (saved) {
+    getOrientation() {
+        try {
+            return (window.innerHeight >= window.innerWidth) ? 'portrait' : 'landscape';
+        } catch (e) {
+            return 'portrait';
+        }
+    }
+    
+    loadCustomLayout(mode, orientation) {
+        const orient = orientation || this.getOrientation();
+        // Prefer orientation-specific key; fallback to legacy key without orientation
+        const keyOriented = `customControlsLayout_${mode}_${orient}`;
+        const keyLegacy = `customControlsLayout_${mode}`;
+        const savedOriented = localStorage.getItem(keyOriented);
+        const savedLegacy = localStorage.getItem(keyLegacy);
+        const payload = savedOriented ?? savedLegacy;
+        if (payload) {
             try {
-                return JSON.parse(saved);
+                return JSON.parse(payload);
             } catch (e) {
-                console.error(`Failed to load custom layout for ${mode}:`, e);
+                console.error(`Failed to load custom layout for ${mode}/${orient}:`, e);
             }
         }
         return {};
     }
     
-    saveCustomLayout(mode) {
-        const key = `customControlsLayout_${mode}`;
+    saveCustomLayout(mode, orientation) {
+        const orient = orientation || this.editorOrientation || this.getOrientation();
+        const key = `customControlsLayout_${mode}_${orient}`;
         const layout = mode === 'singleplayer' ? this.customLayoutSingleplayer : this.customLayoutMultiplayer;
         try {
             localStorage.setItem(key, JSON.stringify(layout));
         } catch (e) {
-            console.error(`Failed to save custom layout for ${mode}:`, e);
+            console.error(`Failed to save custom layout for ${mode}/${orient}:`, e);
         }
     }
     
     getCurrentLayout() {
-        // Return the appropriate layout based on current game mode
+        // Return layout for current mode and CURRENT ORIENTATION at runtime
+        const orient = this.getOrientation();
         if (this.gameMode === 'multiplayer') {
-            return this.customLayoutMultiplayer;
+            return this.loadCustomLayout('multiplayer', orient);
         }
-        return this.customLayoutSingleplayer;
+        return this.loadCustomLayout('singleplayer', orient);
     }
     
     openControlsEditor() {
         this.controlsEditorActive = true;
         // Start in singleplayer mode
         this.editorLayoutMode = 'singleplayer';
+        // Initialize orientation for editor
+        this.editorOrientation = this.getOrientation();
         
         // Track which elements have been customized (moved from default)
         this.customizedElements = new Set();
         
-        // Populate with existing customized elements from saved layout
+        // Load orientation-specific layouts into working memory
+        this.customLayoutSingleplayer = this.loadCustomLayout('singleplayer', this.editorOrientation);
+        this.customLayoutMultiplayer = this.loadCustomLayout('multiplayer', this.editorOrientation);
+        
+        // Populate with existing customized elements from saved layout (current mode)
         const layout = this.customLayoutSingleplayer;
         Object.keys(layout).forEach(id => {
             this.customizedElements.add(id);
@@ -3914,6 +3939,12 @@ class Game {
             
             // Setup editor controls
             this.setupEditorControls();
+            
+            // Update orientation label
+            const modeInfo = document.getElementById('editorModeInfo');
+            if (modeInfo) {
+                modeInfo.textContent = `Editing: Singleplayer Layout • ${this.editorOrientation.toUpperCase()}`;
+            }
         }, 200); // Wait for startEditorPreview to complete
     }
     
@@ -3937,6 +3968,7 @@ class Game {
     }
     
     applyEditorLayout() {
+        // Use orientation-specific layout in editor
         const layout = this.editorLayoutMode === 'singleplayer' 
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
@@ -4271,6 +4303,7 @@ class Game {
         const exitBtn = document.getElementById('exitEditorBtn');
         const resetBtn = document.getElementById('resetLayoutBtn');
         const toggleBtn = document.getElementById('toggleLayoutModeBtn');
+        const toggleOrientationBtn = document.getElementById('toggleOrientationBtn');
         const closeInstructionsBtn = document.getElementById('closeInstructionsBtn');
         
         // Remove old listeners by cloning
@@ -4278,6 +4311,7 @@ class Game {
         exitBtn.replaceWith(exitBtn.cloneNode(true));
         resetBtn.replaceWith(resetBtn.cloneNode(true));
         toggleBtn.replaceWith(toggleBtn.cloneNode(true));
+        if (toggleOrientationBtn) toggleOrientationBtn.replaceWith(toggleOrientationBtn.cloneNode(true));
         if (closeInstructionsBtn) closeInstructionsBtn.replaceWith(closeInstructionsBtn.cloneNode(true));
         
         // Get fresh references
@@ -4285,6 +4319,7 @@ class Game {
         const newExitBtn = document.getElementById('exitEditorBtn');
         const newResetBtn = document.getElementById('resetLayoutBtn');
         const newToggleBtn = document.getElementById('toggleLayoutModeBtn');
+    const newToggleOrientationBtn = document.getElementById('toggleOrientationBtn');
         const newCloseInstructionsBtn = document.getElementById('closeInstructionsBtn');
         
         // Close instructions button
@@ -4325,6 +4360,15 @@ class Game {
             this.audio.playSound('ui_click');
             this.toggleLayoutMode();
         });
+        
+        if (newToggleOrientationBtn) {
+            // Initialize label text
+            newToggleOrientationBtn.textContent = `📱 Orientation: ${this.editorOrientation === 'portrait' ? 'Portrait' : 'Landscape'}`;
+            newToggleOrientationBtn.addEventListener('click', () => {
+                this.audio.playSound('ui_click');
+                this.toggleEditorOrientation();
+            });
+        }
         
         // Setup draggable toolbar
         this.setupDraggableToolbar();
@@ -4405,16 +4449,15 @@ class Game {
         // Toggle mode
         this.editorLayoutMode = this.editorLayoutMode === 'singleplayer' ? 'multiplayer' : 'singleplayer';
         
-        // Reset customized elements tracking for new mode
-        this.customizedElements = new Set();
+        // Load orientation-specific layout for the new mode
+        if (this.editorLayoutMode === 'singleplayer') {
+            this.customLayoutSingleplayer = this.loadCustomLayout('singleplayer', this.editorOrientation);
+        } else {
+            this.customLayoutMultiplayer = this.loadCustomLayout('multiplayer', this.editorOrientation);
+        }
         
-        // Populate customizedElements with elements that have saved layouts in this mode
-        const layout = this.editorLayoutMode === 'singleplayer' 
-            ? this.customLayoutSingleplayer 
-            : this.customLayoutMultiplayer;
-        Object.keys(layout).forEach(id => {
-            this.customizedElements.add(id);
-        });
+        // Reset customized elements tracking for new mode and repopulate
+        this.customizedElements = new Set(Object.keys(this.editorLayoutMode === 'singleplayer' ? this.customLayoutSingleplayer : this.customLayoutMultiplayer));
         
         // Update control visibility
         this.updateEditorControlsVisibility();
@@ -4425,6 +4468,46 @@ class Game {
             this.applyEditorLayout();
             
             // Refresh editable elements
+            this.refreshEditableElements();
+            
+            // Update mode info label
+            const modeInfo = document.getElementById('editorModeInfo');
+            if (modeInfo) {
+                const modeLabel = this.editorLayoutMode === 'singleplayer' ? 'Singleplayer' : 'Multiplayer';
+                modeInfo.textContent = `Editing: ${modeLabel} Layout • ${this.editorOrientation.toUpperCase()}`;
+            }
+        });
+    }
+    
+    toggleEditorOrientation() {
+        // Save current orientation's positions first
+        this.saveCurrentPositions();
+        
+        // Toggle orientation state
+        this.editorOrientation = this.editorOrientation === 'portrait' ? 'landscape' : 'portrait';
+        
+        // Reload orientation-specific layouts into working memory for both modes
+        this.customLayoutSingleplayer = this.loadCustomLayout('singleplayer', this.editorOrientation);
+        this.customLayoutMultiplayer = this.loadCustomLayout('multiplayer', this.editorOrientation);
+        
+        // Rebuild customized elements set for current mode
+        const activeLayout = this.editorLayoutMode === 'singleplayer' ? this.customLayoutSingleplayer : this.customLayoutMultiplayer;
+        this.customizedElements = new Set(Object.keys(activeLayout));
+        
+        // Update UI labels
+        const orientationBtn = document.getElementById('toggleOrientationBtn');
+        if (orientationBtn) {
+            orientationBtn.textContent = `📱 Orientation: ${this.editorOrientation === 'portrait' ? 'Portrait' : 'Landscape'}`;
+        }
+        const modeInfo = document.getElementById('editorModeInfo');
+        if (modeInfo) {
+            const modeLabel = this.editorLayoutMode === 'singleplayer' ? 'Singleplayer' : 'Multiplayer';
+            modeInfo.textContent = `Editing: ${modeLabel} Layout • ${this.editorOrientation.toUpperCase()}`;
+        }
+        
+        // Apply layout for new orientation and refresh editables
+        requestAnimationFrame(() => {
+            this.applyEditorLayout();
             this.refreshEditableElements();
         });
     }
@@ -4651,7 +4734,7 @@ class Game {
             // If not customized, don't save anything - let CSS defaults apply
         });
         
-        this.saveCustomLayout(this.editorLayoutMode);
+        this.saveCustomLayout(this.editorLayoutMode, this.editorOrientation);
     }
     
     resetLayoutToDefault() {
@@ -4659,10 +4742,10 @@ class Game {
             // Clear the current mode's layout
             if (this.editorLayoutMode === 'singleplayer') {
                 this.customLayoutSingleplayer = {};
-                this.saveCustomLayout('singleplayer');
+                this.saveCustomLayout('singleplayer', this.editorOrientation);
             } else {
                 this.customLayoutMultiplayer = {};
-                this.saveCustomLayout('multiplayer');
+                this.saveCustomLayout('multiplayer', this.editorOrientation);
             }
             
             // Clear customized elements tracking for current mode
