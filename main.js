@@ -1762,6 +1762,10 @@ class Game {
         // Show touch controls based on user preference or auto-detection (after state is set)
         this.updateTouchControlsVisibility();
         
+        // CRITICAL: Reapply custom layout AFTER controls visibility is set
+        // This ensures the layout is applied to visible controls
+        this.applyCustomLayout();
+        
         this.gameLoop();
         } catch (error) {
             console.error('Failed to start match:', error);
@@ -3923,18 +3927,22 @@ class Game {
         Object.keys(layout).forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                const layoutData = layout[id];
-                
-                if (layoutData.left !== undefined) {
-                    element.style.left = layoutData.left + 'px';
-                    element.style.right = 'auto';
+                // Only apply to visible elements in the current mode
+                const isVisible = element.offsetParent !== null;
+                if (isVisible) {
+                    const layoutData = layout[id];
+                    
+                    if (layoutData.left !== undefined) {
+                        element.style.left = layoutData.left + 'px';
+                        element.style.right = 'auto';
+                    }
+                    if (layoutData.top !== undefined) {
+                        element.style.top = layoutData.top + 'px';
+                        element.style.bottom = 'auto';
+                    }
+                    if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
+                    if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
                 }
-                if (layoutData.top !== undefined) {
-                    element.style.top = layoutData.top + 'px';
-                    element.style.bottom = 'auto';
-                }
-                if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
-                if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
             }
         });
     }
@@ -3979,8 +3987,14 @@ class Game {
             this.ui.showOverlay('pauseMenu');
         }
         
-        // Apply custom layout (will apply saved layout or leave at default)
-        this.applyCustomLayout();
+        // Update controls visibility first
+        this.updateTouchControlsVisibility();
+        
+        // Then apply custom layout after visibility is set
+        // Use requestAnimationFrame to ensure visibility changes are applied first
+        requestAnimationFrame(() => {
+            this.applyCustomLayout();
+        });
         
         // Show settings menu again
         this.ui.showOverlay('settingsMenu');
@@ -4127,11 +4141,14 @@ class Game {
         // Update control visibility
         this.updateEditorControlsVisibility();
         
-        // Apply the new mode's layout
-        this.applyEditorLayout();
-        
-        // Refresh editable elements
-        this.refreshEditableElements();
+        // Wait for visibility changes to take effect, then apply layout
+        requestAnimationFrame(() => {
+            // Apply the new mode's layout
+            this.applyEditorLayout();
+            
+            // Refresh editable elements
+            this.refreshEditableElements();
+        });
     }
     
     refreshEditableElements() {
@@ -4195,31 +4212,31 @@ class Game {
         e.stopPropagation();
         
         const touch = e.touches ? e.touches[0] : e;
-        let rect = element.getBoundingClientRect();
         
-        // CRITICAL: If element doesn't have explicit left/top, convert its current position
-        // This handles elements positioned with bottom/right in CSS
+        // Get current visual position BEFORE making any changes
+        const initialRect = element.getBoundingClientRect();
+        
+        // Store the visual position explicitly to prevent jumping
+        const visualLeft = initialRect.left;
+        const visualTop = initialRect.top;
+        
+        // Now convert to top/left positioning if needed
         const hasLeft = element.style.left && element.style.left !== '' && element.style.left !== 'auto';
         const hasTop = element.style.top && element.style.top !== '' && element.style.top !== 'auto';
         
-        if (!hasLeft) {
-            element.style.left = rect.left + 'px';
+        if (!hasLeft || !hasTop) {
+            // Set position based on VISUAL location to prevent jump
+            element.style.left = visualLeft + 'px';
+            element.style.top = visualTop + 'px';
             element.style.right = 'auto';
-        }
-        if (!hasTop) {
-            element.style.top = rect.top + 'px';
             element.style.bottom = 'auto';
         }
         
-        // Get fresh rect AFTER setting position to ensure accurate offset calculation
-        // This is needed because changing from bottom/right to top/left might shift the element
-        rect = element.getBoundingClientRect();
-        
         this.draggingElement = element;
-        // Calculate offset from touch point to element's current position
+        // Calculate offset from touch point to element's visual position
         this.dragOffset = {
-            x: touch.clientX - rect.left,
-            y: touch.clientY - rect.top
+            x: touch.clientX - visualLeft,
+            y: touch.clientY - visualTop
         };
         
         element.classList.add('dragging');
@@ -4434,32 +4451,45 @@ class Game {
         elementIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                // Clear all positioning styles first to reset to CSS defaults
-                element.style.left = '';
-                element.style.top = '';
-                element.style.right = '';
-                element.style.bottom = '';
-                element.style.width = '';
-                element.style.height = '';
+                // Only clear positioning if the element is currently visible
+                // This prevents issues with hidden elements
+                const isVisible = element.offsetParent !== null;
+                if (isVisible) {
+                    // Clear all positioning styles first to reset to CSS defaults
+                    element.style.left = '';
+                    element.style.top = '';
+                    element.style.right = '';
+                    element.style.bottom = '';
+                    element.style.width = '';
+                    element.style.height = '';
+                }
             }
         });
         
-        // Then apply saved layout if it exists
-        Object.keys(layout).forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                const layoutData = layout[id];
-                if (layoutData.left !== undefined) {
-                    element.style.left = layoutData.left + 'px';
-                    element.style.right = 'auto';
+        // Small delay to ensure CSS defaults have been applied
+        // before applying custom layout
+        requestAnimationFrame(() => {
+            // Then apply saved layout if it exists
+            Object.keys(layout).forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const isVisible = element.offsetParent !== null;
+                    // Only apply layout to visible elements
+                    if (isVisible) {
+                        const layoutData = layout[id];
+                        if (layoutData.left !== undefined) {
+                            element.style.left = layoutData.left + 'px';
+                            element.style.right = 'auto';
+                        }
+                        if (layoutData.top !== undefined) {
+                            element.style.top = layoutData.top + 'px';
+                            element.style.bottom = 'auto';
+                        }
+                        if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
+                        if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
+                    }
                 }
-                if (layoutData.top !== undefined) {
-                    element.style.top = layoutData.top + 'px';
-                    element.style.bottom = 'auto';
-                }
-                if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
-                if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
-            }
+            });
         });
     }
 }
