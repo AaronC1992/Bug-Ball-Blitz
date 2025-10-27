@@ -3320,11 +3320,10 @@ body {
     z-index: 100;
 }
 
-/* Override CSS positioning when dragging */
+/* Override CSS positioning when dragging: only neutralize transforms.
+   Leave left/top to be controlled by inline styles set via JS. */
 .mock-hud-element.dragging {
-     left: unset !important;
-     top: unset !important;
-     transform: none !important;
+    transform: none !important;
 }
 
 .editable-element::before {
