@@ -4572,11 +4572,6 @@ class Game {
         // Get the element's current position (including any transforms)
         const rectWithTransform = element.getBoundingClientRect();
         
-        // Calculate offset from touch/click point to element's top-left corner BEFORE clearing transform
-        // This offset should remain constant throughout the drag
-        const offsetX = touch.clientX - rectWithTransform.left;
-        const offsetY = touch.clientY - rectWithTransform.top;
-        
         // Convert current position to be relative to container
         const relativeLeft = rectWithTransform.left - containerRect.left;
         const relativeTop = rectWithTransform.top - containerRect.top;
@@ -4590,11 +4585,19 @@ class Game {
         element.style.bottom = 'auto';
         element.style.transform = ''; // Clear transform when starting drag
         
+        // IMPORTANT: Get the rect AGAIN after clearing transform to get accurate position
+        // This ensures the offset calculation matches the actual rendered position
+        const rectAfterTransformClear = element.getBoundingClientRect();
+        
+        // Calculate offset from touch/click point to element's top-left corner AFTER clearing transform
+        const offsetX = touch.clientX - rectAfterTransformClear.left;
+        const offsetY = touch.clientY - rectAfterTransformClear.top;
+        
         // Store the element we're dragging and its initial position
         this.draggingElement = element;
         this.dragStartPosition = {
-            left: relativeLeft,
-            top: relativeTop
+            left: rectAfterTransformClear.left - containerRect.left,
+            top: rectAfterTransformClear.top - containerRect.top
         };
         
         // Store the offset from click point to element corner
@@ -4607,16 +4610,12 @@ class Game {
             elementId: element.id,
             touchX: touch.clientX,
             touchY: touch.clientY,
-            rectLeft: rectWithTransform.left,
-            rectTop: rectWithTransform.top,
-            rectWidth: rectWithTransform.width,
-            rectHeight: rectWithTransform.height,
+            rectBeforeClear: { left: rectWithTransform.left, top: rectWithTransform.top, width: rectWithTransform.width, height: rectWithTransform.height },
+            rectAfterClear: { left: rectAfterTransformClear.left, top: rectAfterTransformClear.top, width: rectAfterTransformClear.width, height: rectAfterTransformClear.height },
             offsetX: offsetX,
             offsetY: offsetY,
             containerLeft: containerRect.left,
-            containerTop: containerRect.top,
-            relativeLeft: relativeLeft,
-            relativeTop: relativeTop
+            containerTop: containerRect.top
         });
         
         element.classList.add('dragging');
@@ -4651,8 +4650,6 @@ class Game {
             elementId: this.draggingElement.id,
             touchX: touch.clientX,
             touchY: touch.clientY,
-            containerLeft: containerRect.left,
-            containerTop: containerRect.top,
             offsetX: this.dragOffset.x,
             offsetY: this.dragOffset.y,
             calculatedLeft: newLeft,
