@@ -4569,38 +4569,41 @@ class Game {
         }
         const containerRect = this.draggingContainer.getBoundingClientRect();
         
-        // Get the element's current position (including any transforms)
+        // Get the element's current VISUAL position (including any transforms)
         const rectWithTransform = element.getBoundingClientRect();
         
-        // Convert current position to be relative to container
-        const relativeLeft = rectWithTransform.left - containerRect.left;
-        const relativeTop = rectWithTransform.top - containerRect.top;
-        
-        // Ensure element uses absolute positioning for smooth dragging
-        // Clear transform since getBoundingClientRect() already accounts for it
+        // Clear all positioning styles and transforms FIRST to get a clean state
         element.style.position = 'absolute';
-        element.style.left = relativeLeft + 'px';
-        element.style.top = relativeTop + 'px';
+        element.style.left = '';  // Clear left temporarily
+        element.style.top = '';   // Clear top temporarily
         element.style.right = 'auto';
         element.style.bottom = 'auto';
-        element.style.transform = ''; // Clear transform when starting drag
+        element.style.transform = ''; // Clear transform
         
-        // Force a reflow to ensure styles are applied before getting the new rect
+        // Force a reflow to ensure styles are applied
         void element.offsetHeight;
         
-        // IMPORTANT: Get the rect AGAIN after clearing transform to get accurate position
-        // This ensures the offset calculation matches the actual rendered position
-        const rectAfterTransformClear = element.getBoundingClientRect();
+        // Now set the position to match where the element WAS visually (before we cleared styles)
+        const relativeLeft = rectWithTransform.left - containerRect.left;
+        const relativeTop = rectWithTransform.top - containerRect.top;
+        element.style.left = relativeLeft + 'px';
+        element.style.top = relativeTop + 'px';
         
-        // Calculate offset from touch/click point to element's top-left corner AFTER clearing transform
-        const offsetX = touch.clientX - rectAfterTransformClear.left;
-        const offsetY = touch.clientY - rectAfterTransformClear.top;
+        // Force another reflow
+        void element.offsetHeight;
+        
+        // Get the rect AFTER all positioning is finalized
+        const rectAfterPositioning = element.getBoundingClientRect();
+        
+        // Calculate offset from touch/click point to element's ACTUAL top-left corner
+        const offsetX = touch.clientX - rectAfterPositioning.left;
+        const offsetY = touch.clientY - rectAfterPositioning.top;
         
         // Store the element we're dragging and its initial position
         this.draggingElement = element;
         this.dragStartPosition = {
-            left: rectAfterTransformClear.left - containerRect.left,
-            top: rectAfterTransformClear.top - containerRect.top
+            left: rectAfterPositioning.left - containerRect.left,
+            top: rectAfterPositioning.top - containerRect.top
         };
         
         // Store the offset from click point to element corner
@@ -4615,12 +4618,10 @@ class Game {
             touchY: touch.clientY,
             beforeLeft: rectWithTransform.left,
             beforeTop: rectWithTransform.top,
-            beforeWidth: rectWithTransform.width,
-            afterLeft: rectAfterTransformClear.left,
-            afterTop: rectAfterTransformClear.top,
-            afterWidth: rectAfterTransformClear.width,
-            leftShift: rectAfterTransformClear.left - rectWithTransform.left,
-            topShift: rectAfterTransformClear.top - rectWithTransform.top,
+            afterLeft: rectAfterPositioning.left,
+            afterTop: rectAfterPositioning.top,
+            leftShift: rectAfterPositioning.left - rectWithTransform.left,
+            topShift: rectAfterPositioning.top - rectWithTransform.top,
             offsetX: offsetX,
             offsetY: offsetY
         });
