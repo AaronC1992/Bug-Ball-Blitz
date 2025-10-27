@@ -3423,3 +3423,40 @@ canvas {
     touch-action: none;
 }
 
+/* Editor: Save button animation */
+@keyframes savePop { 
+    0% { transform: scale(1); }
+    20% { transform: scale(0.95); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.editor-btn.saving {
+    animation: savePop 0.8s ease;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6), 0 0 18px rgba(0, 255, 136, 0.6), 0 0 30px rgba(0, 255, 136, 0.4);
+    border-color: #00ff88;
+}
+
+/* Editor: Toast */
+.controls-editor-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(0, 0, 0, 0.95);
+    color: #00ff88;
+    border: 2px solid #00ff88;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5), 0 0 12px rgba(0,255,136,0.4);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10005;
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+.controls-editor-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}

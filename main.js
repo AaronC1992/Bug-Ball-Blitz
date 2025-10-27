@@ -4012,9 +4012,12 @@ class Game {
             
             // Map real IDs to mock IDs for HUD elements
             let elementId = realId;
-            if (realId === 'scoreDisplay') elementId = 'mockScoreDisplay';
-            if (realId === 'timerDisplay') elementId = 'mockTimerDisplay';
-            if (realId === 'pauseBtn') elementId = 'mockPauseBtn';
+            const isMock = (realId === 'scoreDisplay' || realId === 'timerDisplay' || realId === 'pauseBtn');
+            if (isMock) {
+                if (realId === 'scoreDisplay') elementId = 'mockScoreDisplay';
+                if (realId === 'timerDisplay') elementId = 'mockTimerDisplay';
+                if (realId === 'pauseBtn') elementId = 'mockPauseBtn';
+            }
             
             const element = document.getElementById(elementId);
             if (element && layout[realId]) {
@@ -4025,12 +4028,27 @@ class Game {
                     element.style.position = layoutData.position;
                 }
                 
+                // If applying to mock HUD (in controlsEditor space), translate from gameScreen coords
                 if (layoutData.left !== undefined) {
-                    element.style.left = layoutData.left + 'px';
+                    if (isMock) {
+                        const gameScreenRect = document.getElementById('gameScreen').getBoundingClientRect();
+                        const controlsEditorRect = document.getElementById('controlsEditor').getBoundingClientRect();
+                        const translatedLeft = layoutData.left + gameScreenRect.left - controlsEditorRect.left;
+                        element.style.left = translatedLeft + 'px';
+                    } else {
+                        element.style.left = layoutData.left + 'px';
+                    }
                     element.style.right = 'auto';
                 }
                 if (layoutData.top !== undefined) {
-                    element.style.top = layoutData.top + 'px';
+                    if (isMock) {
+                        const gameScreenRect = document.getElementById('gameScreen').getBoundingClientRect();
+                        const controlsEditorRect = document.getElementById('controlsEditor').getBoundingClientRect();
+                        const translatedTop = layoutData.top + gameScreenRect.top - controlsEditorRect.top;
+                        element.style.top = translatedTop + 'px';
+                    } else {
+                        element.style.top = layoutData.top + 'px';
+                    }
                     element.style.bottom = 'auto';
                 }
                 if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
@@ -4120,20 +4138,24 @@ class Game {
         // Real HUD elements remain hidden - they're not touched by the editor anymore
         // Mock elements will be hidden automatically by CSS when editor closes
         
-        // Return to main menu
-        this.ui.showScreen('mainMenu');
+        // Return to where editor was opened from
+        if (this.editorOpenedFrom === 'mainMenu') {
+            this.ui.showScreen('mainMenu');
+            // Show settings again for main menu flow
+            this.ui.showOverlay('settingsMenu');
+        } else {
+            // We came from in-game settings (pause). Restore game screen and pause menu
+            this.ui.showScreen('gameScreen');
+            this.ui.showOverlay('pauseMenu');
+        }
         
         // Update controls visibility for when user actually plays
         this.updateTouchControlsVisibility();
         
         // Then apply custom layout after visibility is set
-        // Use requestAnimationFrame to ensure visibility changes are applied first
         requestAnimationFrame(() => {
             this.applyCustomLayout();
         });
-        
-        // Show settings menu again
-        this.ui.showOverlay('settingsMenu');
     }
     
     startEditorPreview() {
@@ -4361,16 +4383,15 @@ class Game {
         
         newSaveBtn.addEventListener('click', () => {
             this.audio.playSound('ui_click');
+            // Button animation state
+            newSaveBtn.classList.add('saving');
+            setTimeout(() => newSaveBtn.classList.remove('saving'), 800);
+            
+            // Persist
             this.saveCurrentPositions();
-            // Show confirmation
-            const modeInfo = document.getElementById('editorModeInfo');
-            if (modeInfo) {
-                const originalText = modeInfo.textContent;
-                modeInfo.textContent = '✓ Layout Saved!';
-                setTimeout(() => {
-                    modeInfo.textContent = originalText;
-                }, 1500);
-            }
+            
+            // Toast confirmation
+            this.showEditorToast('✓ Layout Saved');
         });
         
         newExitBtn.addEventListener('click', () => {
@@ -4712,13 +4733,18 @@ class Game {
             // Check if element actually moved (more than 5px threshold to avoid accidental clicks)
             const containerRect = this.draggingContainer.getBoundingClientRect();
             const rect = this.draggingElement.getBoundingClientRect();
+            const gameScreenRect = document.getElementById('gameScreen').getBoundingClientRect();
             
-            const currentLeft = rect.left - containerRect.left;
-            const currentTop = rect.top - containerRect.top;
+            // Calculate current position RELATIVE TO GAME SCREEN (single coordinate system)
+            const currentLeftGame = rect.left - gameScreenRect.left;
+            const currentTopGame = rect.top - gameScreenRect.top;
             
+            // Movement distance still compared within the drag container's coordinates
+            const currentLeftContainer = rect.left - containerRect.left;
+            const currentTopContainer = rect.top - containerRect.top;
             const movedDistance = Math.sqrt(
-                Math.pow(currentLeft - this.dragStartPosition.left, 2) +
-                Math.pow(currentTop - this.dragStartPosition.top, 2)
+                Math.pow(currentLeftContainer - this.dragStartPosition.left, 2) +
+                Math.pow(currentTopContainer - this.dragStartPosition.top, 2)
             );
             
             // Only save if element actually moved
@@ -4734,14 +4760,11 @@ class Game {
                     ? this.customLayoutSingleplayer 
                     : this.customLayoutMultiplayer;
                 
-                const relativeLeft = currentLeft;
-                const relativeTop = currentTop;
-                
                 if (!layout[realId]) layout[realId] = {};
-                // Save absolute position coordinates relative to container (using real ID)
+                // Save absolute position coordinates relative to GAME SCREEN (using real ID)
                 layout[realId].position = 'absolute';
-                layout[realId].left = relativeLeft;
-                layout[realId].top = relativeTop;
+                layout[realId].left = currentLeftGame;
+                layout[realId].top = currentTopGame;
                 // Clear transform since we're using absolute positioning
                 layout[realId].transform = '';
             } else {
@@ -4768,6 +4791,33 @@ class Game {
     saveLayoutAndExit() {
         this.saveCurrentPositions();
         this.closeControlsEditor();
+    }
+
+    // Lightweight toast for editor actions
+    showEditorToast(message, duration = 1500) {
+        try {
+            let toast = document.getElementById('controlsEditorToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'controlsEditorToast';
+                toast.className = 'controls-editor-toast';
+                document.body.appendChild(toast);
+            }
+            // Set message
+            toast.textContent = message;
+            // Restart animation
+            toast.classList.remove('show');
+            // Force reflow to allow re-adding class
+            void toast.offsetWidth; // eslint-disable-line no-unused-expressions
+            toast.classList.add('show');
+
+            if (this._toastTimeout) clearTimeout(this._toastTimeout);
+            this._toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        } catch (e) {
+            console.warn('Toast display failed:', e);
+        }
     }
     
     saveCurrentPositions() {
