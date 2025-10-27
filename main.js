@@ -1513,7 +1513,7 @@ class Game {
         
         this.player1 = {
             x: this.canvas.width * 0.25,
-            y: this.physics.groundY - (p1Size + cosmeticModifiers.height) / 2,
+            y: this.physics.groundY - p1Size / 2, // Ground position based on base size only
             vx: 0,
             vy: 0,
             width: p1Size + cosmeticModifiers.width,

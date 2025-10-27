@@ -87,7 +87,7 @@ export const COSMETICS = {
         unlockCondition: 'Win 5 matches',
         requiredWins: 5,
         unlocked: false,
-        hitboxModifier: { width: 0, height: 15 }, // Taller hitbox
+        hitboxModifier: { width: 0, height: 0 }, // Visual only, no gameplay impact
         visualOffset: { x: 0, y: -35 }, // Positioned above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/tophat.png'
@@ -102,7 +102,7 @@ export const COSMETICS = {
         unlockCondition: 'Complete Tower Level 10',
         requiredTowerLevel: 10,
         unlocked: false,
-        hitboxModifier: { width: 5, height: 12 }, // Slightly wider and taller
+        hitboxModifier: { width: 5, height: 0 }, // Width for collision, height visual only
         visualOffset: { x: 0, y: -35 }, // Raised higher to sit above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/crown.png'
@@ -117,7 +117,7 @@ export const COSMETICS = {
         unlockCondition: 'Score 20 goals',
         requiredGoals: 20,
         unlocked: false,
-        hitboxModifier: { width: 0, height: 18 }, // Very tall
+        hitboxModifier: { width: 0, height: 0 }, // Visual only, no gameplay impact
         visualOffset: { x: 0, y: -35 }, // Positioned above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/partyhat.png'
@@ -132,7 +132,7 @@ export const COSMETICS = {
         unlockCondition: 'Win 15 matches',
         requiredWins: 15,
         unlocked: false,
-        hitboxModifier: { width: 0, height: 20 }, // Tallest hat
+        hitboxModifier: { width: 0, height: 0 }, // Visual only, no gameplay impact
         visualOffset: { x: 0, y: -35 }, // Positioned above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/wizardhat.png'
@@ -147,7 +147,7 @@ export const COSMETICS = {
         unlockCondition: 'Win 10 matches',
         requiredWins: 10,
         unlocked: false,
-        hitboxModifier: { width: 8, height: 8 }, // Wider brim
+        hitboxModifier: { width: 8, height: 0 }, // Width for hat brim, height visual only
         visualOffset: { x: 0, y: -35 }, // Positioned above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/cowboyhat.png'
@@ -162,7 +162,7 @@ export const COSMETICS = {
         unlockCondition: 'Win 12 matches',
         requiredWins: 12,
         unlocked: false,
-        hitboxModifier: { width: 8, height: 8 }, // Wider brim
+        hitboxModifier: { width: 8, height: 0 }, // Width for hat brim, height visual only
         visualOffset: { x: 0, y: -35 }, // Positioned above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/cowgirlhat.png'
@@ -177,7 +177,7 @@ export const COSMETICS = {
         unlockCondition: 'Score 50 goals',
         requiredGoals: 50,
         unlocked: false,
-        hitboxModifier: { width: 0, height: 10 }, // Floating above
+        hitboxModifier: { width: 0, height: 0 }, // Visual only, no gameplay impact
         visualOffset: { x: 0, y: -40 }, // Positioned floating above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/halo.png'
@@ -192,7 +192,7 @@ export const COSMETICS = {
         unlockCondition: 'Win 25 matches',
         requiredWins: 25,
         unlocked: false,
-        hitboxModifier: { width: 12, height: 10 }, // Horns make it wider
+        hitboxModifier: { width: 12, height: 0 }, // Width for horns, height visual only
         visualOffset: { x: 0, y: -35 }, // Positioned above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/vikinghelmet.png'
@@ -207,7 +207,7 @@ export const COSMETICS = {
         unlockCondition: 'Score 30 goals',
         requiredGoals: 30,
         unlocked: false,
-        hitboxModifier: { width: 8, height: 15 }, // Spinning propeller
+        hitboxModifier: { width: 8, height: 0 }, // Width for propeller, height visual only
         visualOffset: { x: 0, y: -35 }, // Positioned above the head
         animated: true, // Spins
         useImage: true, // Use PNG image instead of emoji
@@ -223,7 +223,7 @@ export const COSMETICS = {
         unlockCondition: 'Win 20 matches',
         requiredWins: 20,
         unlocked: false,
-        hitboxModifier: { width: 0, height: 16 }, // Tall and puffy
+        hitboxModifier: { width: 0, height: 0 }, // Visual only, no gameplay impact
         visualOffset: { x: 0, y: -35 }, // Positioned above the head
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/chefhat.png'
@@ -285,7 +285,7 @@ export const COSMETICS = {
         unlockCondition: 'Score 40 goals',
         requiredGoals: 40,
         unlocked: false,
-        hitboxModifier: { width: 15, height: 5 }, // Wings extend outward
+        hitboxModifier: { width: 15, height: 0 }, // Width for wings, height visual only
         visualOffset: { x: 0, y: -5 },
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/fairywings.png'
@@ -300,7 +300,7 @@ export const COSMETICS = {
         unlockCondition: 'Complete Tower Level 15',
         requiredTowerLevel: 15,
         unlocked: false,
-        hitboxModifier: { width: 8, height: 3 }, // Cape adds bulk
+        hitboxModifier: { width: 8, height: 0 }, // Width for cape, height visual only
         visualOffset: { x: -8, y: 0 }
     },
     
@@ -328,7 +328,7 @@ export const COSMETICS = {
         unlockCondition: 'Score 25 goals',
         requiredGoals: 25,
         unlocked: false,
-        hitboxModifier: { width: 6, height: 2 },
+        hitboxModifier: { width: 6, height: 0 }, // Width for scarf, height visual only
         visualOffset: { x: 0, y: 15 }, // Moved down to neck area
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/scarf.png'
@@ -358,7 +358,7 @@ export const COSMETICS = {
         unlockCondition: 'Complete Tower Level 18',
         requiredTowerLevel: 18,
         unlocked: false,
-        hitboxModifier: { width: 10, height: 8 }, // Bulky jetpack
+        hitboxModifier: { width: 10, height: 0 }, // Width for jetpack, height visual only
         visualOffset: { x: -20, y: 0 }, // Offset to the left side (appears on back when flipped)
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/jetpack.png'
@@ -373,7 +373,7 @@ export const COSMETICS = {
         unlockCondition: 'Score 35 goals',
         requiredGoals: 35,
         unlocked: false,
-        hitboxModifier: { width: 8, height: 5 },
+        hitboxModifier: { width: 8, height: 0 }, // Width for backpack, height visual only
         visualOffset: { x: -30, y: 0 }, // Increased offset to move it further to the side
         useImage: true, // Use PNG image instead of emoji
         imagePath: 'Assets/Sprites/backpack.png'
@@ -405,7 +405,7 @@ export const COSMETICS = {
         unlockCondition: 'Complete Tower Level 20',
         requiredTowerLevel: 20,
         unlocked: false,
-        hitboxModifier: { width: 10, height: 10 }, // Energy field
+        hitboxModifier: { width: 10, height: 0 }, // Width for energy field, height visual only
         visualOffset: { x: 0, y: 0 },
         animated: true
     },
@@ -419,7 +419,7 @@ export const COSMETICS = {
         unlockCondition: 'Score 75 goals',
         requiredGoals: 75,
         unlocked: false,
-        hitboxModifier: { width: 8, height: 8 }, // Fire aura
+        hitboxModifier: { width: 8, height: 0 }, // Width for fire aura, height visual only
         visualOffset: { x: 0, y: 0 },
         animated: true
     }
