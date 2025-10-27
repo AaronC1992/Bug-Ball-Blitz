@@ -3798,21 +3798,9 @@ class Game {
             }
             // Hide pause menu so we can see the game UI elements
             this.ui.hideOverlay('pauseMenu');
-            
-            // Make sure game UI is visible
-            const gameInfo = document.getElementById('gameInfo');
-            const pauseBtn = document.getElementById('pauseBtn');
-            if (gameInfo) gameInfo.style.display = 'flex';
-            if (pauseBtn) pauseBtn.style.display = 'block';
         } else {
-            // If in menu, show preview background
+            // If in menu, show preview background with game canvas
             this.startEditorPreview();
-            
-            // Also show game UI elements for editing
-            const gameInfo = document.getElementById('gameInfo');
-            const pauseBtn = document.getElementById('pauseBtn');
-            if (gameInfo) gameInfo.style.display = 'flex';
-            if (pauseBtn) pauseBtn.style.display = 'block';
         }
         
         // Make on-screen elements editable
@@ -3836,17 +3824,15 @@ class Game {
         });
         this.editableElements = [];
         
-        // Stop editor preview if running
-        if (this.editorPreviewBackground) {
-            this.editorPreviewBackground.stop();
-            this.editorPreviewBackground = null;
-            this.menuBackgroundCtx.clearRect(0, 0, this.menuBackgroundCanvas.width, this.menuBackgroundCanvas.height);
+        // Check if we were editing from menu or from paused game
+        const wasInMatch = (this.gameState === 'playing' || this.gameState === 'paused');
+        
+        if (!wasInMatch) {
+            // We were in menu - hide the game screen
+            this.ui.hideScreen('gameScreen');
             
-            // Hide game UI if we're in menu
-            const gameInfo = document.getElementById('gameInfo');
-            const pauseBtn = document.getElementById('pauseBtn');
-            if (gameInfo) gameInfo.style.display = 'none';
-            if (pauseBtn) pauseBtn.style.display = 'none';
+            // Clear the canvas
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         } else {
             // If we were in a match, show pause menu again
             this.ui.showOverlay('pauseMenu');
@@ -3860,21 +3846,29 @@ class Game {
     }
     
     startEditorPreview() {
-        // Start background match for preview
-        if (!this.editorPreviewBackground) {
-            this.editorPreviewBackground = new MenuBackground(
-                this.menuBackgroundCanvas,
-                this.menuBackgroundCtx,
-                this.audio
-            );
-        }
-        this.editorPreviewBackground.start();
+        // Show the game screen to display arena and UI elements
+        this.ui.showScreen('gameScreen');
         
-        // Show mobile controls
+        // Draw a sample arena background on the game canvas
+        if (this.selectedArena) {
+            drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
+        } else {
+            // Use a default arena if none selected
+            const defaultArena = getArenaById('grass_field');
+            if (defaultArena) {
+                drawArenaBackground(this.ctx, defaultArena, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
+            }
+        }
+        
+        // Show mobile controls for editing
         const mobileControls = document.getElementById('mobileControls');
         const mobileControlsP2 = document.getElementById('mobileControlsP2');
         if (mobileControls) mobileControls.classList.add('active');
         if (mobileControlsP2) mobileControlsP2.classList.add('active');
+        
+        // Make sure HUD is visible
+        const gameHUD = document.getElementById('gameHUD');
+        if (gameHUD) gameHUD.style.display = 'flex';
     }
     
     setupEditableElements() {
@@ -3884,7 +3878,7 @@ class Game {
         const elements = [
             { id: 'mobileControls', name: 'P1 Controls', allowResize: true },
             { id: 'mobileControlsP2', name: 'P2 Controls', allowResize: true },
-            { id: 'gameInfo', name: 'Score/Timer', allowResize: true },
+            { id: 'gameHUD', name: 'Score/Timer', allowResize: true },
             { id: 'pauseBtn', name: 'Pause Button', allowResize: true }
         ];
         
