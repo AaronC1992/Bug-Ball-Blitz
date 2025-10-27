@@ -1192,13 +1192,14 @@ input[type="text"]:focus {
 }
 
 /* HUD */
-/* Individual HUD elements - customizable positions */
+/* HUD elements - default centered at top, but individually customizable in editor */
 #scoreDisplay {
     position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 100;
+    display: none; /* Hidden by default, shown during gameplay */
 }
 
 .score-display {
@@ -1216,8 +1217,10 @@ input[type="text"]:focus {
 #timerDisplay {
     position: absolute;
     top: 20px;
-    right: 20px;
+    left: 50%;
+    transform: translateX(calc(-50% + 200px));
     z-index: 100;
+    display: none; /* Hidden by default, shown during gameplay */
 }
 
 .timer-display {
@@ -1234,8 +1237,10 @@ input[type="text"]:focus {
 #pauseBtn {
     position: absolute;
     top: 20px;
-    left: 20px;
+    left: 50%;
+    transform: translateX(calc(-50% - 200px));
     z-index: 100;
+    display: none; /* Hidden by default, shown during gameplay */
 }
 
 .level-info {

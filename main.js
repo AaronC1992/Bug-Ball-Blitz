@@ -1534,12 +1534,23 @@ class Game {
             this.resizeCanvas();
             this.physics = new Physics(this.canvas.width, this.canvas.height);
         
-        // Ensure pause button is functional for actual gameplay
+        // Show and ensure HUD elements are functional for actual gameplay
         const pauseBtn = document.getElementById('pauseBtn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        
         if (pauseBtn) {
             pauseBtn.style.pointerEvents = 'auto';
             pauseBtn.style.opacity = '1';
-            pauseBtn.style.display = 'block';
+            pauseBtn.style.display = 'flex';
+        }
+        
+        if (scoreDisplay) {
+            scoreDisplay.style.display = 'block';
+        }
+        
+        if (timerDisplay) {
+            timerDisplay.style.display = 'block';
         }
         
         // Apply arcade gravity modifiers if in arcade mode
@@ -4490,11 +4501,13 @@ class Game {
         const relativeTop = rect.top - gameScreenRect.top;
         
         // Ensure element uses absolute positioning for smooth dragging
+        // Clear transform since getBoundingClientRect() already accounts for it
         element.style.position = 'absolute';
         element.style.left = relativeLeft + 'px';
         element.style.top = relativeTop + 'px';
         element.style.right = 'auto';
         element.style.bottom = 'auto';
+        element.style.transform = ''; // Clear transform when starting drag
         
         element.classList.add('dragging');
         
