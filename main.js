@@ -4068,34 +4068,35 @@ class Game {
                 
                 // Draw mock players to show scale
                 this.drawMockPlayers();
-            
-            // Draw mock ball
-            this.drawMockBall();
-            
-            // Show game HUD with mock data
-            this.showMockHUD();
-            
-            // Show mobile controls based on mode
-            const mobileControls = document.getElementById('mobileControls');
-            const mobileControlsP2 = document.getElementById('mobileControlsP2');
-            if (mobileControls) mobileControls.classList.add('active');
-            if (mobileControlsP2) mobileControlsP2.classList.add('active');
-            
-            // Show pause button but disable its normal functionality
-            const pauseBtn = document.getElementById('pauseBtn');
-            if (pauseBtn) {
-                pauseBtn.style.display = 'block';
-                // Store original pointerEvents to restore later
-                pauseBtn.dataset.originalPointerEvents = pauseBtn.style.pointerEvents || '';
-                pauseBtn.style.pointerEvents = 'none'; // Disable clicks in editor
-                pauseBtn.style.opacity = '0.5'; // Show it's disabled
-            }
-            
-            // Apply the editor layout AFTER controls are visible
-            setTimeout(() => {
-                this.applyEditorLayout();
-            }, 50);
-        }, 100);
+                
+                // Draw mock ball
+                this.drawMockBall();
+                
+                // Show game HUD with mock data
+                this.showMockHUD();
+                
+                // Show mobile controls based on mode
+                const mobileControls = document.getElementById('mobileControls');
+                const mobileControlsP2 = document.getElementById('mobileControlsP2');
+                if (mobileControls) mobileControls.classList.add('active');
+                if (mobileControlsP2) mobileControlsP2.classList.add('active');
+                
+                // Show pause button but disable its normal functionality
+                const pauseBtn = document.getElementById('pauseBtn');
+                if (pauseBtn) {
+                    pauseBtn.style.display = 'block';
+                    // Store original pointerEvents to restore later
+                    pauseBtn.dataset.originalPointerEvents = pauseBtn.style.pointerEvents || '';
+                    pauseBtn.style.pointerEvents = 'none'; // Disable clicks in editor
+                    pauseBtn.style.opacity = '0.5'; // Show it's disabled
+                }
+                
+                // Apply the editor layout AFTER controls are visible
+                setTimeout(() => {
+                    this.applyEditorLayout();
+                }, 50);
+            }, 50); // Inner setTimeout
+        }, 100); // Outer setTimeout
     }
     
     drawMockPlayers() {
