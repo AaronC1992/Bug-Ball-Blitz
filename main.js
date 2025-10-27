@@ -3881,6 +3881,18 @@ class Game {
             const handles = el.element.querySelectorAll('.resize-handle');
             handles.forEach(handle => handle.remove());
         });
+        
+        // Clear any temporary inline styles that were set during dragging
+        // (they will be reapplied by applyCustomLayout if they were saved)
+        this.editableElements.forEach(({ element }) => {
+            element.style.left = '';
+            element.style.top = '';
+            element.style.right = '';
+            element.style.bottom = '';
+            element.style.width = '';
+            element.style.height = '';
+        });
+        
         this.editableElements = [];
         
         // Check if we were editing from menu or from paused game
@@ -3897,7 +3909,7 @@ class Game {
             this.ui.showOverlay('pauseMenu');
         }
         
-        // Apply custom layout
+        // Apply custom layout (will apply saved layout or leave at default)
         this.applyCustomLayout();
         
         // Show settings menu again
@@ -4092,7 +4104,7 @@ class Game {
         e.stopPropagation();
         
         const touch = e.touches ? e.touches[0] : e;
-        const rect = element.getBoundingClientRect();
+        let rect = element.getBoundingClientRect();
         
         // If element doesn't have explicit left/top, set them now based on current position
         if (!element.style.left || element.style.left === '') {
@@ -4103,6 +4115,9 @@ class Game {
             element.style.top = rect.top + 'px';
             element.style.bottom = 'auto';
         }
+        
+        // Get fresh rect AFTER setting position to ensure accurate offset calculation
+        rect = element.getBoundingClientRect();
         
         this.draggingElement = element;
         // Calculate offset from touch point to element's current position
