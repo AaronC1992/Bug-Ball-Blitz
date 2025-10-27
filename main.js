@@ -3853,18 +3853,36 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
+        // First, clear any saved layout positions to reset to CSS defaults
+        const elementIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD', 'pauseBtn'];
+        elementIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                // Clear all positioning styles first
+                element.style.left = '';
+                element.style.top = '';
+                element.style.right = '';
+                element.style.bottom = '';
+                element.style.width = '';
+                element.style.height = '';
+            }
+        });
+        
+        // Then apply saved layout if it exists
         Object.keys(layout).forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 const layoutData = layout[id];
-                if (layoutData.left !== undefined) element.style.left = layoutData.left + 'px';
-                if (layoutData.top !== undefined) element.style.top = layoutData.top + 'px';
+                if (layoutData.left !== undefined) {
+                    element.style.left = layoutData.left + 'px';
+                    element.style.right = 'auto';
+                }
+                if (layoutData.top !== undefined) {
+                    element.style.top = layoutData.top + 'px';
+                    element.style.bottom = 'auto';
+                }
                 if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
                 if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
-                
-                // Clear right/bottom if we set left/top
-                if (layoutData.left !== undefined) element.style.right = 'auto';
-                if (layoutData.top !== undefined) element.style.bottom = 'auto';
             }
         });
     }
@@ -4098,17 +4116,22 @@ class Game {
         const touch = e.touches ? e.touches[0] : e;
         let rect = element.getBoundingClientRect();
         
-        // If element doesn't have explicit left/top, set them now based on current position
-        if (!element.style.left || element.style.left === '') {
+        // CRITICAL: If element doesn't have explicit left/top, convert its current position
+        // This handles elements positioned with bottom/right in CSS
+        const hasLeft = element.style.left && element.style.left !== '' && element.style.left !== 'auto';
+        const hasTop = element.style.top && element.style.top !== '' && element.style.top !== 'auto';
+        
+        if (!hasLeft) {
             element.style.left = rect.left + 'px';
             element.style.right = 'auto';
         }
-        if (!element.style.top || element.style.top === '') {
+        if (!hasTop) {
             element.style.top = rect.top + 'px';
             element.style.bottom = 'auto';
         }
         
         // Get fresh rect AFTER setting position to ensure accurate offset calculation
+        // This is needed because changing from bottom/right to top/left might shift the element
         rect = element.getBoundingClientRect();
         
         this.draggingElement = element;
@@ -4324,18 +4347,37 @@ class Game {
     
     applyCustomLayout() {
         const layout = this.getCurrentLayout();
+        
+        // First clear all positioning for elements that might be customized
+        const elementIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD', 'pauseBtn'];
+        elementIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                // Clear all positioning styles first to reset to CSS defaults
+                element.style.left = '';
+                element.style.top = '';
+                element.style.right = '';
+                element.style.bottom = '';
+                element.style.width = '';
+                element.style.height = '';
+            }
+        });
+        
+        // Then apply saved layout if it exists
         Object.keys(layout).forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 const layoutData = layout[id];
-                if (layoutData.left !== undefined) element.style.left = layoutData.left + 'px';
-                if (layoutData.top !== undefined) element.style.top = layoutData.top + 'px';
+                if (layoutData.left !== undefined) {
+                    element.style.left = layoutData.left + 'px';
+                    element.style.right = 'auto';
+                }
+                if (layoutData.top !== undefined) {
+                    element.style.top = layoutData.top + 'px';
+                    element.style.bottom = 'auto';
+                }
                 if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
                 if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
-                
-                // Clear right/bottom if we set left/top
-                if (layout.left !== undefined) element.style.right = 'auto';
-                if (layout.top !== undefined) element.style.bottom = 'auto';
             }
         });
     }
