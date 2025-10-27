@@ -3882,6 +3882,15 @@ class Game {
         // Start in singleplayer mode
         this.editorLayoutMode = 'singleplayer';
         
+        // Track which elements have been customized (moved from default)
+        this.customizedElements = new Set();
+        
+        // Populate with existing customized elements from saved layout
+        const layout = this.customLayoutSingleplayer;
+        Object.keys(layout).forEach(id => {
+            this.customizedElements.add(id);
+        });
+        
         // Track where we opened from
         this.editorOpenedFrom = this.settingsOpenedFrom || 'mainMenu';
         
@@ -4420,6 +4429,17 @@ class Game {
         // Toggle mode
         this.editorLayoutMode = this.editorLayoutMode === 'singleplayer' ? 'multiplayer' : 'singleplayer';
         
+        // Reset customized elements tracking for new mode
+        this.customizedElements = new Set();
+        
+        // Populate customizedElements with elements that have saved layouts in this mode
+        const layout = this.editorLayoutMode === 'singleplayer' 
+            ? this.customLayoutSingleplayer 
+            : this.customLayoutMultiplayer;
+        Object.keys(layout).forEach(id => {
+            this.customizedElements.add(id);
+        });
+        
         // Update control visibility
         this.updateEditorControlsVisibility();
         
@@ -4487,8 +4507,12 @@ class Game {
         // Get the element's current position
         const rect = element.getBoundingClientRect();
         
-        // Store the element we're dragging
+        // Store the element we're dragging and its initial position
         this.draggingElement = element;
+        this.dragStartPosition = {
+            left: rect.left - gameScreenRect.left,
+            top: rect.top - gameScreenRect.top
+        };
         
         // Calculate offset from touch/click point to element's top-left corner
         this.dragOffset = {
@@ -4557,31 +4581,52 @@ class Game {
         if (this.draggingElement) {
             this.draggingElement.classList.remove('dragging');
             
-            // Save position to the current mode's layout
-            const layout = this.editorLayoutMode === 'singleplayer' 
-                ? this.customLayoutSingleplayer 
-                : this.customLayoutMultiplayer;
-            
-            const id = this.draggingElement.id;
-            
-            // Get position relative to game screen
+            // Check if element actually moved (more than 5px threshold to avoid accidental clicks)
             const gameScreen = document.getElementById('gameScreen');
             const gameScreenRect = gameScreen.getBoundingClientRect();
             const rect = this.draggingElement.getBoundingClientRect();
             
-            const relativeLeft = rect.left - gameScreenRect.left;
-            const relativeTop = rect.top - gameScreenRect.top;
+            const currentLeft = rect.left - gameScreenRect.left;
+            const currentTop = rect.top - gameScreenRect.top;
             
-            if (!layout[id]) layout[id] = {};
-            // Save absolute position coordinates relative to game screen
-            layout[id].position = 'absolute';
-            layout[id].left = relativeLeft;
-            layout[id].top = relativeTop;
-            // Clear transform since we're using absolute positioning
-            layout[id].transform = '';
-            this.draggingElement.style.transform = '';
+            const movedDistance = Math.sqrt(
+                Math.pow(currentLeft - this.dragStartPosition.left, 2) +
+                Math.pow(currentTop - this.dragStartPosition.top, 2)
+            );
+            
+            // Only save if element actually moved
+            if (movedDistance > 5) {
+                // Mark this element as customized
+                this.customizedElements.add(this.draggingElement.id);
+                
+                // Save position to the current mode's layout
+                const layout = this.editorLayoutMode === 'singleplayer' 
+                    ? this.customLayoutSingleplayer 
+                    : this.customLayoutMultiplayer;
+                
+                const id = this.draggingElement.id;
+                
+                const relativeLeft = currentLeft;
+                const relativeTop = currentTop;
+                
+                if (!layout[id]) layout[id] = {};
+                // Save absolute position coordinates relative to game screen
+                layout[id].position = 'absolute';
+                layout[id].left = relativeLeft;
+                layout[id].top = relativeTop;
+                // Clear transform since we're using absolute positioning
+                layout[id].transform = '';
+            } else {
+                // Element didn't move significantly - restore its original position
+                // This handles accidental clicks
+                this.draggingElement.style.position = '';
+                this.draggingElement.style.left = '';
+                this.draggingElement.style.top = '';
+                this.draggingElement.style.transform = '';
+            }
             
             this.draggingElement = null;
+            this.dragStartPosition = null;
         }
         
         // Remove global listeners
@@ -4605,22 +4650,27 @@ class Game {
         const gameScreen = document.getElementById('gameScreen');
         const gameScreenRect = gameScreen.getBoundingClientRect();
         
+        // Only save positions for elements that were actually customized
         this.editableElements.forEach(({ element }) => {
             const id = element.id;
-            const rect = element.getBoundingClientRect();
             
-            // Calculate position relative to game screen
-            const relativeLeft = rect.left - gameScreenRect.left;
-            const relativeTop = rect.top - gameScreenRect.top;
-            
-            if (!layout[id]) layout[id] = {};
-            // Save as absolute positioning relative to game screen
-            layout[id].position = 'absolute';
-            layout[id].left = relativeLeft;
-            layout[id].top = relativeTop;
-            // Clear transform since we're using absolute positioning
-            layout[id].transform = '';
-            element.style.transform = '';
+            // Only save if this element was customized (moved from default)
+            if (this.customizedElements.has(id)) {
+                const rect = element.getBoundingClientRect();
+                
+                // Calculate position relative to game screen
+                const relativeLeft = rect.left - gameScreenRect.left;
+                const relativeTop = rect.top - gameScreenRect.top;
+                
+                if (!layout[id]) layout[id] = {};
+                // Save as absolute positioning relative to game screen
+                layout[id].position = 'absolute';
+                layout[id].left = relativeLeft;
+                layout[id].top = relativeTop;
+                // Clear transform since we're using absolute positioning
+                layout[id].transform = '';
+            }
+            // If not customized, don't save anything - let CSS defaults apply
         });
         
         this.saveCustomLayout(this.editorLayoutMode);
@@ -4636,6 +4686,9 @@ class Game {
                 this.customLayoutMultiplayer = {};
                 this.saveCustomLayout('multiplayer');
             }
+            
+            // Clear customized elements tracking for current mode
+            this.customizedElements.clear();
             
             // Remove ALL inline styles to restore CSS defaults
             this.editableElements.forEach(({ element }) => {
