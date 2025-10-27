@@ -4829,6 +4829,9 @@ class Game {
         const gameScreen = document.getElementById('gameScreen');
         const gameScreenRect = gameScreen.getBoundingClientRect();
         
+        console.log(`[SAVE] Saving ${this.editorLayoutMode} layout for ${this.editorOrientation} orientation`);
+        console.log(`[SAVE] Customized elements:`, Array.from(this.customizedElements));
+        
         // Only save positions for elements that were actually customized
         this.editableElements.forEach(({ element, config }) => {
             // Get the real ID (for mock elements) or use the element's own ID
@@ -4849,11 +4852,14 @@ class Game {
                 layout[realId].top = relativeTop;
                 // Clear transform since we're using absolute positioning
                 layout[realId].transform = '';
+                
+                console.log(`[SAVE] ${realId}: left=${relativeLeft.toFixed(1)}, top=${relativeTop.toFixed(1)}`);
             }
             // If not customized, don't save anything - let CSS defaults apply
         });
         
         this.saveCustomLayout(this.editorLayoutMode, this.editorOrientation);
+        console.log(`[SAVE] Final layout saved:`, JSON.stringify(layout, null, 2));
     }
     
     resetLayoutToDefault() {
@@ -4897,8 +4903,12 @@ class Game {
     applyCustomLayout() {
         const layout = this.getCurrentLayout();
         
+        console.log(`[APPLY] Applying layout for ${this.gameMode || 'unknown'} mode, ${this.getOrientation()} orientation`);
+        console.log(`[APPLY] Layout data:`, JSON.stringify(layout, null, 2));
+        
         // If no custom layout exists, don't do anything
         if (Object.keys(layout).length === 0) {
+            console.log('[APPLY] No custom layout found - using CSS defaults');
             return;
         }
         
@@ -4924,62 +4934,44 @@ class Game {
             mobileControlsP2.style.height = 'auto';
         }
         
-        // First clear all positioning for all editable elements
-        const elementIds = ['scoreDisplay', 'timerDisplay', 'pauseBtn', 'p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer'];
-        elementIds.forEach(id => {
+        // Apply saved layout directly WITHOUT clearing first
+        // This prevents the flash of default positions
+        Object.keys(layout).forEach(id => {
+            if (id === 'gameHUD') return; // Skip old gameHUD reference
+            
             const element = document.getElementById(id);
             if (element) {
                 const isVisible = element.offsetParent !== null;
                 if (isVisible) {
-                    // Clear all positioning styles first to reset to CSS defaults
-                    element.style.position = '';
-                    element.style.left = '';
-                    element.style.top = '';
-                    element.style.right = '';
-                    element.style.bottom = '';
-                    element.style.width = '';
-                    element.style.height = '';
-                    element.style.transform = '';
+                    const layoutData = layout[id];
+                    
+                    console.log(`[APPLY] Applying to ${id}:`, layoutData);
+                    
+                    // Apply absolute positioning for gameplay
+                    if (layoutData.position) {
+                        element.style.position = layoutData.position;
+                    }
+                    
+                    if (layoutData.left !== undefined) {
+                        element.style.left = layoutData.left + 'px';
+                        element.style.right = 'auto';
+                    }
+                    if (layoutData.top !== undefined) {
+                        element.style.top = layoutData.top + 'px';
+                        element.style.bottom = 'auto';
+                    }
+                    if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
+                    if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
+                    
+                    // Preserve transform if it exists in saved layout
+                    if (layoutData.transform !== undefined) {
+                        element.style.transform = layoutData.transform;
+                    }
                 }
             }
         });
         
-        // Small delay to ensure CSS defaults have been applied
-        requestAnimationFrame(() => {
-            // Then apply saved layout
-            Object.keys(layout).forEach(id => {
-                if (id === 'gameHUD') return; // Skip old gameHUD reference
-                
-                const element = document.getElementById(id);
-                if (element) {
-                    const isVisible = element.offsetParent !== null;
-                    if (isVisible) {
-                        const layoutData = layout[id];
-                        
-                        // Apply absolute positioning for gameplay
-                        if (layoutData.position) {
-                            element.style.position = layoutData.position;
-                        }
-                        
-                        if (layoutData.left !== undefined) {
-                            element.style.left = layoutData.left + 'px';
-                            element.style.right = 'auto';
-                        }
-                        if (layoutData.top !== undefined) {
-                            element.style.top = layoutData.top + 'px';
-                            element.style.bottom = 'auto';
-                        }
-                        if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
-                        if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
-                        
-                        // Preserve transform if it exists in saved layout
-                        if (layoutData.transform !== undefined) {
-                            element.style.transform = layoutData.transform;
-                        }
-                    }
-                }
-            });
-        });
+        console.log('[APPLY] Layout application complete');
     }
 }
 
