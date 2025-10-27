@@ -3135,7 +3135,7 @@ body {
     display: block;
 }
 
-.editor-header {
+.editor-instructions {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -3143,38 +3143,83 @@ body {
     background: rgba(0, 0, 0, 0.95);
     border: 3px solid #00bfff;
     border-radius: 12px;
-    padding: 15px 30px;
+    padding: 20px 30px;
     text-align: center;
     box-shadow: 0 0 20px rgba(0, 191, 255, 0.6);
     z-index: 10002;
-    pointer-events: auto; /* Allow clicks on header */
+    pointer-events: auto;
+    max-width: 400px;
 }
 
-.editor-header h2 {
+.editor-instructions h3 {
     margin: 0 0 10px 0;
     color: #00bfff;
-    font-size: 24px;
+    font-size: 20px;
     text-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
-}
-
-.editor-instructions {
-    color: #aaa;
-    font-size: 14px;
 }
 
 .editor-instructions p {
     margin: 5px 0;
+    color: #aaa;
+    font-size: 14px;
+}
+
+.close-instructions-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 0, 0, 0.2);
+    border: 2px solid rgba(255, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    color: #ff5555;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.close-instructions-btn:hover {
+    background: rgba(255, 0, 0, 0.4);
+    border-color: rgba(255, 0, 0, 0.8);
+    color: #ff0000;
+    transform: scale(1.1);
 }
 
 .editor-toolbar {
     position: fixed;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 20px;
     display: flex;
-    gap: 15px;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.95);
+    border: 3px solid #00bfff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 0 20px rgba(0, 191, 255, 0.6);
     z-index: 10002;
-    pointer-events: auto; /* Allow clicks on toolbar buttons */
+    pointer-events: auto;
+    cursor: move;
+}
+
+.toolbar-handle {
+    text-align: center;
+    color: #00bfff;
+    font-size: 20px;
+    cursor: grab;
+    padding: 5px;
+    margin: -10px -10px 5px -10px;
+    border-bottom: 2px solid rgba(0, 191, 255, 0.3);
+    user-select: none;
+}
+
+.toolbar-handle:active {
+    cursor: grabbing;
 }
 
 .editor-btn {
@@ -3188,6 +3233,7 @@ body {
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 .editor-btn:hover {

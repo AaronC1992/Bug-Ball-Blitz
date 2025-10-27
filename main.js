@@ -4248,18 +4248,31 @@ class Game {
         const exitBtn = document.getElementById('exitEditorBtn');
         const resetBtn = document.getElementById('resetLayoutBtn');
         const toggleBtn = document.getElementById('toggleLayoutModeBtn');
+        const closeInstructionsBtn = document.getElementById('closeInstructionsBtn');
         
         // Remove old listeners by cloning
         saveBtn.replaceWith(saveBtn.cloneNode(true));
         exitBtn.replaceWith(exitBtn.cloneNode(true));
         resetBtn.replaceWith(resetBtn.cloneNode(true));
         toggleBtn.replaceWith(toggleBtn.cloneNode(true));
+        if (closeInstructionsBtn) closeInstructionsBtn.replaceWith(closeInstructionsBtn.cloneNode(true));
         
         // Get fresh references
         const newSaveBtn = document.getElementById('saveLayoutBtn');
         const newExitBtn = document.getElementById('exitEditorBtn');
         const newResetBtn = document.getElementById('resetLayoutBtn');
         const newToggleBtn = document.getElementById('toggleLayoutModeBtn');
+        const newCloseInstructionsBtn = document.getElementById('closeInstructionsBtn');
+        
+        // Close instructions button
+        if (newCloseInstructionsBtn) {
+            newCloseInstructionsBtn.addEventListener('click', () => {
+                const instructions = document.getElementById('editorInstructions');
+                if (instructions) {
+                    instructions.style.display = 'none';
+                }
+            });
+        }
         
         newSaveBtn.addEventListener('click', () => {
             this.audio.playSound('ui_click');
@@ -4290,10 +4303,76 @@ class Game {
             this.toggleLayoutMode();
         });
         
+        // Setup draggable toolbar
+        this.setupDraggableToolbar();
+        
         // Setup drag and resize for all editable elements
         this.editableElements.forEach(({ element }) => {
             this.setupDragAndResize(element);
         });
+    }
+    
+    setupDraggableToolbar() {
+        const toolbar = document.getElementById('editorToolbar');
+        const handle = toolbar.querySelector('.toolbar-handle');
+        
+        if (!toolbar || !handle) return;
+        
+        let isDragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+        
+        const startDrag = (e) => {
+            // Only drag if clicking on the handle
+            if (e.target !== handle) return;
+            
+            isDragging = true;
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = toolbar.getBoundingClientRect();
+            
+            offsetX = touch.clientX - rect.left;
+            offsetY = touch.clientY - rect.top;
+            
+            toolbar.style.transition = 'none';
+            e.preventDefault();
+        };
+        
+        const moveDrag = (e) => {
+            if (!isDragging) return;
+            
+            const touch = e.touches ? e.touches[0] : e;
+            let newLeft = touch.clientX - offsetX;
+            let newTop = touch.clientY - offsetY;
+            
+            // Constrain to viewport
+            const maxLeft = window.innerWidth - toolbar.offsetWidth;
+            const maxTop = window.innerHeight - toolbar.offsetHeight;
+            
+            newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+            newTop = Math.max(0, Math.min(newTop, maxTop));
+            
+            toolbar.style.left = newLeft + 'px';
+            toolbar.style.top = newTop + 'px';
+            toolbar.style.right = 'auto';
+            toolbar.style.bottom = 'auto';
+            toolbar.style.transform = 'none';
+            
+            e.preventDefault();
+        };
+        
+        const endDrag = () => {
+            if (isDragging) {
+                isDragging = false;
+                toolbar.style.transition = '';
+            }
+        };
+        
+        handle.addEventListener('mousedown', startDrag);
+        handle.addEventListener('touchstart', startDrag, { passive: false });
+        document.addEventListener('mousemove', moveDrag);
+        document.addEventListener('touchmove', moveDrag, { passive: false });
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
     }
     
     toggleLayoutMode() {
