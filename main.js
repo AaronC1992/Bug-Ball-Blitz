@@ -3863,27 +3863,18 @@ class Game {
         // Start in singleplayer mode
         this.editorLayoutMode = 'singleplayer';
         
-        const editor = document.getElementById('controlsEditor');
-        editor.classList.add('active');
-        
         // Track where we opened from
         this.editorOpenedFrom = this.settingsOpenedFrom || 'mainMenu';
         
         // Hide settings menu
         this.ui.hideOverlay('settingsMenu');
         
-        // If in a match, keep it paused and show game UI
-        const wasInMatch = (this.gameState === 'playing' || this.gameState === 'paused');
-        if (wasInMatch) {
-            if (this.gameState === 'playing') {
-                this.pauseGame();
-            }
-            // Hide pause menu so we can see the game UI elements
-            this.ui.hideOverlay('pauseMenu');
-        } else {
-            // If in menu, show preview background with game canvas
-            this.startEditorPreview();
-        }
+        // Set up a mock match environment for editing
+        this.startEditorPreview();
+        
+        // Show the editor overlay
+        const editor = document.getElementById('controlsEditor');
+        editor.classList.add('active');
         
         // Apply the current mode's layout
         this.applyEditorLayout();
@@ -3944,7 +3935,7 @@ class Game {
             if (element && layout[id]) {
                 const layoutData = layout[id];
                 
-                // Use fixed positioning for editor
+                // Use absolute positioning in editor
                 if (layoutData.position) {
                     element.style.position = layoutData.position;
                 }
@@ -3976,34 +3967,33 @@ class Game {
         // Clean up editable elements
         this.editableElements.forEach(el => {
             el.element.classList.remove('editable-element');
-            // Remove resize handles
+            // Remove resize handles (if any were added)
             const handles = el.element.querySelectorAll('.resize-handle');
             handles.forEach(handle => handle.remove());
         });
         
         this.editableElements = [];
         
-        // Check if we were editing from menu or from paused game
-        const wasInMatch = (this.gameState === 'playing' || this.gameState === 'paused');
-        
-        if (!wasInMatch) {
-            // We were in menu - hide the game screen by removing active class
-            const gameScreen = document.getElementById('gameScreen');
-            if (gameScreen) {
-                gameScreen.classList.remove('active');
-            }
-            
-            // Clear the canvas
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            
-            // Show the main menu screen so settings overlay has something behind it
-            this.ui.showScreen('mainMenu');
-        } else {
-            // If we were in a match, show pause menu again
-            this.ui.showOverlay('pauseMenu');
+        // Clean up the mock match environment
+        // Hide game screen and return to main menu
+        const gameScreen = document.getElementById('gameScreen');
+        if (gameScreen) {
+            gameScreen.classList.remove('active');
         }
         
-        // Update controls visibility first
+        // Clear the canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Hide mobile controls
+        const mobileControls = document.getElementById('mobileControls');
+        const mobileControlsP2 = document.getElementById('mobileControlsP2');
+        if (mobileControls) mobileControls.classList.remove('active');
+        if (mobileControlsP2) mobileControlsP2.classList.remove('active');
+        
+        // Return to main menu
+        this.ui.showScreen('mainMenu');
+        
+        // Update controls visibility for when user actually plays
         this.updateTouchControlsVisibility();
         
         // Then apply custom layout after visibility is set
@@ -4017,32 +4007,102 @@ class Game {
     }
     
     startEditorPreview() {
-        // Show the game screen to display arena and UI elements
+        // Create a full mock match environment for accurate editing
+        
+        // Switch to game screen to show full match environment
         this.ui.showScreen('gameScreen');
         
-        // Resize canvas to ensure proper rendering
+        // Ensure canvas is properly sized
         this.resizeCanvas();
         
-        // Draw a sample arena background on the game canvas
-        if (this.selectedArena) {
-            drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
-        } else {
-            // Use a default arena if none selected
-            const defaultArena = getArenaById('grass_field');
-            if (defaultArena) {
-                drawArenaBackground(this.ctx, defaultArena, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
-            }
+        // Initialize mock physics for realistic arena dimensions
+        if (!this.physics) {
+            this.physics = new Physics(this.canvas.width, this.canvas.height);
         }
         
-        // Show BOTH P1 and P2 mobile controls for editing (even in single player)
+        // Draw arena background
+        const arenaToUse = this.selectedArena || getArenaById('grass_field');
+        if (arenaToUse) {
+            drawArenaBackground(this.ctx, arenaToUse, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
+        }
+        
+        // Draw mock players to show scale
+        this.drawMockPlayers();
+        
+        // Draw mock ball
+        this.drawMockBall();
+        
+        // Show game HUD with mock data
+        this.showMockHUD();
+        
+        // Show mobile controls based on mode
         const mobileControls = document.getElementById('mobileControls');
         const mobileControlsP2 = document.getElementById('mobileControlsP2');
         if (mobileControls) mobileControls.classList.add('active');
         if (mobileControlsP2) mobileControlsP2.classList.add('active');
         
-        // Make sure HUD is visible
+        // Show pause button
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (pauseBtn) pauseBtn.style.display = 'block';
+    }
+    
+    drawMockPlayers() {
+        // Draw sample players to show scale and positioning
+        const centerY = this.canvas.height / 2;
+        
+        // Player 1 (left side)
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(0, 191, 255, 0.7)'; // Blue
+        this.ctx.beginPath();
+        this.ctx.arc(this.canvas.width * 0.25, centerY, 40, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+        this.ctx.restore();
+        
+        // Player 2 (right side)
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(255, 50, 50, 0.7)'; // Red
+        this.ctx.beginPath();
+        this.ctx.arc(this.canvas.width * 0.75, centerY, 40, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+        this.ctx.restore();
+    }
+    
+    drawMockBall() {
+        // Draw sample ball at center
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(255, 215, 0, 0.8)'; // Gold
+        this.ctx.beginPath();
+        this.ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+        this.ctx.restore();
+    }
+    
+    showMockHUD() {
+        // Update HUD with mock data
         const gameHUD = document.getElementById('gameHUD');
-        if (gameHUD) gameHUD.style.display = 'flex';
+        if (gameHUD) {
+            gameHUD.style.display = 'flex';
+        }
+        
+        const score1El = document.getElementById('score1');
+        const score2El = document.getElementById('score2');
+        const timerEl = document.getElementById('timer');
+        
+        if (score1El) score1El.textContent = '0';
+        if (score2El) score2El.textContent = '0';
+        if (timerEl) timerEl.textContent = '3:00';
     }
     
     setupEditableElements() {
@@ -4204,7 +4264,7 @@ class Game {
         
         const touch = e.touches ? e.touches[0] : e;
         
-        // Get the element's current position relative to viewport
+        // Get the element's current position
         const rect = element.getBoundingClientRect();
         
         // Store the element we're dragging
@@ -4216,9 +4276,9 @@ class Game {
             y: touch.clientY - rect.top
         };
         
-        // Force element to use fixed positioning relative to viewport
-        // This makes drag behavior consistent
-        element.style.position = 'fixed';
+        // Ensure element uses absolute positioning for smooth dragging
+        // This works because we're now in the game screen environment
+        element.style.position = 'absolute';
         element.style.left = rect.left + 'px';
         element.style.top = rect.top + 'px';
         element.style.right = 'auto';
@@ -4249,12 +4309,9 @@ class Game {
         const newLeft = touch.clientX - this.dragOffset.x;
         const newTop = touch.clientY - this.dragOffset.y;
         
-        // Apply new position using fixed positioning
-        this.draggingElement.style.position = 'fixed';
+        // Apply new position
         this.draggingElement.style.left = newLeft + 'px';
         this.draggingElement.style.top = newTop + 'px';
-        this.draggingElement.style.right = 'auto';
-        this.draggingElement.style.bottom = 'auto';
     }
     
     endDrag = () => {
@@ -4270,8 +4327,8 @@ class Game {
             const rect = this.draggingElement.getBoundingClientRect();
             
             if (!layout[id]) layout[id] = {};
-            // Save fixed position coordinates
-            layout[id].position = 'fixed';
+            // Save absolute position coordinates
+            layout[id].position = 'absolute';
             layout[id].left = rect.left;
             layout[id].top = rect.top;
             
@@ -4300,8 +4357,8 @@ class Game {
             const rect = element.getBoundingClientRect();
             
             if (!layout[id]) layout[id] = {};
-            // Save as fixed positioning for consistency
-            layout[id].position = 'fixed';
+            // Save as absolute positioning
+            layout[id].position = 'absolute';
             layout[id].left = rect.left;
             layout[id].top = rect.top;
         });
@@ -4380,7 +4437,7 @@ class Game {
                     if (isVisible) {
                         const layoutData = layout[id];
                         
-                        // Apply fixed positioning for consistency
+                        // Apply absolute positioning for gameplay (same as editor)
                         if (layoutData.position) {
                             element.style.position = layoutData.position;
                         }
