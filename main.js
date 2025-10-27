@@ -4576,13 +4576,17 @@ class Game {
         const targetLeft = rectWithTransform.left - containerRect.left;
         const targetTop = rectWithTransform.top - containerRect.top;
         
-        // Clear all positioning styles and transforms, setting explicit values
+    // Immediately neutralize CSS transforms to prevent visual jump
+    // Do this BEFORE we measure the post-positioning rect so transforms don't re-apply
+    element.classList.add('dragging');
+
+    // Clear all positioning styles and transforms, setting explicit values
         element.style.position = 'absolute';
         element.style.left = targetLeft + 'px';  // Set immediately to target position
         element.style.top = targetTop + 'px';
         element.style.right = 'auto';
         element.style.bottom = 'auto';
-        element.style.transform = ''; // Clear transform
+    element.style.transform = 'none'; // Explicitly override any CSS transforms
         
         // Force a reflow to ensure styles are applied
         void element.offsetHeight;
@@ -4621,7 +4625,6 @@ class Game {
             offsetY: offsetY
         });
         
-        element.classList.add('dragging');
         
         // Remove any existing listeners first
         document.removeEventListener('mousemove', this.handleDragMove);
