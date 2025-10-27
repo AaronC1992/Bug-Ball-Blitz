@@ -1618,6 +1618,7 @@ input[type="text"]:focus {
     padding-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for notched phones */
 }
 
+/* Player 1 - Blue controls ALL on LEFT side */
 .joystick-container {
     position: absolute;
     left: 20px;
@@ -1648,7 +1649,7 @@ input[type="text"]:focus {
 
 .action-buttons {
     position: absolute;
-    right: 20px;
+    left: 140px; /* Position jump button to the right of joystick on LEFT side */
     bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     display: flex;
     gap: 12px;
@@ -1695,7 +1696,7 @@ input[type="text"]:focus {
     }
     
     .action-buttons {
-        right: 15px;
+        left: 100px; /* Player 1 jump stays on left side next to joystick */
         bottom: calc(15px + env(safe-area-inset-bottom, 0px));
         gap: 8px;
     }
@@ -1712,8 +1713,8 @@ input[type="text"]:focus {
     }
     
     .mobile-controls-p2 .action-buttons {
-        left: 15px; /* Keep on left side in landscape */
-        right: auto;
+        right: 100px; /* Player 2 jump stays on right side next to joystick */
+        left: auto;
     }
 }
 
@@ -2346,10 +2347,10 @@ input[type="text"]:focus {
     display: none;
 }
 
-/* Player 2 - Neon Red Theme on Right Side */
+/* Player 2 - Neon Red Theme ALL on RIGHT Side */
 .mobile-controls-p2 .joystick-container {
     left: auto;
-    right: 20px; /* Position on the right side */
+    right: 20px; /* Joystick on the right side */
 }
 
 .mobile-controls-p2 .joystick {
@@ -2362,8 +2363,8 @@ input[type="text"]:focus {
 }
 
 .mobile-controls-p2 .action-buttons {
-    right: auto;
-    left: 20px; /* Position on the left side */
+    right: 140px; /* Jump button to the left of joystick on RIGHT side */
+    left: auto;
 }
 
 .mobile-controls-p2 .action-btn {
