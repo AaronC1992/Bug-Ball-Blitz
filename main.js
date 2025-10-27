@@ -4609,10 +4609,14 @@ class Game {
             touchY: touch.clientY,
             rectLeft: rectWithTransform.left,
             rectTop: rectWithTransform.top,
+            rectWidth: rectWithTransform.width,
+            rectHeight: rectWithTransform.height,
             offsetX: offsetX,
             offsetY: offsetY,
             containerLeft: containerRect.left,
-            containerTop: containerRect.top
+            containerTop: containerRect.top,
+            relativeLeft: relativeLeft,
+            relativeTop: relativeTop
         });
         
         element.classList.add('dragging');
@@ -4651,8 +4655,8 @@ class Game {
             containerTop: containerRect.top,
             offsetX: this.dragOffset.x,
             offsetY: this.dragOffset.y,
-            newLeft: newLeft,
-            newTop: newTop
+            calculatedLeft: newLeft,
+            calculatedTop: newTop
         });
         
         // Get element dimensions
