@@ -718,21 +718,35 @@ class Game {
         joystick.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.mobileControls.joystickActive = true;
+            this.mobileControls.touchId = e.touches[0].identifier;
             this.updateJoystick(e.touches[0], joystick, stick, this.mobileControls);
         });
         
         joystick.addEventListener('touchmove', (e) => {
             e.preventDefault();
             if (this.mobileControls.joystickActive) {
-                this.updateJoystick(e.touches[0], joystick, stick, this.mobileControls);
+                // Find the correct touch by identifier
+                for (let i = 0; i < e.touches.length; i++) {
+                    if (e.touches[i].identifier === this.mobileControls.touchId) {
+                        this.updateJoystick(e.touches[i], joystick, stick, this.mobileControls);
+                        break;
+                    }
+                }
             }
         });
         
-        joystick.addEventListener('touchend', () => {
-            this.mobileControls.joystickActive = false;
-            this.mobileControls.joystickX = 0;
-            this.mobileControls.joystickY = 0;
-            stick.style.transform = 'translate(-50%, -50%)';
+        joystick.addEventListener('touchend', (e) => {
+            // Check if the released touch is the one we're tracking
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === this.mobileControls.touchId) {
+                    this.mobileControls.joystickActive = false;
+                    this.mobileControls.joystickX = 0;
+                    this.mobileControls.joystickY = 0;
+                    this.mobileControls.touchId = null;
+                    stick.style.transform = 'translate(-50%, -50%)';
+                    break;
+                }
+            }
         });
         
         // Jump button
@@ -755,21 +769,35 @@ class Game {
         joystickP2.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.mobileControlsP2.joystickActive = true;
+            this.mobileControlsP2.touchId = e.touches[0].identifier;
             this.updateJoystick(e.touches[0], joystickP2, stickP2, this.mobileControlsP2);
         });
         
         joystickP2.addEventListener('touchmove', (e) => {
             e.preventDefault();
             if (this.mobileControlsP2.joystickActive) {
-                this.updateJoystick(e.touches[0], joystickP2, stickP2, this.mobileControlsP2);
+                // Find the correct touch by identifier
+                for (let i = 0; i < e.touches.length; i++) {
+                    if (e.touches[i].identifier === this.mobileControlsP2.touchId) {
+                        this.updateJoystick(e.touches[i], joystickP2, stickP2, this.mobileControlsP2);
+                        break;
+                    }
+                }
             }
         });
         
-        joystickP2.addEventListener('touchend', () => {
-            this.mobileControlsP2.joystickActive = false;
-            this.mobileControlsP2.joystickX = 0;
-            this.mobileControlsP2.joystickY = 0;
-            stickP2.style.transform = 'translate(-50%, -50%)';
+        joystickP2.addEventListener('touchend', (e) => {
+            // Check if the released touch is the one we're tracking
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === this.mobileControlsP2.touchId) {
+                    this.mobileControlsP2.joystickActive = false;
+                    this.mobileControlsP2.joystickX = 0;
+                    this.mobileControlsP2.joystickY = 0;
+                    this.mobileControlsP2.touchId = null;
+                    stickP2.style.transform = 'translate(-50%, -50%)';
+                    break;
+                }
+            }
         });
         
         // Jump button P2
