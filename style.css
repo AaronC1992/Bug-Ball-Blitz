@@ -1628,7 +1628,7 @@ input[type="text"]:focus {
     width: 100px;
     height: 100px;
     background: rgba(0, 0, 0, 0.5);
-    border: 3px solid rgba(126, 211, 33, 0.8);
+    border: 3px solid rgba(0, 191, 255, 0.8); /* Neon blue for Player 1 */
     border-radius: 50%;
     position: relative;
 }
@@ -1636,13 +1636,14 @@ input[type="text"]:focus {
 .joystick-stick {
     width: 45px;
     height: 45px;
-    background: rgba(126, 211, 33, 0.9);
+    background: rgba(0, 191, 255, 0.9); /* Neon blue for Player 1 */
     border-radius: 50%;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     transition: all 0.1s ease;
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
 }
 
 .action-buttons {
@@ -1656,15 +1657,16 @@ input[type="text"]:focus {
 .action-btn {
     width: 70px;
     height: 70px;
-    background: rgba(126, 211, 33, 0.9);
-    border: 3px solid rgba(95, 179, 4, 1);
+    background: rgba(0, 191, 255, 0.9); /* Neon blue for Player 1 */
+    border: 3px solid rgba(0, 150, 255, 1);
     border-radius: 50%;
     font-size: 13px;
     font-weight: bold;
     color: white;
     cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 191, 255, 0.5);
     touch-action: manipulation; /* Prevent double-tap zoom */
+    text-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
 }
 
 .action-btn:active {
@@ -1705,12 +1707,12 @@ input[type="text"]:focus {
     }
     
     .mobile-controls-p2 .joystick-container {
-        right: 120px;
+        right: 15px; /* Keep on right side in landscape */
         left: auto;
     }
     
     .mobile-controls-p2 .action-buttons {
-        left: 15px;
+        left: 15px; /* Keep on left side in landscape */
         right: auto;
     }
 }
@@ -2344,14 +2346,31 @@ input[type="text"]:focus {
     display: none;
 }
 
+/* Player 2 - Neon Red Theme on Right Side */
 .mobile-controls-p2 .joystick-container {
     left: auto;
-    right: 180px;
+    right: 20px; /* Position on the right side */
+}
+
+.mobile-controls-p2 .joystick {
+    border: 3px solid rgba(255, 69, 58, 0.8); /* Neon red */
+}
+
+.mobile-controls-p2 .joystick-stick {
+    background: rgba(255, 69, 58, 0.9); /* Neon red */
+    box-shadow: 0 0 15px rgba(255, 69, 58, 0.6);
 }
 
 .mobile-controls-p2 .action-buttons {
     right: auto;
-    left: 40px;
+    left: 20px; /* Position on the left side */
+}
+
+.mobile-controls-p2 .action-btn {
+    background: rgba(255, 69, 58, 0.9); /* Neon red */
+    border: 3px solid rgba(255, 40, 30, 1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 69, 58, 0.5);
+    text-shadow: 0 0 10px rgba(255, 69, 58, 0.8);
 }
 
 /* Style Tabs */

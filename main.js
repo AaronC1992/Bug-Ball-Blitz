@@ -3145,7 +3145,8 @@ class Game {
         
         if (shouldShow) {
             mobileControls.classList.add('active');
-            if (this.gameMode === 'multiplayer' && (this.ui.isTablet || this.touchControlsEnabled)) {
+            // Show Player 2 controls in multiplayer mode
+            if (this.gameMode === 'multiplayer') {
                 mobileControlsP2.classList.add('active');
             } else {
                 mobileControlsP2.classList.remove('active');
