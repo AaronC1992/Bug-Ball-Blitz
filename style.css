@@ -3320,6 +3320,13 @@ body {
     z-index: 100;
 }
 
+/* Override CSS positioning when dragging */
+.mock-hud-element.dragging {
+     left: unset !important;
+     top: unset !important;
+     transform: none !important;
+}
+
 .editable-element::before {
     content: attr(data-editable-name);
     position: absolute;
