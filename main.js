@@ -121,7 +121,9 @@ class Game {
         
         // Controls Editor
         this.controlsEditorActive = false;
-        this.customLayout = this.loadCustomLayout();
+        this.editorLayoutMode = 'singleplayer'; // 'singleplayer' or 'multiplayer'
+        this.customLayoutSingleplayer = this.loadCustomLayout('singleplayer');
+        this.customLayoutMultiplayer = this.loadCustomLayout('multiplayer');
         this.editableElements = [];
         this.draggingElement = null;
         this.resizingElement = null;
@@ -3763,24 +3765,38 @@ class Game {
     }
     
     // Controls Editor Methods
-    loadCustomLayout() {
-        const saved = localStorage.getItem('customControlsLayout');
+    loadCustomLayout(mode) {
+        const key = `customControlsLayout_${mode}`;
+        const saved = localStorage.getItem(key);
         if (saved) {
             try {
                 return JSON.parse(saved);
             } catch (e) {
-                console.error('Failed to load custom layout:', e);
+                console.error(`Failed to load custom layout for ${mode}:`, e);
             }
         }
         return {};
     }
     
-    saveCustomLayout() {
-        localStorage.setItem('customControlsLayout', JSON.stringify(this.customLayout));
+    saveCustomLayout(mode) {
+        const key = `customControlsLayout_${mode}`;
+        const layout = mode === 'singleplayer' ? this.customLayoutSingleplayer : this.customLayoutMultiplayer;
+        localStorage.setItem(key, JSON.stringify(layout));
+    }
+    
+    getCurrentLayout() {
+        // Return the appropriate layout based on current game mode
+        if (this.gameMode === 'multiplayer') {
+            return this.customLayoutMultiplayer;
+        }
+        return this.customLayoutSingleplayer;
     }
     
     openControlsEditor() {
         this.controlsEditorActive = true;
+        // Start in singleplayer mode
+        this.editorLayoutMode = 'singleplayer';
+        
         const editor = document.getElementById('controlsEditor');
         editor.classList.add('active');
         
@@ -3798,22 +3814,59 @@ class Game {
             }
             // Hide pause menu so we can see the game UI elements
             this.ui.hideOverlay('pauseMenu');
-            
-            // Force both P1 and P2 controls to be visible for editing
-            const mobileControls = document.getElementById('mobileControls');
-            const mobileControlsP2 = document.getElementById('mobileControlsP2');
-            if (mobileControls) mobileControls.classList.add('active');
-            if (mobileControlsP2) mobileControlsP2.classList.add('active');
         } else {
             // If in menu, show preview background with game canvas
             this.startEditorPreview();
         }
+        
+        // Apply the current mode's layout
+        this.applyEditorLayout();
+        
+        // Update visibility based on mode
+        this.updateEditorControlsVisibility();
         
         // Make on-screen elements editable
         this.setupEditableElements();
         
         // Setup editor controls
         this.setupEditorControls();
+    }
+    
+    updateEditorControlsVisibility() {
+        const mobileControls = document.getElementById('mobileControls');
+        const mobileControlsP2 = document.getElementById('mobileControlsP2');
+        const toggleBtn = document.getElementById('toggleLayoutModeBtn');
+        
+        if (this.editorLayoutMode === 'singleplayer') {
+            if (mobileControls) mobileControls.classList.add('active');
+            if (mobileControlsP2) mobileControlsP2.classList.remove('active');
+            if (toggleBtn) toggleBtn.textContent = '🎮 Switch to Multiplayer';
+        } else {
+            if (mobileControls) mobileControls.classList.add('active');
+            if (mobileControlsP2) mobileControlsP2.classList.add('active');
+            if (toggleBtn) toggleBtn.textContent = '👤 Switch to Singleplayer';
+        }
+    }
+    
+    applyEditorLayout() {
+        const layout = this.editorLayoutMode === 'singleplayer' 
+            ? this.customLayoutSingleplayer 
+            : this.customLayoutMultiplayer;
+        
+        Object.keys(layout).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                const layoutData = layout[id];
+                if (layoutData.left !== undefined) element.style.left = layoutData.left + 'px';
+                if (layoutData.top !== undefined) element.style.top = layoutData.top + 'px';
+                if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
+                if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
+                
+                // Clear right/bottom if we set left/top
+                if (layoutData.left !== undefined) element.style.right = 'auto';
+                if (layoutData.top !== undefined) element.style.bottom = 'auto';
+            }
+        });
     }
     
     closeControlsEditor() {
@@ -3880,18 +3933,24 @@ class Game {
     setupEditableElements() {
         this.editableElements = [];
         
-        // Define editable elements - break down controls into individual pieces
-        const elements = [
-            // Player 1 controls - individual elements
+        // Define editable elements based on current mode
+        const elements = [];
+        
+        // Always include P1 controls and UI
+        elements.push(
             { id: 'joystick', parentSelector: '.mobile-controls .joystick-container', name: 'P1 Joystick', allowResize: true },
             { id: 'jumpBtn', parentSelector: '.mobile-controls .action-buttons', name: 'P1 Jump Button', allowResize: true },
-            // Player 2 controls - individual elements
-            { id: 'joystickP2', parentSelector: '.mobile-controls-p2 .joystick-container', name: 'P2 Joystick', allowResize: true },
-            { id: 'jumpBtnP2', parentSelector: '.mobile-controls-p2 .action-buttons', name: 'P2 Jump Button', allowResize: true },
-            // UI elements
             { id: 'gameHUD', name: 'Score/Timer', allowResize: true },
             { id: 'pauseBtn', name: 'Pause Button', allowResize: true }
-        ];
+        );
+        
+        // Include P2 controls only in multiplayer mode
+        if (this.editorLayoutMode === 'multiplayer') {
+            elements.push(
+                { id: 'joystickP2', parentSelector: '.mobile-controls-p2 .joystick-container', name: 'P2 Joystick', allowResize: true },
+                { id: 'jumpBtnP2', parentSelector: '.mobile-controls-p2 .action-buttons', name: 'P2 Jump Button', allowResize: true }
+            );
+        }
         
         elements.forEach(config => {
             let element = document.getElementById(config.id);
@@ -3934,14 +3993,17 @@ class Game {
     setupEditorControls() {
         const saveBtn = document.getElementById('saveLayoutBtn');
         const resetBtn = document.getElementById('resetLayoutBtn');
+        const toggleBtn = document.getElementById('toggleLayoutModeBtn');
         
         // Remove old listeners
         saveBtn.replaceWith(saveBtn.cloneNode(true));
         resetBtn.replaceWith(resetBtn.cloneNode(true));
+        toggleBtn.replaceWith(toggleBtn.cloneNode(true));
         
         // Get fresh references
         const newSaveBtn = document.getElementById('saveLayoutBtn');
         const newResetBtn = document.getElementById('resetLayoutBtn');
+        const newToggleBtn = document.getElementById('toggleLayoutModeBtn');
         
         newSaveBtn.addEventListener('click', () => {
             this.audio.playSound('ui_click');
@@ -3953,7 +4015,47 @@ class Game {
             this.resetLayoutToDefault();
         });
         
+        newToggleBtn.addEventListener('click', () => {
+            this.audio.playSound('ui_click');
+            this.toggleLayoutMode();
+        });
+        
         // Setup drag and resize for all editable elements
+        this.editableElements.forEach(({ element }) => {
+            this.setupDragAndResize(element);
+        });
+    }
+    
+    toggleLayoutMode() {
+        // Save current mode's positions before switching
+        this.saveCurrentPositions();
+        
+        // Toggle mode
+        this.editorLayoutMode = this.editorLayoutMode === 'singleplayer' ? 'multiplayer' : 'singleplayer';
+        
+        // Update control visibility
+        this.updateEditorControlsVisibility();
+        
+        // Apply the new mode's layout
+        this.applyEditorLayout();
+        
+        // Refresh editable elements
+        this.refreshEditableElements();
+    }
+    
+    refreshEditableElements() {
+        // Clean up existing editable elements
+        this.editableElements.forEach(el => {
+            el.element.classList.remove('editable-element');
+            const handles = el.element.querySelectorAll('.resize-handle');
+            handles.forEach(handle => handle.remove());
+        });
+        this.editableElements = [];
+        
+        // Setup new editable elements for current mode
+        this.setupEditableElements();
+        
+        // Setup drag/resize for new elements
         this.editableElements.forEach(({ element }) => {
             this.setupDragAndResize(element);
         });
@@ -4125,14 +4227,39 @@ class Game {
     }
     
     saveLayoutAndExit() {
-        this.saveCustomLayout();
+        this.saveCurrentPositions();
         this.closeControlsEditor();
     }
     
+    saveCurrentPositions() {
+        const layout = this.editorLayoutMode === 'singleplayer' 
+            ? this.customLayoutSingleplayer 
+            : this.customLayoutMultiplayer;
+        
+        this.editableElements.forEach(({ element }) => {
+            const id = element.id;
+            const rect = element.getBoundingClientRect();
+            
+            if (!layout[id]) layout[id] = {};
+            layout[id].width = rect.width;
+            layout[id].height = rect.height;
+            layout[id].left = rect.left;
+            layout[id].top = rect.top;
+        });
+        
+        this.saveCustomLayout(this.editorLayoutMode);
+    }
+    
     resetLayoutToDefault() {
-        if (confirm('Reset all controls to default positions and sizes?')) {
-            this.customLayout = {};
-            this.saveCustomLayout();
+        if (confirm(`Reset ${this.editorLayoutMode} layout to default positions and sizes?`)) {
+            // Clear the current mode's layout
+            if (this.editorLayoutMode === 'singleplayer') {
+                this.customLayoutSingleplayer = {};
+                this.saveCustomLayout('singleplayer');
+            } else {
+                this.customLayoutMultiplayer = {};
+                this.saveCustomLayout('multiplayer');
+            }
             
             // Remove inline styles
             this.editableElements.forEach(({ element }) => {
@@ -4147,14 +4274,15 @@ class Game {
     }
     
     applyCustomLayout() {
-        Object.keys(this.customLayout).forEach(id => {
+        const layout = this.getCurrentLayout();
+        Object.keys(layout).forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                const layout = this.customLayout[id];
-                if (layout.left !== undefined) element.style.left = layout.left + 'px';
-                if (layout.top !== undefined) element.style.top = layout.top + 'px';
-                if (layout.width !== undefined) element.style.width = layout.width + 'px';
-                if (layout.height !== undefined) element.style.height = layout.height + 'px';
+                const layoutData = layout[id];
+                if (layoutData.left !== undefined) element.style.left = layoutData.left + 'px';
+                if (layoutData.top !== undefined) element.style.top = layoutData.top + 'px';
+                if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
+                if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
                 
                 // Clear right/bottom if we set left/top
                 if (layout.left !== undefined) element.style.right = 'auto';
