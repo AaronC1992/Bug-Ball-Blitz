@@ -3286,10 +3286,38 @@ body {
 
 .controls-editor.active .mock-hud-element {
     display: block; /* Show only when editor is active */
+    width: auto; /* Prevent stretching */
+    max-width: max-content; /* Fit content naturally */
 }
 
 .controls-editor.active #mockPauseBtn {
     display: flex; /* Pause button needs flex for centering */
+    width: auto; /* Prevent stretching */
+}
+
+/* Mock elements inherit real element positioning */
+#mockScoreDisplay {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+}
+
+#mockTimerDisplay {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(calc(-50% + 200px));
+    z-index: 100;
+}
+
+#mockPauseBtn {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(calc(-50% - 200px));
+    z-index: 100;
 }
 
 .editable-element::before {
