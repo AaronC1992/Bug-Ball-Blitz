@@ -3798,6 +3798,12 @@ class Game {
             }
             // Hide pause menu so we can see the game UI elements
             this.ui.hideOverlay('pauseMenu');
+            
+            // Force both P1 and P2 controls to be visible for editing
+            const mobileControls = document.getElementById('mobileControls');
+            const mobileControlsP2 = document.getElementById('mobileControlsP2');
+            if (mobileControls) mobileControls.classList.add('active');
+            if (mobileControlsP2) mobileControlsP2.classList.add('active');
         } else {
             // If in menu, show preview background with game canvas
             this.startEditorPreview();
@@ -3860,7 +3866,7 @@ class Game {
             }
         }
         
-        // Show mobile controls for editing
+        // Show BOTH P1 and P2 mobile controls for editing (even in single player)
         const mobileControls = document.getElementById('mobileControls');
         const mobileControlsP2 = document.getElementById('mobileControlsP2');
         if (mobileControls) mobileControls.classList.add('active');
@@ -3874,18 +3880,33 @@ class Game {
     setupEditableElements() {
         this.editableElements = [];
         
-        // Define editable elements
+        // Define editable elements - break down controls into individual pieces
         const elements = [
-            { id: 'mobileControls', name: 'P1 Controls', allowResize: true },
-            { id: 'mobileControlsP2', name: 'P2 Controls', allowResize: true },
+            // Player 1 controls - individual elements
+            { id: 'joystick', parentSelector: '.mobile-controls .joystick-container', name: 'P1 Joystick', allowResize: true },
+            { id: 'jumpBtn', parentSelector: '.mobile-controls .action-buttons', name: 'P1 Jump Button', allowResize: true },
+            // Player 2 controls - individual elements
+            { id: 'joystickP2', parentSelector: '.mobile-controls-p2 .joystick-container', name: 'P2 Joystick', allowResize: true },
+            { id: 'jumpBtnP2', parentSelector: '.mobile-controls-p2 .action-buttons', name: 'P2 Jump Button', allowResize: true },
+            // UI elements
             { id: 'gameHUD', name: 'Score/Timer', allowResize: true },
             { id: 'pauseBtn', name: 'Pause Button', allowResize: true }
         ];
         
         elements.forEach(config => {
-            const element = document.getElementById(config.id);
+            let element = document.getElementById(config.id);
+            
+            // For nested elements, we need to make the parent draggable
+            if (config.parentSelector && element) {
+                const parent = element.closest(config.parentSelector);
+                if (parent) {
+                    element = parent;
+                }
+            }
+            
             if (element) {
                 element.classList.add('editable-element');
+                element.dataset.editableName = config.name;
                 
                 // Add resize handles if allowed
                 if (config.allowResize) {
