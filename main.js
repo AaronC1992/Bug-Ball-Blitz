@@ -2228,7 +2228,7 @@ class Game {
         // Check if touch controls are enabled (either auto-detected or manually enabled)
         const useTouchControls = this.touchControlsEnabled !== null 
             ? this.touchControlsEnabled 
-            : this.ui.isMobile;
+            : (this.ui.isMobile || this.ui.isTablet);
             
         if (useTouchControls) {
             // Mobile/Touch controls
