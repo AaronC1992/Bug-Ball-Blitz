@@ -3921,8 +3921,8 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
-        // First, ensure all elements are at their CSS defaults
-        const allIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD', 'pauseBtn'];
+        // First, ensure all elements are at their CSS defaults (excluding pauseBtn)
+        const allIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD'];
         allIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -3937,8 +3937,10 @@ class Game {
             }
         });
         
-        // Then apply saved layout if it exists
+        // Then apply saved layout if it exists (skip pauseBtn)
         Object.keys(layout).forEach(id => {
+            if (id === 'pauseBtn') return; // Skip pause button
+            
             const element = document.getElementById(id);
             if (element && layout[id]) {
                 const layoutData = layout[id];
@@ -4165,8 +4167,8 @@ class Game {
         elements.push(
             { id: 'p1JoystickContainer', name: 'P1 Joystick', allowResize: false },
             { id: 'p1JumpContainer', name: 'P1 Jump Button', allowResize: false },
-            { id: 'gameHUD', name: 'Score/Timer', allowResize: false },
-            { id: 'pauseBtn', name: 'Pause Button', allowResize: false }
+            { id: 'gameHUD', name: 'Score/Timer', allowResize: false }
+            // Note: pauseBtn is NOT editable - it's just visible for context
         );
         
         // Include P2 controls only in multiplayer mode
@@ -4490,8 +4492,8 @@ class Game {
     applyCustomLayout() {
         const layout = this.getCurrentLayout();
         
-        // First clear all positioning for elements that might be customized
-        const elementIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD', 'pauseBtn'];
+        // First clear all positioning for elements that might be customized (excluding pauseBtn)
+        const elementIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer', 'gameHUD'];
         elementIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -4514,8 +4516,10 @@ class Game {
         // Small delay to ensure CSS defaults have been applied
         // before applying custom layout
         requestAnimationFrame(() => {
-            // Then apply saved layout if it exists
+            // Then apply saved layout if it exists (skip pauseBtn)
             Object.keys(layout).forEach(id => {
+                if (id === 'pauseBtn') return; // Skip pause button
+                
                 const element = document.getElementById(id);
                 if (element) {
                     const isVisible = element.offsetParent !== null;
