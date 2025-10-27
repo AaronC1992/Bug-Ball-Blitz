@@ -4015,35 +4015,44 @@ class Game {
         // Ensure canvas is properly sized
         this.resizeCanvas();
         
-        // Initialize mock physics for realistic arena dimensions
-        if (!this.physics) {
-            this.physics = new Physics(this.canvas.width, this.canvas.height);
-        }
-        
-        // Draw arena background
-        const arenaToUse = this.selectedArena || getArenaById('grass_field');
-        if (arenaToUse) {
-            drawArenaBackground(this.ctx, arenaToUse, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
-        }
-        
-        // Draw mock players to show scale
-        this.drawMockPlayers();
-        
-        // Draw mock ball
-        this.drawMockBall();
-        
-        // Show game HUD with mock data
-        this.showMockHUD();
-        
-        // Show mobile controls based on mode
-        const mobileControls = document.getElementById('mobileControls');
-        const mobileControlsP2 = document.getElementById('mobileControlsP2');
-        if (mobileControls) mobileControls.classList.add('active');
-        if (mobileControlsP2) mobileControlsP2.classList.add('active');
-        
-        // Show pause button
-        const pauseBtn = document.getElementById('pauseBtn');
-        if (pauseBtn) pauseBtn.style.display = 'block';
+        // IMPORTANT: Wait for next frame to ensure canvas is fully sized
+        requestAnimationFrame(() => {
+            // Initialize mock physics for realistic arena dimensions
+            if (!this.physics) {
+                this.physics = new Physics(this.canvas.width, this.canvas.height);
+            }
+            
+            // Draw arena background
+            const arenaToUse = this.selectedArena || getArenaById('grass_field');
+            if (arenaToUse) {
+                drawArenaBackground(this.ctx, arenaToUse, this.canvas.width, this.canvas.height, this.quality, 'quickplay', 1);
+            }
+            
+            // Draw mock players to show scale
+            this.drawMockPlayers();
+            
+            // Draw mock ball
+            this.drawMockBall();
+            
+            // Show game HUD with mock data
+            this.showMockHUD();
+            
+            // Show mobile controls based on mode
+            const mobileControls = document.getElementById('mobileControls');
+            const mobileControlsP2 = document.getElementById('mobileControlsP2');
+            if (mobileControls) mobileControls.classList.add('active');
+            if (mobileControlsP2) mobileControlsP2.classList.add('active');
+            
+            // Show pause button
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (pauseBtn) pauseBtn.style.display = 'block';
+            
+            // CRITICAL: Apply the editor layout AFTER controls are visible
+            // This prevents the jump-down issue
+            requestAnimationFrame(() => {
+                this.applyEditorLayout();
+            });
+        });
     }
     
     drawMockPlayers() {
