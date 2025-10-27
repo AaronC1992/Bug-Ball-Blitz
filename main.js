@@ -4569,7 +4569,23 @@ class Game {
         }
         const containerRect = this.draggingContainer.getBoundingClientRect();
         
-        // Get the element's current position
+        // Get the element's current position (including any transforms)
+        const rectWithTransform = element.getBoundingClientRect();
+        
+        // Convert current position to be relative to container
+        const relativeLeft = rectWithTransform.left - containerRect.left;
+        const relativeTop = rectWithTransform.top - containerRect.top;
+        
+        // Ensure element uses absolute positioning for smooth dragging
+        // Clear transform since getBoundingClientRect() already accounts for it
+        element.style.position = 'absolute';
+        element.style.left = relativeLeft + 'px';
+        element.style.top = relativeTop + 'px';
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
+        element.style.transform = ''; // Clear transform when starting drag
+        
+        // Now get the rect again AFTER clearing transform for accurate offset calculation
         const rect = element.getBoundingClientRect();
         
         // Store the element we're dragging and its initial position
@@ -4584,19 +4600,6 @@ class Game {
             x: touch.clientX - rect.left,
             y: touch.clientY - rect.top
         };
-        
-        // Convert current position to be relative to container
-        const relativeLeft = rect.left - containerRect.left;
-        const relativeTop = rect.top - containerRect.top;
-        
-        // Ensure element uses absolute positioning for smooth dragging
-        // Clear transform since getBoundingClientRect() already accounts for it
-        element.style.position = 'absolute';
-        element.style.left = relativeLeft + 'px';
-        element.style.top = relativeTop + 'px';
-        element.style.right = 'auto';
-        element.style.bottom = 'auto';
-        element.style.transform = ''; // Clear transform when starting drag
         
         element.classList.add('dragging');
         
