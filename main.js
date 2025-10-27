@@ -4572,24 +4572,19 @@ class Game {
         // Get the element's current VISUAL position (including any transforms)
         const rectWithTransform = element.getBoundingClientRect();
         
-        // Clear all positioning styles and transforms FIRST to get a clean state
+        // Calculate where the element should be positioned (relative to container) to maintain visual position
+        const targetLeft = rectWithTransform.left - containerRect.left;
+        const targetTop = rectWithTransform.top - containerRect.top;
+        
+        // Clear all positioning styles and transforms, setting explicit values
         element.style.position = 'absolute';
-        element.style.left = '';  // Clear left temporarily
-        element.style.top = '';   // Clear top temporarily
+        element.style.left = targetLeft + 'px';  // Set immediately to target position
+        element.style.top = targetTop + 'px';
         element.style.right = 'auto';
         element.style.bottom = 'auto';
         element.style.transform = ''; // Clear transform
         
         // Force a reflow to ensure styles are applied
-        void element.offsetHeight;
-        
-        // Now set the position to match where the element WAS visually (before we cleared styles)
-        const relativeLeft = rectWithTransform.left - containerRect.left;
-        const relativeTop = rectWithTransform.top - containerRect.top;
-        element.style.left = relativeLeft + 'px';
-        element.style.top = relativeTop + 'px';
-        
-        // Force another reflow
         void element.offsetHeight;
         
         // Get the rect AFTER all positioning is finalized
