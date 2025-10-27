@@ -3898,17 +3898,6 @@ class Game {
             handles.forEach(handle => handle.remove());
         });
         
-        // Clear any temporary inline styles that were set during dragging
-        // (they will be reapplied by applyCustomLayout if they were saved)
-        this.editableElements.forEach(({ element }) => {
-            element.style.left = '';
-            element.style.top = '';
-            element.style.right = '';
-            element.style.bottom = '';
-            element.style.width = '';
-            element.style.height = '';
-        });
-        
         this.editableElements = [];
         
         // Check if we were editing from menu or from paused game
