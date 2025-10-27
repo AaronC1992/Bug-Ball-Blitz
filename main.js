@@ -3921,8 +3921,8 @@ class Game {
             ? this.customLayoutSingleplayer 
             : this.customLayoutMultiplayer;
         
-        // First, ensure all elements are at their CSS defaults (only touch controls)
-        const allIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer'];
+        // First, ensure all elements are at their CSS defaults
+        const allIds = ['scoreDisplay', 'timerDisplay', 'pauseBtn', 'p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer'];
         allIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -3934,12 +3934,13 @@ class Game {
                 element.style.bottom = '';
                 element.style.width = '';
                 element.style.height = '';
+                element.style.transform = '';
             }
         });
         
-        // Then apply saved layout if it exists (only for touch controls)
+        // Then apply saved layout if it exists
         Object.keys(layout).forEach(id => {
-            if (id === 'pauseBtn' || id === 'gameHUD') return; // Skip HUD elements
+            if (id === 'gameHUD') return; // Skip old gameHUD reference
             
             const element = document.getElementById(id);
             if (element && layout[id]) {
@@ -3960,6 +3961,11 @@ class Game {
                 }
                 if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
                 if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
+                
+                // Preserve transform if it exists in saved layout
+                if (layoutData.transform !== undefined) {
+                    element.style.transform = layoutData.transform;
+                }
             }
         });
     }
@@ -4029,6 +4035,12 @@ class Game {
             pauseBtn.style.pointerEvents = 'auto';
             pauseBtn.style.opacity = '1';
         }
+        
+        // Hide HUD elements
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        if (scoreDisplay) scoreDisplay.style.display = 'none';
+        if (timerDisplay) timerDisplay.style.display = 'none';
         
         // Return to main menu
         this.ui.showScreen('mainMenu');
@@ -4191,12 +4203,20 @@ class Game {
     }
     
     showMockHUD() {
-        // Update HUD with mock data
-        const gameHUD = document.getElementById('gameHUD');
-        if (gameHUD) {
-            gameHUD.style.display = 'flex';
+        // Show individual HUD elements
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const pauseBtn = document.getElementById('pauseBtn');
+        
+        if (scoreDisplay) scoreDisplay.style.display = 'block';
+        if (timerDisplay) timerDisplay.style.display = 'block';
+        if (pauseBtn) {
+            pauseBtn.style.display = 'flex';
+            pauseBtn.style.pointerEvents = 'none'; // Disable during editor
+            pauseBtn.style.opacity = '0.7'; // Slightly transparent to indicate disabled
         }
         
+        // Update HUD with mock data
         const score1El = document.getElementById('score1');
         const score2El = document.getElementById('score2');
         const timerEl = document.getElementById('timer');
@@ -4212,7 +4232,14 @@ class Game {
         // Define editable elements based on current mode
         const elements = [];
         
-        // Always include P1 controls (NOT gameHUD or pauseBtn - they should stay fixed at top)
+        // Always include HUD elements - individually customizable
+        elements.push(
+            { id: 'scoreDisplay', name: 'Score Display', allowResize: false },
+            { id: 'timerDisplay', name: 'Timer Display', allowResize: false },
+            { id: 'pauseBtn', name: 'Pause Button', allowResize: false }
+        );
+        
+        // Always include P1 controls
         elements.push(
             { id: 'p1JoystickContainer', name: 'P1 Joystick', allowResize: false },
             { id: 'p1JumpContainer', name: 'P1 Jump Button', allowResize: false }
@@ -4537,6 +4564,9 @@ class Game {
             layout[id].position = 'absolute';
             layout[id].left = relativeLeft;
             layout[id].top = relativeTop;
+            // Clear transform since we're using absolute positioning
+            layout[id].transform = '';
+            this.draggingElement.style.transform = '';
             
             this.draggingElement = null;
         }
@@ -4575,6 +4605,9 @@ class Game {
             layout[id].position = 'absolute';
             layout[id].left = relativeLeft;
             layout[id].top = relativeTop;
+            // Clear transform since we're using absolute positioning
+            layout[id].transform = '';
+            element.style.transform = '';
         });
         
         this.saveCustomLayout(this.editorLayoutMode);
@@ -4645,8 +4678,8 @@ class Game {
             mobileControlsP2.style.height = 'auto';
         }
         
-        // First clear all positioning for touch controls only
-        const elementIds = ['p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer'];
+        // First clear all positioning for all editable elements
+        const elementIds = ['scoreDisplay', 'timerDisplay', 'pauseBtn', 'p1JoystickContainer', 'p1JumpContainer', 'p2JoystickContainer', 'p2JumpContainer'];
         elementIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -4660,15 +4693,16 @@ class Game {
                     element.style.bottom = '';
                     element.style.width = '';
                     element.style.height = '';
+                    element.style.transform = '';
                 }
             }
         });
         
         // Small delay to ensure CSS defaults have been applied
         requestAnimationFrame(() => {
-            // Then apply saved layout (only for touch controls)
+            // Then apply saved layout
             Object.keys(layout).forEach(id => {
-                if (id === 'pauseBtn' || id === 'gameHUD') return; // Skip HUD elements
+                if (id === 'gameHUD') return; // Skip old gameHUD reference
                 
                 const element = document.getElementById(id);
                 if (element) {
@@ -4691,6 +4725,11 @@ class Game {
                         }
                         if (layoutData.width !== undefined) element.style.width = layoutData.width + 'px';
                         if (layoutData.height !== undefined) element.style.height = layoutData.height + 'px';
+                        
+                        // Preserve transform if it exists in saved layout
+                        if (layoutData.transform !== undefined) {
+                            element.style.transform = layoutData.transform;
+                        }
                     }
                 }
             });

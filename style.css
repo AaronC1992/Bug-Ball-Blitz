@@ -1192,14 +1192,12 @@ input[type="text"]:focus {
 }
 
 /* HUD */
-.hud {
+/* Individual HUD elements - customizable positions */
+#scoreDisplay {
     position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    gap: 20px;
-    align-items: center;
     z-index: 100;
 }
 
@@ -1215,6 +1213,13 @@ input[type="text"]:focus {
     text-shadow: 0 0 10px rgba(126, 211, 33, 0.8);
 }
 
+#timerDisplay {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
 .timer-display {
     background: rgba(0, 0, 0, 0.6);
     padding: 10px 20px;
@@ -1224,6 +1229,13 @@ input[type="text"]:focus {
     border: 2px solid #7ED321;
     box-shadow: 0 0 15px rgba(126, 211, 33, 0.6);
     text-shadow: 0 0 10px rgba(126, 211, 33, 0.8);
+}
+
+#pauseBtn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
 }
 
 .level-info {
