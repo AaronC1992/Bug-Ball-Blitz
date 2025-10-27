@@ -3922,8 +3922,11 @@ class Game {
         const wasInMatch = (this.gameState === 'playing' || this.gameState === 'paused');
         
         if (!wasInMatch) {
-            // We were in menu - hide the game screen
-            this.ui.hideScreen('gameScreen');
+            // We were in menu - hide the game screen by removing active class
+            const gameScreen = document.getElementById('gameScreen');
+            if (gameScreen) {
+                gameScreen.classList.remove('active');
+            }
             
             // Clear the canvas
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
