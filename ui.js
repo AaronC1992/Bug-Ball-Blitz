@@ -513,7 +513,7 @@ export class UIManager {
         }
     }
     
-    showBugSelection(callback, customMessage = null) {
+    showBugSelection(callback, customMessage = null, playerClass = null) {
         console.log('showBugSelection called with message:', customMessage);
         
         const bugGrid = document.getElementById('bugGrid');
@@ -527,6 +527,12 @@ export class UIManager {
         this.showScreen('bugSelectScreen');
         
         const bugSelectScreen = document.getElementById('bugSelectScreen');
+        // Apply per-player styling (p1/p2) if provided
+        if (bugSelectScreen) {
+            bugSelectScreen.classList.remove('p1', 'p2');
+            if (playerClass === 'p1') bugSelectScreen.classList.add('p1');
+            if (playerClass === 'p2') bugSelectScreen.classList.add('p2');
+        }
         const existingHeader = bugSelectScreen?.querySelector('h2');
         if (customMessage && existingHeader) {
             existingHeader.textContent = customMessage;

@@ -835,6 +835,28 @@ input[type="text"]:focus {
     margin-bottom: 20px;
 }
 
+/* Player-specific styling for Bug Selection */
+#bugSelectScreen.p1 h2 {
+    color: #ff3b30; /* red */
+    text-shadow: 0 0 12px rgba(255,59,48,0.5);
+}
+#bugSelectScreen.p2 h2 {
+    color: #0ab0ff; /* blue */
+    text-shadow: 0 0 12px rgba(10,176,255,0.5);
+}
+#bugSelectScreen.p1 .bug-grid {
+    border: 3px solid rgba(255,59,48,0.8);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 0 18px rgba(255,59,48,0.25);
+}
+#bugSelectScreen.p2 .bug-grid {
+    border: 3px solid rgba(10,176,255,0.8);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 0 18px rgba(10,176,255,0.25);
+}
+
 /* Difficulty Selection */
 .difficulty-subtitle {
     color: #95a5a6;

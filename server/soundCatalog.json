@@ -1,0 +1,18 @@
+[
+  {
+    "id": "epic_fantasy_tension",
+    "type": "music",
+    "tags": ["fantasy", "dnd", "tension", "battle", "dark"],
+    "src": "/media/epic_fantasy_tension.mp3",
+    "loop": true,
+    "license": "epidemic-sound-pro-2025-10"
+  },
+  {
+    "id": "door_creak_01",
+    "type": "sfx",
+    "tags": ["door", "horror", "castle", "old"],
+    "src": "/media/door_creak_01.mp3",
+    "loop": false,
+    "license": "epidemic-sound-pro-2025-10"
+  }
+]

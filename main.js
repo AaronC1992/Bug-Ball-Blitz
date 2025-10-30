@@ -1200,8 +1200,8 @@ class Game {
                     this.selectedArena = getArenaById(arenaId);
                     this.startMatch();
                 });
-            });
-        });
+            }, '🔵 P2 — Select Your Bug', 'p2');
+        }, '🔴 P1 — Select Your Bug', 'p1');
     }
     
     showArcadeMode() {
