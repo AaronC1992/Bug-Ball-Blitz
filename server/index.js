@@ -22,6 +22,12 @@ app.use(express.json({ limit: '2mb' }));
 // CORS (allow all for now)
 app.use(cors());
 
+// Serve static demo client (optional)
+const publicDir = path.join(__dirname, 'public');
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+}
+
 // Simple health check
 app.get('/health', (req, res) => res.json({ ok: true }));
 
