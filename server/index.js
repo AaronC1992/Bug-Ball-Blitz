@@ -198,7 +198,14 @@ async function loadCatalog(){
   const res=await fetch('/sounds');
   const cat=await res.json();
   const grid=document.getElementById('catalog');
-  grid.innerHTML=cat.map(item=>`<div class=card><strong>${item.id}</strong><div>type: ${item.type}</div><div>src: ${item.src}</div><div>${(item.tags||[]).map(t=>`<span class=badge>${t}</span>`).join('')}</div></div>`).join('');
+  grid.innerHTML = cat.map(item => {
+    const tags = (item.tags||[]).map(t => '<span class="badge">'+t+'</span>').join('');
+    return '<div class="card"><strong>'+item.id+'</strong>'+
+           '<div>type: '+item.type+'</div>'+
+           '<div>src: '+item.src+'</div>'+
+           '<div>'+tags+'</div>'+
+           '</div>';
+  }).join('');
 }
 loadCatalog();
 

@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CueAI Demo Client</title>
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
   <style>
     body{font-family:system-ui,Arial,sans-serif;background:#0b0b0b;color:#f4f4f4;margin:0;padding:20px}
     .container{max-width:900px;margin:0 auto}
@@ -42,6 +43,7 @@
 </div>
 <script type="module">
   import { fetchCatalog, openTranscribeSocket, closeTranscribeSocket, startMicCapture, stopMicCapture, analyze } from './api.js';
+  import AudioManager from './audioManager.js';
 
   const catalogPre = document.getElementById('catalog');
   const transcriptBox = document.getElementById('transcriptBox');
@@ -50,11 +52,13 @@
   const analyzeResult = document.getElementById('analyzeResult');
 
   let fullTranscript = '';
+  const audioManager = new AudioManager();
 
   // Load catalog
   try {
     const catalog = await fetchCatalog();
     catalogPre.textContent = JSON.stringify(catalog, null, 2);
+    audioManager.loadCatalog(catalog);
   } catch (e) {
     catalogPre.textContent = 'Failed to load catalog: ' + e.message;
   }
@@ -85,6 +89,9 @@
       const mode = modeInput.value || 'dnd';
       const result = await analyze({ transcript, mode, context: { recentSounds: ['door_creak_01'], recentMusic: 'epic_fantasy_tension' } });
       analyzeResult.textContent = JSON.stringify(result, null, 2);
+      
+      // Play audio based on result
+      audioManager.handleAnalyzeResult(result);
     } catch (e) {
       analyzeResult.textContent = 'Analyze failed: ' + e.message;
     }
