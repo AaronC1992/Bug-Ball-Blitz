@@ -12,9 +12,15 @@ export class UIManager {
         this.isMobile = this.detectMobile();
         this.isTablet = this.detectTablet();
         
+        // Dev mode secret activation tracking
+        this.devHoldTimer = null;
+        this.devHoldStartTime = 0;
+        this.devHoldDuration = 3000; // 3 seconds
+        
         this.initializeEventListeners();
         this.updateMobileUI();
         this.setupModeChangeDetection();
+        this.setupDevModeActivation();
     }
     
     detectMobile() {
@@ -52,6 +58,84 @@ export class UIManager {
                 this.handleModeChange();
             }
         }, { once: true, passive: true });
+    }
+    
+    setupDevModeActivation() {
+        // Secret activation: Hold/tap soccer ball for 3 seconds on title screen
+        const soccerBall = document.querySelector('.soccer-ball');
+        
+        if (!soccerBall) return;
+        
+        // Mouse/touch start
+        const startHold = (e) => {
+            if (this.currentScreen !== 'titleScreen') return;
+            
+            e.preventDefault();
+            this.devHoldStartTime = Date.now();
+            
+            // Visual feedback
+            soccerBall.style.transform = 'scale(1.2)';
+            soccerBall.style.filter = 'brightness(1.5)';
+            
+            // Check progress every 100ms
+            this.devHoldTimer = setInterval(() => {
+                const elapsed = Date.now() - this.devHoldStartTime;
+                const progress = Math.min(elapsed / this.devHoldDuration, 1);
+                
+                // Pulse effect during hold
+                const scale = 1.2 + (Math.sin(elapsed / 100) * 0.1);
+                soccerBall.style.transform = `scale(${scale})`;
+                
+                if (elapsed >= this.devHoldDuration) {
+                    this.activateDevMode();
+                    endHold();
+                }
+            }, 100);
+        };
+        
+        // Mouse/touch end
+        const endHold = () => {
+            if (this.devHoldTimer) {
+                clearInterval(this.devHoldTimer);
+                this.devHoldTimer = null;
+            }
+            
+            // Reset visual feedback
+            soccerBall.style.transform = '';
+            soccerBall.style.filter = '';
+            this.devHoldStartTime = 0;
+        };
+        
+        // Desktop events
+        soccerBall.addEventListener('mousedown', startHold);
+        soccerBall.addEventListener('mouseup', endHold);
+        soccerBall.addEventListener('mouseleave', endHold);
+        
+        // Mobile events
+        soccerBall.addEventListener('touchstart', startHold, { passive: false });
+        soccerBall.addEventListener('touchend', endHold);
+        soccerBall.addEventListener('touchcancel', endHold);
+    }
+    
+    activateDevMode() {
+        const devBtn1 = document.getElementById('devClearDataBtn');
+        const devBtn2 = document.getElementById('devTestProfileBtn');
+        
+        if (devBtn1 && devBtn2) {
+            devBtn1.style.display = 'flex';
+            devBtn2.style.display = 'flex';
+            
+            // Flash animation to show they appeared
+            devBtn1.style.animation = 'pulse 0.5s ease-in-out 3';
+            devBtn2.style.animation = 'pulse 0.5s ease-in-out 3';
+            
+            // Play sound if available
+            if (this.game && this.game.audio) {
+                this.game.audio.playSound('ui_click');
+            }
+            
+            console.log('🔧 Developer mode activated!');
+        }
     }
     
     handleModeChange() {

@@ -441,7 +441,8 @@ h2 {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    -webkit-text-stroke: 2px #1b5e20;
+    /* Remove direct stroke to prevent glyph overlap artifacts (e.g., E) */
+    -webkit-text-stroke: 0 transparent;
     position: relative;
     z-index: 1;
     letter-spacing: 4px;
@@ -450,6 +451,18 @@ h2 {
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8)) 
             drop-shadow(0 0 15px rgba(255, 215, 0, 0.5));
     animation: headerGlow 3s ease-in-out infinite;
+}
+
+/* Generic outline layer for gradient headings except matchResultTitle (which has its own logic) */
+h2:not(#matchResultTitle)::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    -webkit-text-stroke: 2px #1b5e20;
+    z-index: 0;
+    pointer-events: none;
 }
 
 @keyframes headerGlow {
@@ -1840,6 +1853,30 @@ input[type="text"]:focus {
 
 .menu-panel h2 {
     margin-bottom: 20px;
+}
+
+/* Match result title: use solid color fill with separate outline layer to avoid glyph self-overlap (e.g., letter E) */
+#matchResultTitle {
+    /* Disable gradient clip so JS-set color applies cleanly */
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    background-clip: initial;
+    -webkit-background-clip: initial;
+    /* Keep positioned for pseudo-element outline */
+    position: relative;
+    z-index: 1; /* ensure above its outline */
+}
+
+#matchResultTitle::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    /* Draw the outline behind the filled text */
+    -webkit-text-stroke: 2px #1b5e20;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    z-index: 0;
+    pointer-events: none;
 }
 
 /* Pause Menu Enhancements */

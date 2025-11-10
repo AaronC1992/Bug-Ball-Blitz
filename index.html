@@ -13,7 +13,7 @@
 </head>
 <body>
     <!-- Version number - always visible -->
-    <div class="version">v1.21.5-debug</div>    
+    <div class="version">v1.21.5</div>    
     <div id="gameContainer">
         <!-- Title Screen -->
         <div id="titleScreen" class="screen active">
@@ -39,10 +39,10 @@
                     <span class="btn-text">Exit</span>
                 </button>
             </div>
-            <button class="dev-btn" id="devClearDataBtn" title="Clear all cached data">
+            <button class="dev-btn" id="devClearDataBtn" title="Clear all cached data" style="display: none;">
                 <span class="dev-icon">🔧</span>
             </button>
-            <button class="dev-btn dev-test-btn" id="devTestProfileBtn" title="Create tester profile with everything unlocked">
+            <button class="dev-btn dev-test-btn" id="devTestProfileBtn" title="Create tester profile with everything unlocked" style="display: none;">
                 <span class="dev-icon">👨‍💻</span>
             </button>
         </div>
@@ -779,7 +779,7 @@
         <!-- Match End Screen -->
         <div id="matchEndScreen" class="overlay-menu">
             <div class="menu-panel">
-                <h2 id="matchResultTitle">Victory!</h2>
+                <h2 id="matchResultTitle" data-text="Victory!">Victory!</h2>
                 <div id="matchStats"></div>
                 <div class="menu-buttons">
                     <button class="menu-btn" id="continueBtn">Continue</button>
@@ -792,7 +792,7 @@
         <!-- Tower Victory Screen -->
         <div id="towerVictoryScreen" class="overlay-menu">
             <div class="menu-panel">
-                <h2>🏆 TOWER COMPLETE! 🏆</h2>
+                <h2 data-text="🏆 TOWER COMPLETE! 🏆">🏆 TOWER COMPLETE! 🏆</h2>
                 <p class="victory-text">You've conquered all challenges!</p>
                 <div id="towerVictoryStats"></div>
                 <div class="menu-buttons">

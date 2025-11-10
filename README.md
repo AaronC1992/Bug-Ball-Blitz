@@ -15,39 +15,61 @@ Click the link above to play the latest version directly in your browser!
 ### Game Modes
 
 1. **🏆 Tower Campaign** (Single Player)
-   - Progress through 8 challenging levels
-   - Levels 1-4: Face increasingly difficult AI (Easy → Pro)
-   - Levels 5-8: Battle TWO AI opponents simultaneously (2v1 matches)
+   - Progress through 20 challenging levels
+   - Levels 1-4: 1v1 matches with increasing difficulty (Easy → Pro)
+   - Levels 5-8: 1v2 matches (face TWO AI opponents)
+   - Levels 9-19: Advanced challenges mixing 1v1 and 1v2 battles
+   - Level 20: 👑 BOSS GAUNTLET - Face all bugs consecutively!
    - Complete the tower to become the ultimate Bug Ball champion!
 
 2. **⚡ Quick Play**
    - Instant match against AI
    - Choose your difficulty: Easy, Medium, Hard, or Pro
    - Select your favorite bug and arena
+   - Customize match length and score to win
 
-3. **🎮 Local Multiplayer** (PC Only)
-   - Two players on the same keyboard
-   - Player 1: WASD keys
-   - Player 2: Arrow keys
-   - Automatically hidden on mobile devices
+3. **🎮 Local Multiplayer**
+   - Two players on the same device
+   - **PC**: Player 1 (WASD) vs Player 2 (Arrow keys)
+   - **Mobile/Tablet**: Dual touch controls (portrait mode only)
+   - Large screens recommended for best multiplayer experience
+
+4. **🎯 Arcade Mode**
+   - Fully customizable matches with crazy modifiers!
+   - Adjust gravity, ball size, player size, and physics
+   - Play with multiple balls simultaneously (1-3 balls)
+   - Add weather effects (rain, snow, wind)
+   - Create AI-only spectator matches
+   - Team up with AI partners (2v1, 2v2 modes)
 
 ## 🪲 Playable Bugs
 
 Each bug has unique stats affecting gameplay:
 
-| Bug | Speed | Jump | Power | Size | Playstyle |
-|-----|-------|------|-------|------|-----------|
-| **Beetle** | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Large | Strong kicks, slower movement |
-| **Grasshopper** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Medium | Maximum jump height, very fast |
-| **Ladybug** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Small | Balanced all-around stats |
-| **Ant** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | Tiny | Lightning fast, weaker kicks |
-| **Spider** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Medium | Agile with good control |
+| Bug | Speed | Jump | Power | Size | Unlock Requirement | Playstyle |
+|-----|-------|------|-------|------|-------------------|-----------|
+| **Ladybug** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Small | Starter | Balanced all-around stats |
+| **Grasshopper** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Medium | Win 1st match | Maximum jump, very fast |
+| **Beetle** | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Large | Win 10 matches | Strong kicks, slower |
+| **Ant** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | Tiny | Score 50 goals | Lightning fast, weaker |
+| **Spider** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Medium | Win 10 matches | Agile with control |
 
 ## 🎨 Arenas
 
+Play across 16 unique arenas with different visual themes:
+
+**Starter Arenas** (Always Available):
 - **Grass Field**: Classic grassy soccer pitch
 - **Dirt Patch**: Dusty arena with earth tones
 - **Leaf Arena**: Battle on a giant leaf surface
+
+**Unlockable Arenas** (Earn through achievements):
+- Desert Oasis, Snowy Park, Volcanic Rock
+- Mushroom Forest, Beach Sand, Moon Crater
+- Autumn Leaves, Ice Cave, Garden Pond
+- Neon City, Candy Land, Jungle Vines, Crystal Cavern
+
+Each arena features unique weather effects and visual atmospheres!
 
 ## 🎯 Controls
 
@@ -91,8 +113,12 @@ The game automatically detects mobile devices and:
 - Goals Scored / Conceded
 - Total Matches Played
 - Win Rate Percentage
-- Current Tower Level
+- Current Tower Level & Progress
 - Tower Completion Status
+- **NEW**: Achievement Progress (18 total achievements)
+- **NEW**: Unlocked Bugs, Arenas, Celebrations
+- **NEW**: Goal Celebrations & Bug Animations
+- **NEW**: Cosmetic Items & Customization
 
 ## 🚀 How to Run
 
@@ -133,16 +159,27 @@ Bug Ball Blitz/
 ├── ai.js               # AI behavior (4 difficulty levels + multi-AI)
 ├── saveSystem.js       # localStorage profile management
 ├── ui.js               # Menu system and UI rendering
+├── audioManager.js     # Sound effects and music system
+├── achievementManager.js # Achievement tracking and unlocks
+├── qualitySettings.js  # Graphics quality presets
+├── particles.js        # Particle effects system
+├── celebrations.js     # Goal celebration animations
+├── bugAnimations.js    # Bug-specific animations
+├── cosmetics.js        # Cosmetic items and customization
+├── menuBackground.js   # Animated menu backgrounds
+├── CHEATS.js           # Developer cheat codes
 └── README.md           # This file
 ```
 
 ## 🎲 Game Rules
 
-1. **Match Duration**: 2 minutes or first to 5 goals
+1. **Match Duration**: Customizable (1-5 minutes) or first to reach goal target (3-15 goals)
 2. **Scoring**: Kick the ball into opponent's goal
 3. **Goals**: Located on left and right sides of the field
-4. **Physics**: Realistic ball physics with gravity and bounce
-5. **Reset**: Ball and players reset after each goal
+4. **Physics**: Realistic ball physics with gravity, bounce, and momentum
+5. **Directional Kicks**: Control ball direction based on movement and positioning
+6. **Reset**: Ball and players reset after each goal with 3-second countdown
+7. **Weather Effects**: Rain, snow, and wind affect ball physics dynamically
 
 ## 🧠 AI Behavior
 
@@ -174,12 +211,18 @@ In Tower Campaign levels 5-8, two AI opponents coordinate:
 
 - ✅ Modular code architecture
 - ✅ Real-time physics simulation
-- ✅ Responsive design (mobile + desktop)
+- ✅ Responsive design (mobile + desktop + tablet)
 - ✅ Save/Load system with multiple profiles
-- ✅ Progressive difficulty tower system
+- ✅ Progressive difficulty tower system (20 levels)
 - ✅ All artwork generated as inline SVG
-- ✅ Touch controls for mobile
+- ✅ Touch controls for mobile with customizable layout
 - ✅ No external dependencies
+- ✅ Achievement system with 18 unlockables
+- ✅ Goal celebrations and bug animations
+- ✅ Cosmetic items affecting gameplay
+- ✅ Weather effects (rain, snow, wind)
+- ✅ Arcade mode with custom physics
+- ✅ Quality settings for performance optimization
 
 ## 🎨 Artwork
 
@@ -235,14 +278,22 @@ Edit `ai.js` difficulty parameters:
 ## 📝 Future Enhancements
 
 Potential additions:
-- Online multiplayer
-- More bug characters
-- Power-ups and special moves
-- Tournament mode
-- Replay system
-- Sound effects and music
-- Particle effects for goals
-- Character customization
+- Online multiplayer with matchmaking
+- More bug characters and special abilities
+- Power-ups and special moves during matches
+- Tournament mode with brackets
+- Replay system with highlights
+- Background music and enhanced sound effects
+- Advanced particle effects
+- Character customization shop
+- Daily challenges and events
+- Leaderboards and statistics
+
+## 📜 Version History
+
+Current Version: **v1.21.5**
+
+See [CHANGELOG_v1.9.0.md](CHANGELOG_v1.9.0.md) for detailed version history.
 
 ## 📜 License
 

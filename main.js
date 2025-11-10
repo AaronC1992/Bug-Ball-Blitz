@@ -2797,7 +2797,10 @@ class Game {
         this.weatherDirection = 1;
         this.weatherDirectionTimer = 0;
         
-        const particleCount = 150; // Increased from 80 for better visibility
+        // Get particle count based on quality setting
+        const qualityParticleCount = this.quality.getSetting('particleCount');
+        // Weather particles use 2x the quality setting (range: 40-200)
+        const particleCount = qualityParticleCount * 2;
         
         for (let i = 0; i < particleCount; i++) {
             const particle = {
@@ -2923,15 +2926,8 @@ class Game {
     applyWeatherEffects() {
         if (this.currentWeather === 'none') return;
         
-        // Update weather direction timer (changes every 2 seconds)
-        if (this.currentWeather === 'rain' || this.currentWeather === 'wind') {
-            this.weatherDirectionTimer++;
-            // At 60fps, 120 frames = 2 seconds
-            if (this.weatherDirectionTimer >= 120) {
-                this.weatherDirection *= -1; // Reverse direction
-                this.weatherDirectionTimer = 0;
-            }
-        }
+        // Note: Weather direction timer is updated in updateWeatherParticles()
+        // This keeps the visual particles and physics effects synchronized
         
         // Apply effects to all balls
         for (let ball of this.balls) {
@@ -3078,6 +3074,11 @@ class Game {
         } else {
             titleEl.textContent = 'Defeat';
             titleEl.style.color = '#ff4444';
+        }
+
+        // Update outline layer text for clean stroke rendering (see #matchResultTitle::before CSS)
+        if (titleEl) {
+            titleEl.setAttribute('data-text', titleEl.textContent);
         }
         
         // Show gauntlet stats if applicable

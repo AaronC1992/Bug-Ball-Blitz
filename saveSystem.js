@@ -10,8 +10,14 @@ export class SaveSystem {
         
         const profileKey = SAVE_PREFIX + name.toLowerCase().replace(/\s+/g, '_');
         
-        if (localStorage.getItem(profileKey)) {
-            return { success: false, error: 'Profile already exists' };
+        try {
+            const existingData = localStorage.getItem(profileKey);
+            if (existingData) {
+                return { success: false, error: 'Profile already exists' };
+            }
+        } catch (e) {
+            console.error('Error checking existing profile:', e);
+            return { success: false, error: 'Failed to access storage' };
         }
         
         const profile = {
@@ -54,78 +60,122 @@ export class SaveSystem {
             }
         };
         
-        localStorage.setItem(profileKey, JSON.stringify(profile));
-        return { success: true, profile };
+        try {
+            localStorage.setItem(profileKey, JSON.stringify(profile));
+            return { success: true, profile };
+        } catch (e) {
+            console.error('Error saving profile:', e);
+            if (e.name === 'QuotaExceededError') {
+                return { success: false, error: 'Storage quota exceeded. Please delete old profiles.' };
+            }
+            return { success: false, error: 'Failed to save profile' };
+        }
     }
     
     static loadProfile(name) {
         const profileKey = SAVE_PREFIX + name.toLowerCase().replace(/\s+/g, '_');
-        const data = localStorage.getItem(profileKey);
         
-        if (!data) {
+        try {
+            const data = localStorage.getItem(profileKey);
+            
+            if (!data) {
+                return null;
+            }
+            
+            const profile = JSON.parse(data);
+            
+            // Validate profile structure
+            if (!profile.name || !profile.stats || !profile.tower) {
+                console.error('Invalid profile structure:', profile);
+                return null;
+            }
+            
+            // Migrate old profiles to new format
+            if (!profile.selectedCelebration) {
+                profile.selectedCelebration = 'classic';
+            }
+            if (!profile.selectedBugAnimation) {
+                profile.selectedBugAnimation = 'none';
+            }
+            if (!profile.equippedCosmetics) {
+                profile.equippedCosmetics = [];
+            }
+            if (!profile.tower.highestLevel) {
+                profile.tower.highestLevel = profile.tower.levelsCompleted || 0;
+            }
+            // Add achievement progress if missing (for old profiles)
+            if (!profile.achievementProgress) {
+                profile.achievementProgress = {
+                    stats: {
+                        totalGoals: 0,
+                        totalWins: 0,
+                        totalMatches: 0,
+                        perfectGames: 0,
+                        quickGoals: 0,
+                        comebacks: 0,
+                        blowouts: 0,
+                        goalsInMatch: 0,
+                        visitedArenas: []
+                    },
+                    achievements: {}
+                };
+            }
+            
+            return profile;
+        } catch (e) {
+            console.error('Error loading profile:', e);
             return null;
         }
-        
-        const profile = JSON.parse(data);
-        
-        // Migrate old profiles to new format
-        if (!profile.selectedCelebration) {
-            profile.selectedCelebration = 'classic';
-        }
-        if (!profile.selectedBugAnimation) {
-            profile.selectedBugAnimation = 'none';
-        }
-        if (!profile.equippedCosmetics) {
-            profile.equippedCosmetics = [];
-        }
-        if (!profile.tower.highestLevel) {
-            profile.tower.highestLevel = profile.tower.levelsCompleted || 0;
-        }
-        // Add achievement progress if missing (for old profiles)
-        if (!profile.achievementProgress) {
-            profile.achievementProgress = {
-                stats: {
-                    totalGoals: 0,
-                    totalWins: 0,
-                    totalMatches: 0,
-                    perfectGames: 0,
-                    quickGoals: 0,
-                    comebacks: 0,
-                    blowouts: 0,
-                    goalsInMatch: 0,
-                    visitedArenas: []
-                },
-                achievements: {}
-            };
-        }
-        
-        return profile;
     }
     
     static saveProfile(profile) {
         const profileKey = SAVE_PREFIX + profile.name.toLowerCase().replace(/\s+/g, '_');
-        localStorage.setItem(profileKey, JSON.stringify(profile));
+        try {
+            localStorage.setItem(profileKey, JSON.stringify(profile));
+        } catch (e) {
+            console.error('Error saving profile:', e);
+            if (e.name === 'QuotaExceededError') {
+                alert('Storage quota exceeded! Please delete old profiles.');
+            }
+        }
     }
     
     static getAllProfiles() {
         const profiles = [];
         
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith(SAVE_PREFIX)) {
-                const data = localStorage.getItem(key);
-                if (data) {
-                    profiles.push(JSON.parse(data));
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith(SAVE_PREFIX)) {
+                    try {
+                        const data = localStorage.getItem(key);
+                        if (data) {
+                            const profile = JSON.parse(data);
+                            // Basic validation
+                            if (profile && profile.name && profile.stats) {
+                                profiles.push(profile);
+                            }
+                        }
+                    } catch (parseError) {
+                        console.error('Error parsing profile:', key, parseError);
+                        // Continue to next profile
+                    }
                 }
             }
+        } catch (e) {
+            console.error('Error loading profiles:', e);
         }
         
-        return profiles.sort((a, b) => b.created - a.created);
+        return profiles.sort((a, b) => (b.created || 0) - (a.created || 0));
     }
     
     static deleteProfile(name) {
         const profileKey = SAVE_PREFIX + name.toLowerCase().replace(/\s+/g, '_');
-        localStorage.removeItem(profileKey);
+        try {
+            localStorage.removeItem(profileKey);
+        } catch (e) {
+            console.error('Error deleting profile:', e);
+        }
     }
     
     static updateStats(profile, matchResult) {
