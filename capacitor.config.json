@@ -5,11 +5,11 @@
   "bundledWebRuntime": false,
   "android": {
     "buildOptions": {
-      "keystorePath": "",
-      "keystorePassword": "",
-      "keystoreAlias": "",
-      "keystoreAliasPassword": "",
-      "releaseType": "APK"
+      "keystorePath": "app/bugballblitz-release-key.keystore",
+      "keystorePassword": "bugballblitz2024",
+      "keystoreAlias": "bugballblitz",
+      "keystoreAliasPassword": "bugballblitz2024",
+      "releaseType": "AAB"
     }
   },
   "plugins": {
