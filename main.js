@@ -912,39 +912,47 @@ class Game {
             // MULTIPLAYER DEFAULTS
             if (!p2Joy || !p2Jump) return; // need both sets
             if (isPortrait) {
-                // Portrait multiplayer: P1 RIGHT side, P2 LEFT side
-                // Player 1 (Right)
+                // Portrait multiplayer: P1 LEFT side, P2 RIGHT side
+                // Player 1 (Left)
                 p1Joy.style.position = 'absolute';
-                p1Joy.style.right = '140px';
+                p1Joy.style.left = '20px';
+                p1Joy.style.right = 'auto';
                 p1Joy.style.bottom = '20px';
                 p1Jump.style.position = 'absolute';
-                p1Jump.style.right = '20px';
+                p1Jump.style.left = '140px';
+                p1Jump.style.right = 'auto';
                 p1Jump.style.bottom = '20px';
                 p1Jump.style.display = 'flex';
-                // Player 2 (Left)
+                // Player 2 (Right)
                 p2Joy.style.position = 'absolute';
-                p2Joy.style.left = '20px';
+                p2Joy.style.right = '140px';
+                p2Joy.style.left = 'auto';
                 p2Joy.style.bottom = '20px';
                 p2Jump.style.position = 'absolute';
-                p2Jump.style.left = '140px';
+                p2Jump.style.right = '20px';
+                p2Jump.style.left = 'auto';
                 p2Jump.style.bottom = '20px';
                 p2Jump.style.display = 'flex';
             } else {
                 // Landscape multiplayer: bring controls inward slightly
-                // Player 1 (Right)
+                // Player 1 (Left)
                 p1Joy.style.position = 'absolute';
-                p1Joy.style.right = '180px';
+                p1Joy.style.left = '60px';
+                p1Joy.style.right = 'auto';
                 p1Joy.style.bottom = '20px';
                 p1Jump.style.position = 'absolute';
-                p1Jump.style.right = '60px';
+                p1Jump.style.left = '180px';
+                p1Jump.style.right = 'auto';
                 p1Jump.style.bottom = '25px';
                 p1Jump.style.display = 'flex';
-                // Player 2 (Left)
+                // Player 2 (Right)
                 p2Joy.style.position = 'absolute';
-                p2Joy.style.left = '60px';
+                p2Joy.style.right = '180px';
+                p2Joy.style.left = 'auto';
                 p2Joy.style.bottom = '20px';
                 p2Jump.style.position = 'absolute';
-                p2Jump.style.left = '180px';
+                p2Jump.style.right = '60px';
+                p2Jump.style.left = 'auto';
                 p2Jump.style.bottom = '25px';
                 p2Jump.style.display = 'flex';
             }
