@@ -4,9 +4,21 @@ A modern remake of "Slime Soccer" featuring insect athletes competing in physics
 
 ## 🎮 Play Now!
 
+### Web Version (Browser)
 **[🕹️ Play Bug Ball Blitz](https://aaronc1992.github.io/Bug-Ball-Blitz/)**
 
 Click the link above to play the latest version directly in your browser!
+
+### Android App (Mobile)
+**[📱 Download APK](https://github.com/AaronC1992/Bug-Ball-Blitz/releases/download/v1.0.0/bug-ball-blitz.apk)** | **[All Releases](https://github.com/AaronC1992/Bug-Ball-Blitz/releases)**
+
+Download the native Android app with full AdMob integration and optimized mobile controls.
+
+**Installation:**
+1. Click the "Download APK" link above to get the latest version
+2. Enable "Install from Unknown Sources" in your Android settings
+3. Open the downloaded APK file to install
+4. Enjoy native mobile gameplay with touch controls!
 
 ## 🎮 Game Overview
 
@@ -223,6 +235,61 @@ In Tower Campaign levels 5-8, two AI opponents coordinate:
 - ✅ Weather effects (rain, snow, wind)
 - ✅ Arcade mode with custom physics
 - ✅ Quality settings for performance optimization
+
+## 💰 Monetization (AdMob Integration Scaffold)
+
+The project includes a lightweight ads abstraction (`ads.js`) that provides a unified API for:
+- Interstitial ads (shown after match end, with a cooldown to avoid spamming)
+- Banner placeholder (`#adBanner`) rendered on the match result screen
+- Rewarded ad stub (API present; add a button to trigger and grant rewards)
+
+### Your AdMob IDs
+App ID:
+```
+ca-app-pub-6064374775404365~2828970201
+```
+Interstitial (Transitions):
+```
+ca-app-pub-6064374775404365/3897960551
+```
+
+These are configured in `ensureAds()` inside `main.js`. Web builds only show placeholders; real ads require a native wrapper.
+
+### Enabling Real Ads (Android/iOS)
+1. Wrap the project using Capacitor (recommended) or Cordova.
+2. Install an AdMob plugin:
+    - Capacitor: `@capacitor-community/admob`
+    - Cordova: `admob-plus-cordova`
+3. Configure your App ID:
+    - Android `AndroidManifest.xml`:
+       ```xml
+       <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6064374775404365~2828970201" />
+       ```
+    - iOS `Info.plist`:
+       ```xml
+       <key>GADApplicationIdentifier</key>
+       <string>ca-app-pub-6064374775404365~2828970201</string>
+       ```
+4. Replace placeholder logic in `ads.js` with plugin calls (load/show interstitial & rewarded) per your chosen plugin’s README.
+5. Build and test on a real device (use test ads; never click live ads during development).
+
+### Rewarded Flow (Next Step)
+Add a button (e.g., on the match end screen or styles shop):
+```js
+game.ads.showRewarded(() => {
+   // Grant reward (extra cosmetics currency, bonus XP, etc.)
+});
+```
+
+### Consent & Privacy
+For GDPR/CCPA regions:
+1. Show a consent modal on first launch.
+2. Store choice in `localStorage` (e.g., `adConsent=true`).
+3. Only call `ensureAds()` after consent is granted.
+
+### Frequency Capping
+`AdsManager` includes an interstitial cooldown (default 120s). Adjust via `interstitialCooldownSeconds` when constructing.
+
 
 ## 🎨 Artwork
 
