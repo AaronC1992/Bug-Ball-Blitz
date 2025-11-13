@@ -7,60 +7,13 @@ let imagesLoaded = false;
 // Load cosmetic images
 export function loadCosmeticImages() {
     return new Promise((resolve) => {
-        const imagesToLoad = [
-            { id: 'crown', path: 'Assets/Sprites/crown.png' },
-            { id: 'topHat', path: 'Assets/Sprites/tophat.png' },
-            { id: 'partyHat', path: 'Assets/Sprites/partyhat.png' },
-            { id: 'wizardHat', path: 'Assets/Sprites/wizardhat.png' },
-            { id: 'cowboyHat', path: 'Assets/Sprites/cowboyhat.png' },
-            { id: 'cowgirlHat', path: 'Assets/Sprites/cowgirlhat.png' },
-            { id: 'halo', path: 'Assets/Sprites/halo.png' },
-            { id: 'viking', path: 'Assets/Sprites/vikinghelmet.png' },
-            { id: 'propellerCap', path: 'Assets/Sprites/propellercap.png' },
-            { id: 'chef', path: 'Assets/Sprites/chefhat.png' },
-            { id: 'sunglasses', path: 'Assets/Sprites/sunglasses.png' },
-            { id: 'monocle', path: 'Assets/Sprites/monocle.png' },
-            { id: 'mask', path: 'Assets/Sprites/heromask.png' },
-            { id: 'wings', path: 'Assets/Sprites/fairywings.png' },
-            { id: 'bowtie', path: 'Assets/Sprites/bowtie.png' },
-            { id: 'scarf', path: 'Assets/Sprites/scarf.png' },
-            { id: 'mustache', path: 'Assets/Sprites/fancymustache.png' },
-            { id: 'jetpack', path: 'Assets/Sprites/jetpack.png' },
-            { id: 'backpack', path: 'Assets/Sprites/backpack.png' },
-            { id: 'rainbow', path: 'Assets/Sprites/foxtail.png' }
-            // Add more images here as needed
-        ];
+        // Cosmetic images removed - Assets folder deleted
+        // All cosmetics use emoji/canvas rendering instead
+        const imagesToLoad = [];
         
-        let loadedCount = 0;
-        const totalImages = imagesToLoad.length;
-        
-        if (totalImages === 0) {
-            imagesLoaded = true;
-            resolve();
-            return;
-        }
-        
-        imagesToLoad.forEach(({ id, path }) => {
-            const img = new Image();
-            img.onload = () => {
-                cosmeticImages[id] = img;
-                loadedCount++;
-                if (loadedCount === totalImages) {
-                    imagesLoaded = true;
-                    console.log('Cosmetic images loaded successfully');
-                    resolve();
-                }
-            };
-            img.onerror = () => {
-                console.warn(`Failed to load cosmetic image: ${path}`);
-                loadedCount++;
-                if (loadedCount === totalImages) {
-                    imagesLoaded = true;
-                    resolve();
-                }
-            };
-            img.src = path;
-        });
+        imagesLoaded = true;
+        console.log('Cosmetic images disabled (Assets folder removed)');
+        resolve();
     });
 }
 

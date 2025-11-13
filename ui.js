@@ -12,10 +12,11 @@ export class UIManager {
         this.isMobile = this.detectMobile();
         this.isTablet = this.detectTablet();
         
-        // Dev mode secret activation tracking
-        this.devHoldTimer = null;
-        this.devHoldStartTime = 0;
-        this.devHoldDuration = 3000; // 3 seconds
+        // Dev mode secret activation tracking (click-based)
+        this.devClickCount = 0;
+        this.devClickTimer = null;
+        this.devClickTarget = 1; // 1 click to activate
+        this.devClickWindow = 5000; // within 5 seconds (increased from 3)
         
         this.initializeEventListeners();
         this.updateMobileUI();
@@ -61,80 +62,83 @@ export class UIManager {
     }
     
     setupDevModeActivation() {
-        // Secret activation: Hold/tap soccer ball for 3 seconds on title screen
-        const soccerBall = document.querySelector('.soccer-ball');
+        // Secret activation: Click version number 7 times within 3 seconds on title screen
+        const versionElement = document.querySelector('.version');
         
-        if (!soccerBall) return;
+        if (!versionElement) return;
         
-        // Mouse/touch start
-        const startHold = (e) => {
-            if (this.currentScreen !== 'titleScreen') return;
-            
-            e.preventDefault();
-            this.devHoldStartTime = Date.now();
-            
-            // Visual feedback
-            soccerBall.style.transform = 'scale(1.2)';
-            soccerBall.style.filter = 'brightness(1.5)';
-            
-            // Check progress every 100ms
-            this.devHoldTimer = setInterval(() => {
-                const elapsed = Date.now() - this.devHoldStartTime;
-                const progress = Math.min(elapsed / this.devHoldDuration, 1);
-                
-                // Pulse effect during hold
-                const scale = 1.2 + (Math.sin(elapsed / 100) * 0.1);
-                soccerBall.style.transform = `scale(${scale})`;
-                
-                if (elapsed >= this.devHoldDuration) {
-                    this.activateDevMode();
-                    endHold();
-                }
-            }, 100);
-        };
-        
-        // Mouse/touch end
-        const endHold = () => {
-            if (this.devHoldTimer) {
-                clearInterval(this.devHoldTimer);
-                this.devHoldTimer = null;
+        const handleClick = (e) => {
+            // Only allow on title screen or main menu
+            if (this.currentScreen !== 'titleScreen' && this.currentScreen !== 'mainMenu') {
+                console.log(`❌ Dev mode only works on title screen or main menu. Current: ${this.currentScreen}`);
+                return;
             }
             
-            // Reset visual feedback
-            soccerBall.style.transform = '';
-            soccerBall.style.filter = '';
-            this.devHoldStartTime = 0;
+            e.preventDefault();
+            this.devClickCount++;
+            
+            console.log(`🖱️ Version clicked! Count: ${this.devClickCount}/${this.devClickTarget}`);
+            
+            // Visual feedback - flash
+            versionElement.style.color = '#7ed321';
+            versionElement.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                versionElement.style.color = 'rgba(255, 255, 255, 0.7)';
+                versionElement.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Reset timer on first click
+            if (this.devClickCount === 1) {
+                this.devClickTimer = setTimeout(() => {
+                    console.log('⏱️ Dev mode timeout - resetting click count');
+                    this.devClickCount = 0;
+                }, this.devClickWindow);
+            }
+            
+            // Check if target reached
+            if (this.devClickCount >= this.devClickTarget) {
+                console.log('🎯 Target reached! Activating dev mode...');
+                clearTimeout(this.devClickTimer);
+                this.devClickCount = 0;
+                this.activateDevMode();
+            }
         };
         
-        // Desktop events
-        soccerBall.addEventListener('mousedown', startHold);
-        soccerBall.addEventListener('mouseup', endHold);
-        soccerBall.addEventListener('mouseleave', endHold);
-        
-        // Mobile events
-        soccerBall.addEventListener('touchstart', startHold, { passive: false });
-        soccerBall.addEventListener('touchend', endHold);
-        soccerBall.addEventListener('touchcancel', endHold);
+        // Desktop and mobile events
+        versionElement.addEventListener('click', handleClick);
+        versionElement.addEventListener('touchend', handleClick);
     }
     
     activateDevMode() {
-        const devBtn1 = document.getElementById('devClearDataBtn');
-        const devBtn2 = document.getElementById('devTestProfileBtn');
+        const devPopup = document.getElementById('devModePopup');
         
-        if (devBtn1 && devBtn2) {
-            devBtn1.style.display = 'flex';
-            devBtn2.style.display = 'flex';
+        console.log('🔧 Attempting to activate dev mode...');
+        console.log('Dev popup element:', devPopup);
+        console.log('Current screen:', this.currentScreen);
+        
+        if (devPopup) {
+            // Show the popup using flex display
+            devPopup.style.display = 'flex';
+            devPopup.classList.add('active');
             
-            // Flash animation to show they appeared
-            devBtn1.style.animation = 'pulse 0.5s ease-in-out 3';
-            devBtn2.style.animation = 'pulse 0.5s ease-in-out 3';
+            console.log('✅ Set popup display to flex and added active class');
+            console.log('Popup computed style display:', window.getComputedStyle(devPopup).display);
+            console.log('Popup classList:', devPopup.classList.toString());
             
             // Play sound if available
             if (this.game && this.game.audio) {
                 this.game.audio.playSound('ui_click');
             }
             
-            console.log('🔧 Developer mode activated!');
+            console.log('✅ Developer mode popup should now be visible!');
+        } else {
+            console.error('❌ Dev mode popup not found in DOM!');
+            console.log('Searching for popup...');
+            const allOverlays = document.querySelectorAll('.overlay-menu');
+            console.log('Found overlay-menu elements:', allOverlays.length);
+            allOverlays.forEach((el, i) => {
+                console.log(`Overlay ${i}:`, el.id, el.style.display);
+            });
         }
     }
     
@@ -261,6 +265,62 @@ export class UIManager {
             });
         } else {
             console.error('Dev test profile button not found!');
+        }
+        
+        // Developer Mode Popup buttons
+        const closeDevModeBtn = document.getElementById('closeDevModeBtn');
+        if (closeDevModeBtn) {
+            closeDevModeBtn.addEventListener('click', () => {
+                console.log('Close dev mode button clicked');
+                const devPopup = document.getElementById('devModePopup');
+                if (devPopup) {
+                    devPopup.style.display = 'none';
+                    devPopup.classList.remove('active');
+                    console.log('Dev popup closed');
+                } else {
+                    console.error('Dev popup not found when trying to close');
+                }
+            });
+        } else {
+            console.error('Close dev mode button not found!');
+        }
+        
+        const devClearAllDataBtn = document.getElementById('devClearAllDataBtn');
+        if (devClearAllDataBtn) {
+            devClearAllDataBtn.addEventListener('click', () => {
+                if (confirm('⚠️ DEVELOPER MODE ⚠️\n\nThis will erase ALL cached data including:\n• All profiles\n• All achievements\n• All unlocked content\n• All settings\n\nThis action cannot be undone!\n\nContinue?')) {
+                    // Clear localStorage
+                    localStorage.clear();
+                    
+                    // Clear sessionStorage
+                    sessionStorage.clear();
+                    
+                    // Clear cookies
+                    document.cookie.split(";").forEach(function(c) { 
+                        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                    });
+                    
+                    // Show confirmation
+                    alert('✅ All cached data has been cleared!\n\nThe page will now reload to show fresh content.');
+                    
+                    // Force reload from server (bypass cache)
+                    window.location.reload(true);
+                }
+            });
+        }
+        
+        const devCreateTestProfileBtn = document.getElementById('devCreateTestProfileBtn');
+        if (devCreateTestProfileBtn) {
+            devCreateTestProfileBtn.addEventListener('click', () => {
+                if (confirm('👨‍💻 DEVELOPER MODE 👨‍💻\n\nCreate a test profile with:\n• All bugs unlocked\n• All arenas unlocked\n• All celebrations unlocked\n• All achievements completed\n• Max stats and tower progress\n\nProfile name: "DEV-TESTER"\n\nContinue?')) {
+                    this.createDevTesterProfile();
+                    // Close the popup
+                    const devPopup = document.getElementById('devModePopup');
+                    if (devPopup) {
+                        devPopup.style.display = 'none';
+                    }
+                }
+            });
         }
         
         // Profile creation

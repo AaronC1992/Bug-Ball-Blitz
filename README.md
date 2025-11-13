@@ -20,6 +20,11 @@ Download the native Android app with full AdMob integration and optimized mobile
 3. Open the downloaded APK file to install
 4. Enjoy native mobile gameplay with touch controls!
 
+### iOS App (iPhone/iPad)
+**[🍎 iOS Build Guide](IOS_BUILD_GUIDE.md)** - Step-by-step instructions for building the iOS version
+
+The iOS version requires a Mac with Xcode to build. Follow the detailed guide above if you have access to a Mac, or contact someone with a Mac to help build the iOS version for you.
+
 ## 🎮 Game Overview
 
 **Bug Ball Blitz** is a 2D physics-based soccer game where bugs compete in intense matches across natural arenas. Features a progressive Tower Campaign, Quick Play mode, and local multiplayer.

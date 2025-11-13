@@ -139,10 +139,80 @@ export class Physics {
         }
         
         // Jump input (with jump power multiplier for arcade mode)
+        // Larger bugs are heavier and can't jump as high
+        // Size inversely affects jump: size 0.6 = 1.4x jump, size 1.2 = 0.8x jump
+        const sizeJumpPenalty = 2 - stats.size; // Inverse relationship
         if (player.jump && player.isGrounded) {
-            player.vy = -stats.jump * 15 * jumpPowerMultiplier;
+            player.vy = -stats.jump * 15 * jumpPowerMultiplier * sizeJumpPenalty;
             player.isGrounded = false;
             player.jump = false;
+        }
+    }
+    
+    checkPlayerPlayerCollision(player1, bug1, player2, bug2) {
+        // Calculate distance between player centers
+        const dx = player2.x - player1.x;
+        const dy = (player2.y - player2.height / 2) - (player1.y - player1.height / 2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Calculate collision threshold (average of both player sizes)
+        const collisionDistance = (player1.width + player2.width) / 2;
+        
+        if (distance < collisionDistance && distance > 0) {
+            // Collision detected - check size differential
+            const size1 = bug1.stats.size;
+            const size2 = bug2.stats.size;
+            const sizeDiff = size1 - size2;
+            
+            // Calculate normalized collision direction
+            const normalX = dx / distance;
+            const normalY = dy / distance;
+            
+            // Calculate overlap (how much players are intersecting)
+            const overlap = collisionDistance - distance;
+            
+            // Only push if size difference is significant (> 0.15)
+            if (Math.abs(sizeDiff) > 0.15) {
+                // Calculate push force based on size difference and collision depth
+                const basePushForce = overlap * 0.5; // Increased from 0.3
+                const sizePushMultiplier = Math.abs(sizeDiff) * 3; // Increased from 2
+                const pushForce = basePushForce * sizePushMultiplier;
+                
+                // Bigger bug pushes smaller bug
+                if (sizeDiff > 0.15) {
+                    // Player1 is bigger - push player2 away
+                    player2.vx += normalX * pushForce;
+                    player2.vy += normalY * pushForce * 0.3; // Less vertical push
+                    // Slight resistance to player1
+                    player1.vx -= normalX * pushForce * 0.15;
+                } else if (sizeDiff < -0.15) {
+                    // Player2 is bigger - push player1 away
+                    player1.vx -= normalX * pushForce;
+                    player1.vy -= normalY * pushForce * 0.3; // Less vertical push
+                    // Slight resistance to player2
+                    player2.vx += normalX * pushForce * 0.15;
+                }
+                
+                // Strong separation to prevent overlap - increased force
+                const separationForce = overlap * 0.8; // Increased from 0.5
+                if (sizeDiff > 0.15) {
+                    player2.x += normalX * separationForce;
+                    player1.x -= normalX * separationForce * 0.15;
+                } else if (sizeDiff < -0.15) {
+                    player1.x -= normalX * separationForce;
+                    player2.x += normalX * separationForce * 0.15;
+                }
+            } else {
+                // Equal sized bugs - just separate them to prevent sticking
+                const separationForce = overlap * 0.6;
+                player1.x -= normalX * separationForce * 0.5;
+                player2.x += normalX * separationForce * 0.5;
+            }
+            
+            // Clamp velocities to prevent excessive speeds from pushing
+            const maxPushVelocity = 8;
+            player1.vx = Math.max(-maxPushVelocity, Math.min(maxPushVelocity, player1.vx));
+            player2.vx = Math.max(-maxPushVelocity, Math.min(maxPushVelocity, player2.vx));
         }
     }
     

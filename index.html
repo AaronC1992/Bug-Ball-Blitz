@@ -10,6 +10,8 @@
             <title>Bug Ball Blitz v1.21.5-debug</title>
 
     <link rel="stylesheet" href="style.css">
+    <!-- AdsManager module (placeholder on web; real AdMob via native wrapper) -->
+    <script type="module" src="./ads.js"></script>
 </head>
 <body>
     <!-- Version number - always visible -->
@@ -21,7 +23,7 @@
             <div class="title-content">
                 <div class="game-title">
                     <h1 class="title-main">BUG BALL</h1>
-                    <h2 class="title-sub">BLITZ</h2>
+                    <h2 class="title-sub" data-text="BLITZ">BLITZ</h2>
                     <div class="soccer-ball">⚽</div>
                 </div>
             </div>
@@ -46,10 +48,32 @@
                 <span class="dev-icon">👨‍💻</span>
             </button>
         </div>
+        
+        <!-- Developer Mode Popup -->
+        <div id="devModePopup" class="overlay-menu">
+            <div class="menu-panel dev-panel">
+                <h2 data-text="🔧 Developer Mode">🔧 Developer Mode</h2>
+                <p style="color: #ff4444; margin-bottom: 20px; font-size: 16px;">⚠️ Warning: These tools can delete all your data!</p>
+                <div class="menu-buttons">
+                    <button class="menu-btn" id="devClearAllDataBtn" style="background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); border-color: #ff4444;">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Clear All Data</span>
+                    </button>
+                    <button class="menu-btn" id="devCreateTestProfileBtn" style="background: linear-gradient(135deg, #0099ff 0%, #0066cc 100%); border-color: #0099ff;">
+                        <span class="btn-icon">👨‍💻</span>
+                        <span class="btn-text">Create Test Profile</span>
+                    </button>
+                    <button class="menu-btn primary-btn" id="closeDevModeBtn">
+                        <span class="btn-icon">✓</span>
+                        <span class="btn-text">Close</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Profile Creation Screen -->
         <div id="profileCreateScreen" class="screen">
-            <h2>Create New Profile</h2>
+            <h2 data-text="Create New Profile">Create New Profile</h2>
             <input type="text" id="profileNameInput" placeholder="Enter your name" maxlength="15">
             <div class="menu-buttons">
                 <button class="menu-btn" id="confirmProfileBtn">✓ Create</button>
@@ -59,7 +83,7 @@
 
         <!-- Profile Load Screen -->
         <div id="profileLoadScreen" class="screen">
-            <h2>Load Profile</h2>
+            <h2 data-text="Load Profile">Load Profile</h2>
             <div id="profileList"></div>
             <div class="menu-buttons">
                 <button class="menu-btn" id="backToTitleBtn">← Back</button>
@@ -70,7 +94,7 @@
         <div id="mainMenu" class="screen">
             <canvas id="mainMenuBackgroundCanvas"></canvas>
             <div class="menu-content">
-                <h2>Main Menu</h2>
+                <h2 data-text="Main Menu">Main Menu</h2>
                 <div id="profileInfo" class="profile-info"></div>
                 <div class="menu-buttons">
                     <button class="menu-btn" id="towerCampaignBtn">🏆 Tower Campaign</button>
@@ -90,7 +114,7 @@
 
         <!-- Tower Level Select Screen -->
         <div id="towerLevelSelectScreen" class="screen">
-            <h2>🏆 Tower Campaign - Select Level</h2>
+            <h2 data-text="🏆 Tower Campaign - Select Level">🏆 Tower Campaign - Select Level</h2>
             <div class="tower-level-grid" id="towerLevelGrid">
                 <!-- Levels will be generated dynamically -->
             </div>
@@ -102,7 +126,7 @@
 
         <!-- Tutorial Screen -->
         <div id="tutorialScreen" class="screen">
-            <h2>📖 How to Play</h2>
+            <h2 data-text="📖 How to Play">📖 How to Play</h2>
             <div class="tutorial-content">
                 <div class="tutorial-section">
                     <h3>🎯 Objective</h3>
@@ -168,7 +192,7 @@
         <!-- Arcade Mode Screens -->
         <!-- Arcade Player Count Screen -->
         <div id="arcadePlayerCountScreen" class="screen">
-            <h2>🎯 Arcade Mode - Player Count</h2>
+            <h2 data-text="🎯 Arcade Mode - Player Count">🎯 Arcade Mode - Player Count</h2>
             <p class="arcade-subtitle">Choose your game mode</p>
             <div class="menu-buttons">
                 <button class="menu-btn primary-btn" id="arcadeSinglePlayerBtn">
@@ -185,7 +209,7 @@
 
         <!-- Arcade Team Setup Screen -->
         <div id="arcadeTeamSetupScreen" class="screen">
-            <h2>🎯 Arcade Mode - Team Setup</h2>
+            <h2 data-text="🎯 Arcade Mode - Team Setup">🎯 Arcade Mode - Team Setup</h2>
             <div class="arcade-content">
                 <!-- Left Team (Player 1) -->
                 <div class="team-setup-section">
@@ -277,7 +301,7 @@
 
         <!-- Arcade Game Settings Screen -->
         <div id="arcadeSettingsScreen" class="screen">
-            <h2>🎯 Arcade Mode - Game Settings</h2>
+            <h2 data-text="🎯 Arcade Mode - Game Settings">🎯 Arcade Mode - Game Settings</h2>
             <div class="arcade-settings-grid">
                 <div class="arcade-setting">
                     <label>Player Gravity:</label>
@@ -371,7 +395,7 @@
 
         <!-- Styles Screen -->
         <div id="stylesScreen" class="screen">
-            <h2>🎨 Celebrations & Animations</h2>
+            <h2 data-text="🎨 Celebrations & Animations">🎨 Celebrations & Animations</h2>
             <p class="styles-subtitle">Customize your victory style!</p>
             
             <!-- Top Back Button -->
@@ -427,7 +451,7 @@
 
         <!-- Stats Screen -->
         <div id="statsScreen" class="screen">
-            <h2>Player Stats</h2>
+            <h2 data-text="Player Stats">Player Stats</h2>
             <div id="statsDisplay"></div>
             <div class="menu-buttons">
                 <button class="menu-btn" id="backToMainBtn">← Back</button>
@@ -436,7 +460,7 @@
 
         <!-- Achievements Screen -->
         <div id="achievementsScreen" class="screen">
-            <h2>🏅 Achievements</h2>
+            <h2 data-text="🏅 Achievements">🏅 Achievements</h2>
             <div class="achievement-progress">
                 <div class="progress-text">
                     <span id="achievementCount">0/18</span> Unlocked
@@ -462,7 +486,7 @@
 
         <!-- Bug Selection Screen -->
         <div id="bugSelectScreen" class="screen">
-            <h2>Select Your Bug</h2>
+            <h2 data-text="Select Your Bug">Select Your Bug</h2>
             <div id="bugGrid" class="bug-grid"></div>
             <div class="menu-buttons">
                 <button class="menu-btn" id="cancelBugSelectBtn">← Back</button>
@@ -471,7 +495,7 @@
 
         <!-- Difficulty Selection (Quick Play) -->
         <div id="difficultyScreen" class="screen">
-            <h2>Select Difficulty</h2>
+            <h2 data-text="Select Difficulty">Select Difficulty</h2>
             <p class="difficulty-subtitle">Choose your challenge level</p>
             <div class="difficulty-grid">
                 <div class="difficulty-card">
@@ -510,7 +534,7 @@
 
         <!-- Match Length Selection -->
         <div id="matchLengthScreen" class="screen">
-            <h2>Match Duration</h2>
+            <h2 data-text="Match Duration">Match Duration</h2>
             <p class="difficulty-subtitle">Choose how long you want to play</p>
             <div class="difficulty-grid">
                 <div class="difficulty-card">
@@ -549,7 +573,7 @@
 
         <!-- Arena Selection -->
         <div id="arenaSelectScreen" class="screen">
-            <h2>Select Arena</h2>
+            <h2 data-text="Select Arena">Select Arena</h2>
             <div id="arenaGrid" class="arena-grid"></div>
             <div class="menu-buttons">
                 <button class="menu-btn" id="cancelArenaSelectBtn">← Back</button>
@@ -559,7 +583,7 @@
         <!-- Loading Screen -->
         <div id="loadingScreen" class="screen" style="display: none;">
             <div class="loading-content">
-                <h2 class="loading-title">Tower Mode</h2>
+                <h2 class="loading-title" data-text="Tower Mode">Tower Mode</h2>
                 <div class="tower-visual" id="towerVisual">
                     <!-- Tower levels will be generated here -->
                 </div>
@@ -575,6 +599,8 @@
         <!-- Game Canvas -->
         <div id="gameScreen" class="screen">
             <canvas id="gameCanvas"></canvas>
+            <!-- Optional banner ad placeholder -->
+            <div id="adBanner" class="ad-banner" style="display:none"></div>
             <!-- HUD Elements - Grouped for default centered position, but individually customizable -->
             <div id="scoreDisplay" class="score-display">
                 <span id="player1Score">0</span> - <span id="player2Score">0</span>
@@ -609,7 +635,7 @@
         <!-- Settings Menu -->
         <div id="settingsMenu" class="overlay-menu">
             <div class="menu-panel settings-panel">
-                <h2>⚙️ Settings</h2>
+                <h2 data-text="⚙️ Settings">⚙️ Settings</h2>
                 <div class="settings-options">
                     <!-- Volume Controls -->
                     <div class="setting-section">
@@ -702,7 +728,7 @@
         <div id="arenaPreviewModal" class="modal">
             <div class="modal-content arena-preview-content">
                 <span class="close-modal" id="closeArenaPreview">&times;</span>
-                <h2 id="arenaPreviewTitle">Arena Name</h2>
+                <h2 id="arenaPreviewTitle" data-text="Arena Name">Arena Name</h2>
                 <canvas id="arenaPreviewCanvas" width="600" height="400"></canvas>
                 <div id="arenaPreviewDescription" class="arena-description"></div>
                 
@@ -751,9 +777,9 @@
         </div>
 
         <!-- Pause Menu -->
-        <div id="pauseMenu" class="overlay-menu">
+        <div id="pauseScreen" class="overlay-menu">
             <div class="menu-panel pause-panel">
-                <h2>⏸️ Paused</h2>
+                <h2 data-text="⏸️ Paused">⏸️ Paused</h2>
                 <div class="pause-info">
                     <div class="pause-score">
                         <span id="pauseScore1" class="score-display">0</span>
