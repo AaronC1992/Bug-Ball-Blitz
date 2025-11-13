@@ -2325,6 +2325,11 @@ class Game {
         if (this.gameMode === 'multiplayer') {
             this.updatePlayer2Input();
         } else if (this.gameMode === 'arcade') {
+            // Arcade mode: update human player 2 if exists
+            if (this.arcadeSettings && this.arcadeSettings.rightHasHuman) {
+                this.updatePlayer2Input();
+            }
+            
             // Arcade AI control
             if (this.player1AI) {
                 this.player1AI.update();
