@@ -31,14 +31,26 @@ body.no-clip-text h2 {
     background-clip: initial !important;
     -webkit-text-fill-color: #ffeb3b !important;
     color: #ffeb3b !important;
-    text-shadow: 0 0 18px rgba(255, 235, 59, 0.6), 0 2px 4px rgba(0,0,0,0.6);
+    text-shadow: 0 0 12px rgba(255, 235, 59, 0.5), 0 2px 4px rgba(0,0,0,0.6);
+    -webkit-text-stroke: 0 !important;
+    letter-spacing: 0.08em; /* reduce sub-pixel gaps */
 }
 
-/* Keep outline layer behind text for headings when fallback is active */
-body.no-clip-text h2:not(#matchResultTitle)::before,
+/* Disable pseudo-element outlines which can cause seams on some Android builds */
+body.no-clip-text h2::before,
 body.no-clip-text .title-main::before,
-body.no-clip-text .title-sub::before {
-    -webkit-text-stroke: 2px #1b5e20 !important;
+body.no-clip-text .title-sub::before,
+body.no-clip-text #matchResultTitle::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* Ensure match result title also uses the fallback solid fill */
+body.no-clip-text #matchResultTitle {
+    background: none !important;
+    -webkit-text-fill-color: #ffeb3b !important;
+    color: #ffeb3b !important;
+    text-shadow: 0 0 12px rgba(255, 235, 59, 0.5), 0 2px 4px rgba(0,0,0,0.6);
 }
 
 #gameContainer {
