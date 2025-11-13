@@ -207,8 +207,11 @@ body {
     font-size: 16px;
     font-weight: bold;
     z-index: 1000;
-    pointer-events: none;
+    pointer-events: auto; /* Allow clicks for dev mode activation */
+    cursor: pointer;
+    user-select: none;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    transition: all 0.15s ease;
 }
 
 .version-number {
@@ -268,6 +271,39 @@ body {
 .dev-icon {
     display: block;
     filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
+}
+
+/* Developer Mode Popup Panel */
+.dev-panel {
+    max-width: 600px;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    border: 2px solid rgba(255, 68, 68, 0.5);
+}
+
+.dev-panel h2 {
+    color: #ff4444;
+    margin-bottom: 10px;
+}
+
+.dev-panel .menu-btn {
+    margin: 10px 0;
+}
+
+.dev-panel .btn-icon {
+    font-size: 24px;
+}
+
+.dev-panel .btn-text {
+    font-size: 18px;
+}
+
+/* Hide dev popup by default */
+#devModePopup {
+    display: none;
+}
+
+#devModePopup.active {
+    display: flex !important;
 }
 
 /* Menu Buttons */
@@ -463,6 +499,11 @@ h2:not(#matchResultTitle)::before {
     -webkit-text-stroke: 2px #1b5e20;
     z-index: 0;
     pointer-events: none;
+}
+
+/* Remove green outline layer on bug select screen to prevent double-stacked title appearance */
+#bugSelectScreen h2::before {
+    display: none;
 }
 
 @keyframes headerGlow {
@@ -1810,8 +1851,10 @@ input[type="text"]:focus {
         height: 40px;
     }
     
-    .action-buttons {
+    /* In small portrait, ensure P1 jump sits on the right by default */
+    #p1JumpContainer {
         right: 15px;
+        left: auto;
         bottom: calc(15px + env(safe-area-inset-bottom, 0px));
         gap: 10px;
     }
@@ -1835,6 +1878,28 @@ input[type="text"]:focus {
     z-index: 100;
     justify-content: center;
     align-items: center;
+}
+
+/* Settings menu should appear above pause menu */
+#settingsMenu {
+    z-index: 101;
+}
+
+/* Placeholder banner ad styles (web only) */
+.ad-banner {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    border-top: 2px solid rgba(255,255,255,0.15);
+    z-index: 12;
+    font-weight: 700;
 }
 
 .overlay-menu.active {

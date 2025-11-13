@@ -891,7 +891,7 @@ class Game {
                 p1Joy.style.bottom = '20px';
                 p1Jump.style.position = 'absolute';
                 p1Jump.style.right = '20px';
-                p1Jump.style.left = '';
+                p1Jump.style.left = 'auto';
                 p1Jump.style.bottom = '20px';
                 p1Jump.style.display = 'flex';
             } else {
