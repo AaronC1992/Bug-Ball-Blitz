@@ -903,6 +903,7 @@ class Game {
                 p1Joy.style.bottom = '20px';
                 p1Jump.style.position = 'absolute';
                 p1Jump.style.left = '150px';
+                p1Jump.style.right = 'auto'; // Override any CSS right positioning
                 p1Jump.style.bottom = '25px';
                 p1Jump.style.display = 'flex';
             }
