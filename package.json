@@ -1,6 +1,6 @@
 {
   "name": "bug-ball-blitz",
-  "version": "1.22.2",
+  "version": "1.22.3",
   "description": "A physics-based soccer game featuring insect athletes",
   "main": "index.html",
   "scripts": {

@@ -3591,6 +3591,11 @@ canvas {
 .tutorial-overlay {
     z-index: 200;
     background: rgba(0, 0, 0, 0.95);
+    pointer-events: auto; /* Enable clicks when active */
+}
+
+.tutorial-overlay:not(.active) {
+    pointer-events: none !important; /* Disable clicks when hidden */
 }
 
 .tutorial-panel {

@@ -1223,9 +1223,19 @@ export class UIManager {
         this.showTutorialStep();
         this.showOverlay('tutorialOverlay');
         
-        // Setup tutorial button event listeners
-        document.getElementById('nextTutorialBtn').addEventListener('click', () => this.nextTutorialStep());
-        document.getElementById('skipTutorialBtn').addEventListener('click', () => this.skipTutorial());
+        // Setup tutorial button event listeners (use once to prevent duplicates)
+        const nextBtn = document.getElementById('nextTutorialBtn');
+        const skipBtn = document.getElementById('skipTutorialBtn');
+        
+        // Remove any existing listeners by cloning and replacing
+        const newNextBtn = nextBtn.cloneNode(true);
+        const newSkipBtn = skipBtn.cloneNode(true);
+        nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+        skipBtn.parentNode.replaceChild(newSkipBtn, skipBtn);
+        
+        // Add fresh event listeners
+        newNextBtn.addEventListener('click', () => this.nextTutorialStep());
+        newSkipBtn.addEventListener('click', () => this.skipTutorial());
     }
     
     showTutorialStep() {
@@ -1274,6 +1284,10 @@ export class UIManager {
             this.currentProfile.tutorialCompleted = true;
             SaveSystem.saveProfile(this.currentProfile);
         }
+        
+        // Ensure main menu is properly shown and interactive
+        this.showScreen('mainMenu');
+        this.showMainMenu();
     }
 }
 
