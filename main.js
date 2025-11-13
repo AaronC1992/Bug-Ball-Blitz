@@ -2497,9 +2497,11 @@ class Game {
     
     updatePlayer2Input() {
         // Check if touch controls are enabled for player 2
+        const isMultiplayerMode = this.gameMode === 'multiplayer' || 
+                                 (this.gameMode === 'arcade' && this.arcadeSettings && this.arcadeSettings.rightHasHuman);
         const useTouchControls = this.touchControlsEnabled !== null 
-            ? (this.touchControlsEnabled && this.gameMode === 'multiplayer')
-            : ((this.ui.isMobile || this.ui.isTablet) && this.gameMode === 'multiplayer');
+            ? (this.touchControlsEnabled && isMultiplayerMode)
+            : ((this.ui.isMobile || this.ui.isTablet) && isMultiplayerMode);
         
         // Keyboard controls (Arrow keys) - always check
         const keyboardLeft = this.keys['arrowleft'] || false;
