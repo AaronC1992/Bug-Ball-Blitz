@@ -879,7 +879,9 @@ class Game {
         if (!p1Joy || !p1Jump) return; // elements not ready
 
         const isPortrait = window.innerHeight > window.innerWidth;
-        const multiplayer = this.gameMode === 'multiplayer';
+        // Consider it multiplayer if gameMode is 'multiplayer' OR arcade with human on right team
+        const multiplayer = this.gameMode === 'multiplayer' || 
+                           (this.gameMode === 'arcade' && this.arcadeSettings && this.arcadeSettings.rightHasHuman);
 
         // Reset inline styles so we start clean each pass
         [p1Joy, p1Jump, p2Joy, p2Jump].forEach(el => { if (el) el.style.cssText = ''; });
@@ -3544,8 +3546,12 @@ class Game {
         
         if (shouldShow) {
             mobileControls.classList.add('active');
-            // Show Player 2 controls in multiplayer mode
-            if (this.gameMode === 'multiplayer') {
+            
+            // Show Player 2 controls in multiplayer mode OR arcade mode with human on right team
+            const needsP2Controls = this.gameMode === 'multiplayer' || 
+                                    (this.gameMode === 'arcade' && this.arcadeSettings && this.arcadeSettings.rightHasHuman);
+            
+            if (needsP2Controls) {
                 mobileControlsP2.classList.add('active');
             } else {
                 mobileControlsP2.classList.remove('active');

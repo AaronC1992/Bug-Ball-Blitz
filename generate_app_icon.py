@@ -4,114 +4,133 @@ Creates all required mipmap sizes with game-themed design
 """
 from PIL import Image, ImageDraw, ImageFont
 import os
+import math
 
 def create_icon(size):
     """Create a single icon at the specified size"""
-    # Create image with purple gradient background
+    # Create image with vibrant gradient background
     img = Image.new('RGB', (size, size), color='#1a0033')
     draw = ImageDraw.Draw(img)
     
-    # Draw gradient background (purple to darker purple)
-    for y in range(size):
-        # Gradient from #1a0033 to #0d001a
-        r = int(26 - (y / size) * 13)
-        g = int(0)
-        b = int(51 - (y / size) * 25)
-        draw.line([(0, y), (size, y)], fill=(r, g, b))
-    
-    # Add circular glow effect in center
+    # Draw radial gradient background (dark purple center to lighter edges)
     center_x, center_y = size // 2, size // 2
-    glow_radius = int(size * 0.4)
-    for i in range(glow_radius, 0, -1):
-        opacity = int((glow_radius - i) / glow_radius * 60)
-        color = (138 + opacity, 43 + opacity, 226 + opacity)
-        draw.ellipse([center_x - i, center_y - i, center_x + i, center_y + i], 
-                     outline=color, width=2)
+    max_dist = math.sqrt(2) * size / 2
     
-    # Draw soccer ball (white circle with black pentagons)
-    ball_size = int(size * 0.35)
+    for y in range(size):
+        for x in range(size):
+            # Calculate distance from center
+            dist = math.sqrt((x - center_x)**2 + (y - center_y)**2)
+            # Normalize distance (0 at center, 1 at corners)
+            norm_dist = dist / max_dist
+            
+            # Create gradient from dark purple/blue to lighter
+            r = int(10 + norm_dist * 100)  # 10 to 110
+            g = int(5 + norm_dist * 80)     # 5 to 85
+            b = int(50 + norm_dist * 150)   # 50 to 200
+            
+            img.putpixel((x, y), (r, g, b))
+            img.putpixel((x, y), (r, g, b))
+    
+    # Draw large soccer ball in center
+    ball_size = int(size * 0.42)
     ball_x = center_x
-    ball_y = int(size * 0.55)
+    ball_y = center_y
     
-    # White ball background
-    draw.ellipse([ball_x - ball_size, ball_y - ball_size, 
-                  ball_x + ball_size, ball_y + ball_size], 
-                 fill='white', outline='#cccccc', width=max(2, size // 100))
+    # Ball shadow for depth
+    shadow_offset = max(3, size // 40)
+    draw.ellipse([ball_x - ball_size + shadow_offset, ball_y - ball_size + shadow_offset,
+                  ball_x + ball_size + shadow_offset, ball_y + ball_size + shadow_offset],
+                 fill=(0, 0, 0, 80))
     
-    # Black pentagon pattern (simplified)
-    pentagon_size = int(ball_size * 0.3)
+    # White ball with subtle gradient
+    for r_offset in range(ball_size, 0, -1):
+        # Subtle shading from top-left (lighter) to bottom-right (darker)
+        shade = 255 - int((ball_size - r_offset) / ball_size * 20)
+        draw.ellipse([ball_x - r_offset, ball_y - r_offset,
+                      ball_x + r_offset, ball_y + r_offset],
+                     fill=(shade, shade, shade))
+    
+    # Draw classic soccer ball pentagon pattern
+    pentagon_size = int(ball_size * 0.25)
+    
     # Center pentagon
-    draw.regular_polygon((ball_x, ball_y, pentagon_size), 5, rotation=0, fill='black')
+    points = []
+    for i in range(5):
+        angle = math.radians(i * 72 - 90)
+        x = ball_x + pentagon_size * math.cos(angle)
+        y = ball_y + pentagon_size * math.sin(angle)
+        points.append((x, y))
+    draw.polygon(points, fill='#1a1a1a')
     
-    # Small pentagons around
-    for angle in [0, 72, 144, 216, 288]:
-        import math
-        offset = ball_size * 0.6
-        px = ball_x + int(offset * math.cos(math.radians(angle - 90)))
-        py = ball_y + int(offset * math.sin(math.radians(angle - 90)))
-        small_pent = int(pentagon_size * 0.4)
-        draw.regular_polygon((px, py, small_pent), 5, rotation=angle, fill='black')
+    # Surrounding pentagons (5 around center)
+    for sector in range(5):
+        angle_offset = sector * 72
+        dist = ball_size * 0.55
+        offset_angle = math.radians(angle_offset - 90)
+        px = ball_x + dist * math.cos(offset_angle)
+        py = ball_y + dist * math.sin(offset_angle)
+        
+        points = []
+        pent_size = int(pentagon_size * 0.55)
+        for i in range(5):
+            angle = math.radians(i * 72 + angle_offset - 90)
+            x = px + pent_size * math.cos(angle)
+            y = py + pent_size * math.sin(angle)
+            points.append((x, y))
+        draw.polygon(points, fill='#2a2a2a')
     
-    # Draw bug (ladybug style) at top
-    bug_size = int(size * 0.25)
-    bug_x = center_x
-    bug_y = int(size * 0.25)
+    # Draw cute bug/beetle icon overlay
+    bug_size = int(size * 0.2)
+    bug_x = center_x + int(ball_size * 0.75)
+    bug_y = center_y - int(ball_size * 0.75)
     
-    # Bug shadow
-    shadow_offset = max(2, size // 60)
-    draw.ellipse([bug_x - bug_size - shadow_offset, bug_y - bug_size // 2 - shadow_offset + bug_size // 4,
-                  bug_x + bug_size - shadow_offset, bug_y + bug_size // 2 - shadow_offset + bug_size // 4],
-                 fill=(0, 0, 0, 100))
-    
-    # Bug body (red ladybug)
-    draw.ellipse([bug_x - bug_size, bug_y - bug_size // 2,
-                  bug_x + bug_size, bug_y + bug_size // 2],
-                 fill='#ff4444', outline='#cc0000', width=max(2, size // 80))
+    # Bug body (red circle for ladybug style)
+    draw.ellipse([bug_x - bug_size, bug_y - bug_size//2,
+                  bug_x + bug_size, bug_y + bug_size//2],
+                 fill='#ff4444', outline='#cc0000', width=max(2, size//100))
     
     # Bug head (black)
-    head_size = int(bug_size * 0.6)
-    draw.ellipse([bug_x - head_size // 2, bug_y - bug_size // 2 - head_size // 2,
-                  bug_x + head_size // 2, bug_y - bug_size // 2 + head_size // 2],
-                 fill='#2d2d2d', outline='#000000', width=max(1, size // 100))
+    head_size = int(bug_size * 0.5)
+    draw.ellipse([bug_x - head_size//2, bug_y - bug_size//2 - head_size//2,
+                  bug_x + head_size//2, bug_y - bug_size//2 + head_size//2],
+                 fill='#1a1a1a')
     
-    # Bug spots (black dots on body)
-    spot_size = int(bug_size * 0.15)
-    spot_positions = [
-        (bug_x - bug_size // 2, bug_y - bug_size // 4),
-        (bug_x + bug_size // 2, bug_y - bug_size // 4),
-        (bug_x - bug_size // 3, bug_y + bug_size // 6),
-        (bug_x + bug_size // 3, bug_y + bug_size // 6),
+    # Bug spots (black dots)
+    spot_size = int(bug_size * 0.2)
+    spots = [
+        (bug_x - bug_size//2, bug_y),
+        (bug_x + bug_size//2, bug_y),
+        (bug_x, bug_y - bug_size//4)
     ]
-    for spot_x, spot_y in spot_positions:
+    for spot_x, spot_y in spots:
         draw.ellipse([spot_x - spot_size, spot_y - spot_size,
                       spot_x + spot_size, spot_y + spot_size],
-                     fill='black')
+                     fill='#000000')
     
-    # Bug eyes (white with black pupils)
-    eye_size = int(head_size * 0.2)
-    pupil_size = int(eye_size * 0.5)
-    eye_offset = int(head_size * 0.2)
+    # Antennae
+    antenna_size = int(head_size * 0.3)
+    draw.line([bug_x - head_size//3, bug_y - bug_size//2 - head_size//3,
+               bug_x - head_size//2, bug_y - bug_size//2 - head_size],
+              fill='#1a1a1a', width=max(1, size//150))
+    draw.line([bug_x + head_size//3, bug_y - bug_size//2 - head_size//3,
+               bug_x + head_size//2, bug_y - bug_size//2 - head_size],
+              fill='#1a1a1a', width=max(1, size//150))
     
-    # Left eye
-    draw.ellipse([bug_x - eye_offset - eye_size, bug_y - bug_size // 2 - eye_size // 2,
-                  bug_x - eye_offset + eye_size, bug_y - bug_size // 2 + eye_size // 2],
-                 fill='white')
-    draw.ellipse([bug_x - eye_offset - pupil_size, bug_y - bug_size // 2 - pupil_size // 2,
-                  bug_x - eye_offset + pupil_size, bug_y - bug_size // 2 + pupil_size // 2],
-                 fill='black')
+    # Antenna tips
+    draw.ellipse([bug_x - head_size//2 - antenna_size, bug_y - bug_size//2 - head_size - antenna_size,
+                  bug_x - head_size//2 + antenna_size, bug_y - bug_size//2 - head_size + antenna_size],
+                 fill='#1a1a1a')
+    draw.ellipse([bug_x + head_size//2 - antenna_size, bug_y - bug_size//2 - head_size - antenna_size,
+                  bug_x + head_size//2 + antenna_size, bug_y - bug_size//2 - head_size + antenna_size],
+                 fill='#1a1a1a')
     
-    # Right eye
-    draw.ellipse([bug_x + eye_offset - eye_size, bug_y - bug_size // 2 - eye_size // 2,
-                  bug_x + eye_offset + eye_size, bug_y - bug_size // 2 + eye_size // 2],
-                 fill='white')
-    draw.ellipse([bug_x + eye_offset - pupil_size, bug_y - bug_size // 2 - pupil_size // 2,
-                  bug_x + eye_offset + pupil_size, bug_y - bug_size // 2 + pupil_size // 2],
-                 fill='black')
-    
-    # Add neon glow border
-    border_width = max(3, size // 40)
-    draw.rectangle([0, 0, size - 1, size - 1], 
-                   outline='#8a2be2', width=border_width)
+    # Add circular border with neon glow effect
+    border_width = max(4, size // 32)
+    for i in range(3):
+        glow_alpha = 100 - (i * 30)
+        offset = i * 2
+        draw.ellipse([offset, offset, size - offset - 1, size - offset - 1],
+                     outline=(138, 43, 226, glow_alpha), width=border_width - i)
     
     return img
 
