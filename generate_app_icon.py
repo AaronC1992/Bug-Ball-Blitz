@@ -12,6 +12,7 @@ def load_source_icon():
     Supports multiple friendly filenames, including one with a space ("App icon.png").
     The image is center-cropped to square with alpha preserved."""
     candidates = [
+        'assets/App-icon.png',
         'assets/App icon.png',
         'assets/App_icon.png',
         'assets/AppIcon.png',
