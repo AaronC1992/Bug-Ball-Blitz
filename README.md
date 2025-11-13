@@ -10,7 +10,7 @@ A modern remake of "Slime Soccer" featuring insect athletes competing in physics
 Click the link above to play the latest version directly in your browser!
 
 ### Android App (Mobile)
-**[📱 Download APK](https://github.com/AaronC1992/Bug-Ball-Blitz/releases/download/v1.0.0/bug-ball-blitz.apk)** | **[All Releases](https://github.com/AaronC1992/Bug-Ball-Blitz/releases)**
+**[📱 Download APK](https://github.com/AaronC1992/Bug-Ball-Blitz/releases/download/v1.21.5/app-debug.apk)** | **[All Releases](https://github.com/AaronC1992/Bug-Ball-Blitz/releases)**
 
 Download the native Android app with full AdMob integration and optimized mobile controls.
 
