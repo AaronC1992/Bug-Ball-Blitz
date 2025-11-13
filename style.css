@@ -3586,3 +3586,136 @@ canvas {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* Tutorial Overlay Styles */
+.tutorial-overlay {
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.tutorial-panel {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    padding: 40px;
+    border-radius: 16px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
+    border: 2px solid rgba(0, 191, 255, 0.3);
+}
+
+.tutorial-progress {
+    text-align: center;
+    font-size: 14px;
+    color: #00bfff;
+    margin-bottom: 20px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.tutorial-content {
+    min-height: 300px;
+    color: #fff;
+    line-height: 1.6;
+}
+
+.tutorial-content h2 {
+    color: #00bfff;
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    text-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+}
+
+.tutorial-content p {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #e0e0e0;
+}
+
+.tutorial-content ul {
+    margin: 15px 0 15px 25px;
+    list-style: none;
+}
+
+.tutorial-content ul li {
+    margin-bottom: 12px;
+    padding-left: 25px;
+    position: relative;
+    font-size: 15px;
+}
+
+.tutorial-content ul li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.tutorial-content .highlight {
+    color: #00bfff;
+    font-weight: bold;
+}
+
+.tutorial-content .emoji-large {
+    font-size: 60px;
+    text-align: center;
+    display: block;
+    margin: 20px 0;
+}
+
+.tutorial-content .controls-demo {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(0, 191, 255, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.tutorial-content kbd {
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: monospace;
+    font-size: 14px;
+    color: #00bfff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tutorial-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    justify-content: space-between;
+}
+
+.tutorial-buttons .menu-btn {
+    flex: 1;
+}
+
+/* Mobile tutorial adjustments */
+@media screen and (max-width: 600px) {
+    .tutorial-panel {
+        padding: 25px;
+        max-height: 90vh;
+    }
+    
+    .tutorial-content h2 {
+        font-size: 22px;
+    }
+    
+    .tutorial-content p,
+    .tutorial-content ul li {
+        font-size: 14px;
+    }
+    
+    .tutorial-content .emoji-large {
+        font-size: 50px;
+    }
+}
+

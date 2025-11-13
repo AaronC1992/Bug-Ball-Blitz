@@ -12,6 +12,10 @@ export class UIManager {
         this.isMobile = this.detectMobile();
         this.isTablet = this.detectTablet();
         
+        // Tutorial tracking
+        this.tutorialStep = 0;
+        this.tutorialSteps = this.createTutorialSteps();
+        
         // Dev mode secret activation tracking (click-based)
         this.devClickCount = 0;
         this.devClickTimer = null;
@@ -394,6 +398,11 @@ export class UIManager {
                 }
                 this.game.mainMenuBackground.setupMatch();
                 this.game.mainMenuBackground.start();
+            }
+            
+            // Show tutorial for new profiles
+            if (!this.currentProfile.tutorialCompleted) {
+                this.startTutorial();
             }
         } else {
             alert(result.error);
@@ -1107,4 +1116,164 @@ export class UIManager {
         // Convert back to hex
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
+    
+    // Tutorial System
+    createTutorialSteps() {
+        return [
+            {
+                title: "⚽ Welcome to Bug Ball Blitz!",
+                content: `
+                    <p>Welcome to the ultimate bug soccer experience!</p>
+                    <p>In this game, you'll control insect athletes in fast-paced physics-based soccer matches.</p>
+                    <p>Let's learn the basics so you can start dominating the field! 🏆</p>
+                `
+            },
+            {
+                title: "🎮 How to Play",
+                content: `
+                    <p>Your goal is simple: <span class="highlight">Score more goals than your opponent!</span></p>
+                    <div class="controls-demo">
+                        <p><strong>PC Controls:</strong></p>
+                        <p><kbd>A</kbd> / <kbd>D</kbd> - Move Left/Right</p>
+                        <p><kbd>W</kbd> or <kbd>Space</kbd> - Jump</p>
+                        <p><kbd>ESC</kbd> - Pause Game</p>
+                    </div>
+                    <div class="controls-demo">
+                        <p><strong>Mobile Controls:</strong></p>
+                        <p>🕹️ Virtual Joystick - Move</p>
+                        <p>🔘 Jump Button - Jump</p>
+                    </div>
+                    <p>Use momentum and timing to control the ball's direction!</p>
+                `
+            },
+            {
+                title: "⏸️ Pause Menu",
+                content: `
+                    <p>Need a break? Press <kbd>ESC</kbd> or tap the <span class="highlight">⏸ button</span> to pause.</p>
+                    <ul>
+                        <li><strong>Resume:</strong> Continue your match</li>
+                        <li><strong>Restart Match:</strong> Start the current match over</li>
+                        <li><strong>Settings:</strong> Adjust audio, quality, and controls</li>
+                        <li><strong>Quit to Menu:</strong> Return to the main menu</li>
+                    </ul>
+                    <p>Your game progress is automatically saved!</p>
+                `
+            },
+            {
+                title: "⚙️ Settings & Controls",
+                content: `
+                    <p>Customize your experience in the Settings menu:</p>
+                    <ul>
+                        <li><strong>Audio:</strong> Adjust music and sound effects volume</li>
+                        <li><strong>Graphics Quality:</strong> Optimize performance for your device</li>
+                        <li><strong>Touch Controls:</strong> Enable/disable mobile controls</li>
+                        <li><strong>Control Layout Editor:</strong> <span class="highlight">Customize your button positions!</span></li>
+                    </ul>
+                    <p>Mobile users: Use the <span class="highlight">Layout Editor</span> to drag and resize your joystick and jump button to your preferred positions for portrait and landscape modes!</p>
+                `
+            },
+            {
+                title: "🎉 Unlockables & Celebrations",
+                content: `
+                    <span class="emoji-large">🏆</span>
+                    <p>The more you play, the more you unlock!</p>
+                    <ul>
+                        <li><strong>🐛 Bugs:</strong> Unlock 5 unique characters with different stats (speed, jump, power)</li>
+                        <li><strong>🏟️ Arenas:</strong> Discover 16 beautiful arenas with unique themes</li>
+                        <li><strong>🎊 Celebrations:</strong> Unlock special goal celebrations by scoring in style!</li>
+                        <li><strong>🎨 Cosmetics:</strong> Earn cosmetic items to customize your bugs</li>
+                        <li><strong>🏅 Achievements:</strong> Complete 18 challenges to prove your mastery</li>
+                    </ul>
+                    <p>Check your progress in the Achievements screen!</p>
+                `
+            },
+            {
+                title: "🏆 Game Modes",
+                content: `
+                    <p>Bug Ball Blitz offers multiple ways to play:</p>
+                    <ul>
+                        <li><strong>Tower Campaign:</strong> Progress through 20 challenging levels, including 2v1 battles and a final boss gauntlet!</li>
+                        <li><strong>Quick Play:</strong> Jump into a match with customizable settings</li>
+                        <li><strong>Local Multiplayer:</strong> Challenge a friend on the same device</li>
+                        <li><strong>Arcade Mode:</strong> Experimental mode with crazy physics modifiers, multiple balls, and weather effects!</li>
+                    </ul>
+                    <p>Start with Tower Campaign to unlock bugs and learn the game!</p>
+                `
+            },
+            {
+                title: "🚀 Ready to Play!",
+                content: `
+                    <span class="emoji-large">🐛⚽</span>
+                    <p>You're all set to become a Bug Ball champion!</p>
+                    <p><strong>Pro Tips:</strong></p>
+                    <ul>
+                        <li>Master the <span class="highlight">physics</span> - timing and positioning are everything!</li>
+                        <li>Each bug has unique <span class="highlight">stats</span> - experiment to find your favorite</li>
+                        <li>Complete <span class="highlight">achievements</span> to unlock special content</li>
+                        <li>Try different <span class="highlight">arenas</span> for visual variety</li>
+                    </ul>
+                    <p>Good luck, and have fun! 🎮</p>
+                `
+            }
+        ];
+    }
+    
+    startTutorial() {
+        this.tutorialStep = 0;
+        this.showTutorialStep();
+        this.showOverlay('tutorialOverlay');
+        
+        // Setup tutorial button event listeners
+        document.getElementById('nextTutorialBtn').addEventListener('click', () => this.nextTutorialStep());
+        document.getElementById('skipTutorialBtn').addEventListener('click', () => this.skipTutorial());
+    }
+    
+    showTutorialStep() {
+        const step = this.tutorialSteps[this.tutorialStep];
+        const content = document.getElementById('tutorialContent');
+        const stepDisplay = document.getElementById('tutorialStep');
+        const totalDisplay = document.getElementById('tutorialTotal');
+        const nextBtn = document.getElementById('nextTutorialBtn');
+        
+        content.innerHTML = `
+            <h2>${step.title}</h2>
+            ${step.content}
+        `;
+        
+        stepDisplay.textContent = this.tutorialStep + 1;
+        totalDisplay.textContent = this.tutorialSteps.length;
+        
+        // Change button text on last step
+        if (this.tutorialStep === this.tutorialSteps.length - 1) {
+            nextBtn.textContent = "Let's Play! 🎮";
+        } else {
+            nextBtn.textContent = "Next →";
+        }
+    }
+    
+    nextTutorialStep() {
+        if (this.tutorialStep < this.tutorialSteps.length - 1) {
+            this.tutorialStep++;
+            this.showTutorialStep();
+        } else {
+            this.completeTutorial();
+        }
+    }
+    
+    skipTutorial() {
+        if (confirm("Skip the tutorial? You can always review controls in the Settings menu.")) {
+            this.completeTutorial();
+        }
+    }
+    
+    completeTutorial() {
+        this.hideOverlay('tutorialOverlay');
+        
+        // Mark tutorial as completed in profile
+        if (this.currentProfile) {
+            this.currentProfile.tutorialCompleted = true;
+            SaveSystem.saveProfile(this.currentProfile);
+        }
+    }
 }
+
