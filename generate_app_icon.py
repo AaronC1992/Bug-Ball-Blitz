@@ -8,18 +8,28 @@ import math
 from pathlib import Path
 
 def load_source_icon():
-    """Return a PIL image if a user-provided icon exists at assets/app_icon.png.
+    """Return a PIL image if a user-provided icon exists.
+    Supports multiple friendly filenames, including one with a space ("App icon.png").
     The image is center-cropped to square with alpha preserved."""
-    src_path = Path('assets/app_icon.png')
-    if src_path.exists():
-        img = Image.open(src_path).convert('RGBA')
-        w, h = img.size
-        # center-crop to square
-        side = min(w, h)
-        left = (w - side) // 2
-        top = (h - side) // 2
-        img = img.crop((left, top, left + side, top + side))
-        return img
+    candidates = [
+        'assets/App icon.png',
+        'assets/App_icon.png',
+        'assets/AppIcon.png',
+        'assets/app_icon.png',
+        'assets/app-icon.png',
+        'assets/appicon.png'
+    ]
+    for rel in candidates:
+        src_path = Path(rel)
+        if src_path.exists():
+            print(f"Using source icon: {rel}")
+            img = Image.open(src_path).convert('RGBA')
+            w, h = img.size
+            side = min(w, h)
+            left = (w - side) // 2
+            top = (h - side) // 2
+            img = img.crop((left, top, left + side, top + side))
+            return img
     return None
 
 def create_icon(size):
