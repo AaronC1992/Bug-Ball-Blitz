@@ -14,6 +14,7 @@ import { AudioManager } from './audioManager.js';
 import { ParticleSystem } from './particles.js';
 import { AchievementManager } from './achievementManager.js';
 import { QualityManager } from './qualitySettings.js';
+import { AdsManager } from './ads.js';
 
 class Game {
     constructor() {
@@ -118,6 +119,9 @@ class Game {
         
         // Settings
         this.touchControlsEnabled = this.loadTouchControlsPreference();
+        
+    // Ads
+    this.ads = null; // Initialized lazily via ensureAds()
         
         // Controls Editor
         this.controlsEditorActive = false;
@@ -853,6 +857,96 @@ class Game {
             e.preventDefault();
             this.mobileControlsP2.jumpPressed = false;
         });
+
+        // Apply an initial responsive layout after elements exist
+        this.applyDefaultMobileLayout();
+
+        // Re-apply layout on orientation change / resize
+        window.addEventListener('orientationchange', () => this.applyDefaultMobileLayout());
+        window.addEventListener('resize', () => this.applyDefaultMobileLayout());
+    }
+
+    applyDefaultMobileLayout() {
+        const mobileControls = document.getElementById('mobileControls');
+        const mobileControlsP2 = document.getElementById('mobileControlsP2');
+        const p1Joy = document.getElementById('p1JoystickContainer');
+        const p1Jump = document.getElementById('p1JumpContainer');
+        const p2Joy = document.getElementById('p2JoystickContainer');
+        const p2Jump = document.getElementById('p2JumpContainer');
+
+        if (!p1Joy || !p1Jump) return; // elements not ready
+
+        const isPortrait = window.innerHeight > window.innerWidth;
+        const multiplayer = this.gameMode === 'multiplayer';
+
+        // Reset inline styles so we start clean each pass
+        [p1Joy, p1Jump, p2Joy, p2Jump].forEach(el => { if (el) el.style.cssText = ''; });
+
+        if (!multiplayer) {
+            // SINGLE PLAYER DEFAULTS
+            if (isPortrait) {
+                // Portrait: joystick left, jump right (fix: ensure jump is right side)
+                p1Joy.style.position = 'absolute';
+                p1Joy.style.left = '20px';
+                p1Joy.style.bottom = '20px';
+                p1Jump.style.position = 'absolute';
+                p1Jump.style.right = '20px';
+                p1Jump.style.left = '';
+                p1Jump.style.bottom = '20px';
+                p1Jump.style.display = 'flex';
+            } else {
+                // Landscape: cluster closer; joystick left, jump slightly right
+                p1Joy.style.position = 'absolute';
+                p1Joy.style.left = '20px';
+                p1Joy.style.bottom = '20px';
+                p1Jump.style.position = 'absolute';
+                p1Jump.style.left = '150px';
+                p1Jump.style.bottom = '25px';
+                p1Jump.style.display = 'flex';
+            }
+            if (mobileControlsP2) mobileControlsP2.classList.remove('active');
+        } else {
+            // MULTIPLAYER DEFAULTS
+            if (!p2Joy || !p2Jump) return; // need both sets
+            if (isPortrait) {
+                // Portrait multiplayer: P1 RIGHT side, P2 LEFT side
+                // Player 1 (Right)
+                p1Joy.style.position = 'absolute';
+                p1Joy.style.right = '140px';
+                p1Joy.style.bottom = '20px';
+                p1Jump.style.position = 'absolute';
+                p1Jump.style.right = '20px';
+                p1Jump.style.bottom = '20px';
+                p1Jump.style.display = 'flex';
+                // Player 2 (Left)
+                p2Joy.style.position = 'absolute';
+                p2Joy.style.left = '20px';
+                p2Joy.style.bottom = '20px';
+                p2Jump.style.position = 'absolute';
+                p2Jump.style.left = '140px';
+                p2Jump.style.bottom = '20px';
+                p2Jump.style.display = 'flex';
+            } else {
+                // Landscape multiplayer: bring controls inward slightly
+                // Player 1 (Right)
+                p1Joy.style.position = 'absolute';
+                p1Joy.style.right = '180px';
+                p1Joy.style.bottom = '20px';
+                p1Jump.style.position = 'absolute';
+                p1Jump.style.right = '60px';
+                p1Jump.style.bottom = '25px';
+                p1Jump.style.display = 'flex';
+                // Player 2 (Left)
+                p2Joy.style.position = 'absolute';
+                p2Joy.style.left = '60px';
+                p2Joy.style.bottom = '20px';
+                p2Jump.style.position = 'absolute';
+                p2Jump.style.left = '180px';
+                p2Jump.style.bottom = '25px';
+                p2Jump.style.display = 'flex';
+            }
+            if (mobileControlsP2) mobileControlsP2.classList.add('active');
+        }
     }
     
     updateJoystick(touch, joystick, stick, controlsObject) {
@@ -944,7 +1038,8 @@ class Game {
     }
     
     startTowerCampaign() {
-        this.gameMode = 'tower';
+    this.setGameMode('tower');
+    this.ensureAds();
         // towerLevel is now set by either continuing or selecting a specific level
         if (!this.towerLevel) {
             this.towerLevel = this.ui.currentProfile.tower.currentLevel;
@@ -1165,7 +1260,8 @@ class Game {
     }
     
     startQuickPlay() {
-        this.gameMode = 'quickplay';
+        this.setGameMode('quickplay');
+        this.ensureAds();
         
         // Stop main menu background when entering game
         if (this.mainMenuBackground) {
@@ -1183,7 +1279,8 @@ class Game {
     }
     
     startMultiplayer() {
-        this.gameMode = 'multiplayer';
+        this.setGameMode('multiplayer');
+        this.ensureAds();
         
         // Stop main menu background when entering game
         if (this.mainMenuBackground) {
@@ -1449,7 +1546,7 @@ class Game {
     }
     
     startArcadeMatch() {
-        this.gameMode = 'arcade';
+    this.setGameMode('arcade');
         
         // Stop main menu background
         if (this.mainMenuBackground) {
@@ -2251,6 +2348,16 @@ class Game {
             this.physics.updatePlayer(this.player3, this.selectedBug3, jumpPowerMultiplier);
         }
         
+        // Check player-player collisions (bigger bugs push smaller bugs)
+        this.physics.checkPlayerPlayerCollision(this.player1, this.selectedBug1, this.player2, this.selectedBug2);
+        
+        if (this.player3) {
+            // Check player1 vs player3
+            this.physics.checkPlayerPlayerCollision(this.player1, this.selectedBug1, this.player3, this.selectedBug3);
+            // Check player2 vs player3
+            this.physics.checkPlayerPlayerCollision(this.player2, this.selectedBug2, this.player3, this.selectedBug3);
+        }
+        
         // Update all balls
         for (let ball of this.balls) {
             this.physics.updateBall(ball, ballSpeedMultiplier);
@@ -3046,6 +3153,11 @@ class Game {
         
         // Show match end screen
         this.showMatchEnd(playerWon, isDraw);
+        
+        // Attempt to show interstitial ad (cooldown controlled by AdsManager)
+        if (this.ads && this.ads.canShowInterstitial && this.ads.canShowInterstitial()) {
+            this.ads.showInterstitial();
+        }
     }
     
     showMatchEnd(playerWon, isDraw) {
@@ -3115,6 +3227,10 @@ class Game {
             continueBtn.style.display = 'none';
         }
         
+        // Show banner ad during match result (if available)
+        if (this.ads && this.ads.showBanner) {
+            this.ads.showBanner('bottom');
+        }
         this.ui.showOverlay('matchEndScreen');
     }
     
@@ -3331,6 +3447,8 @@ class Game {
             } else {
                 mobileControlsP2.classList.remove('active');
             }
+            // Apply layout after visibility updates
+            this.applyDefaultMobileLayout();
         } else {
             mobileControls.classList.remove('active');
             mobileControlsP2.classList.remove('active');
@@ -3338,8 +3456,8 @@ class Game {
     }
     
     pauseGame() {
-        // Allow pause during: playing, intro, or countdown state
-        if (this.gameState === 'playing' || this.gameState === 'intro' || this.gameState === 'countdown') {
+        // Only allow pause during: playing or countdown state (NOT during intro animation)
+        if (this.gameState === 'playing' || this.gameState === 'countdown') {
             const previousState = this.gameState;
             this.gameState = 'paused';
             this.pausedFromState = previousState; // Remember what state we paused from
@@ -3360,13 +3478,13 @@ class Game {
             document.getElementById('pauseTimeDisplay').textContent = 
                 `${minutes}:${seconds.toString().padStart(2, '0')}`;
             
-            this.ui.showOverlay('pauseMenu');
+            this.ui.showOverlay('pauseScreen');
         }
     }
     
     resumeGame() {
         if (this.gameState === 'paused') {
-            // Resume to the previous state (either 'playing', 'intro', or 'countdown')
+            // Resume to the previous state (either 'playing' or 'countdown')
             this.gameState = this.pausedFromState || 'playing';
             // Ensure game screen is visible when resuming
             this.ui.showScreen('gameScreen');
@@ -3382,7 +3500,7 @@ class Game {
             }
             
             this.lastFrameTime = performance.now(); // Resume timer
-            this.ui.hideOverlay('pauseMenu');
+            this.ui.hideOverlay('pauseScreen');
             this.gameLoop();
         }
     }
@@ -3395,7 +3513,7 @@ class Game {
         this.lastFrameTime = null;
         
         // Hide pause menu
-        this.ui.hideOverlay('pauseMenu');
+    this.ui.hideOverlay('pauseScreen');
         
         // Restart the match with intro
         this.startMatch();
@@ -3405,7 +3523,7 @@ class Game {
         this.gameState = 'menu';
         cancelAnimationFrame(this.animationId);
         
-        this.ui.hideOverlay('pauseMenu');
+    this.ui.hideOverlay('pauseScreen');
         this.ui.hideOverlay('matchEndScreen');
         this.ui.hideOverlay('towerVictoryScreen');
         
@@ -3872,6 +3990,34 @@ class Game {
         } catch (e) {
             return 'portrait';
         }
+    }
+
+    ensureAds() {
+        // Lazy initialize AdsManager once a game mode is chosen
+        if (!this.ads) {
+            try {
+                this.ads = new AdsManager({
+                    // Real AdMob unit IDs provided by project owner
+                    appId: 'ca-app-pub-6064374775404365~2828970201',
+                    interstitialId: 'ca-app-pub-6064374775404365/3897960551',
+                    // Placeholders for others (can be updated later)
+                    bannerId: 'WEB_PLACEHOLDER_BANNER',
+                    rewardedId: 'WEB_PLACEHOLDER_REWARDED',
+                    interstitialCooldownSeconds: 120,
+                    debug: true
+                });
+                this.ads.init();
+            } catch (e) {
+                console.warn('Ads init failed:', e);
+            }
+        }
+    }
+
+    // Re-apply default layout when game mode changes
+    setGameMode(mode) {
+        this.gameMode = mode;
+        this.updateTouchControlsVisibility();
+        this.applyDefaultMobileLayout();
     }
     
     loadCustomLayout(mode, orientation) {
