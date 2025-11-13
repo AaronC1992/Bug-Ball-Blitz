@@ -27,6 +27,8 @@ class Game {
         this.currentWeather = 'none'; // Current weather type
         this.weatherDirection = 1; // 1 for right, -1 for left
         this.weatherDirectionTimer = 0; // Timer for direction changes
+        this.snowAccumulation = 0; // Snow depth on ground (0-100)
+        this.snowMeltTimer = 0; // Timer for melting snow
         this.achievements = new AchievementManager();
         this.quality = new QualityManager();
         
@@ -135,8 +137,7 @@ class Game {
         this.editorPreviewBackground = null;
         
     // Debug flags
-    this.debugDragLogs = false;
-        
+    this.debugDragLogs = f
         // Animation
         this.animationId = null;
         
@@ -1882,6 +1883,8 @@ class Game {
         // Initialize weather effects
         const levelConfig = this.gameMode === 'tower' ? this.getTowerLevelConfig(this.towerLevel) : null;
         this.currentWeather = this.gameMode === 'arcade' ? (this.arcadeSettings?.weather || 'none') : (levelConfig?.weather || 'none');
+        this.snowAccumulation = 0; // Reset snow accumulation
+        this.snowMeltTimer = 0; // Reset melt timer
         this.initWeatherParticles();
         
         // Start with intro animation - arena preview
@@ -2504,6 +2507,9 @@ class Game {
         // Draw arena background
         drawArenaBackground(this.ctx, this.selectedArena, this.canvas.width, this.canvas.height, this.quality, this.gameMode, this.towerLevel);
         
+        // Draw snow accumulation on ground (before goals so it's behind them)
+        this.drawSnowAccumulation();
+        
         // Draw goals
         this.drawGoals();
         
@@ -3030,35 +3036,122 @@ class Game {
         this.ctx.restore();
     }
     
+    drawSnowAccumulation() {
+        if (this.snowAccumulation <= 0) return;
+        
+        const groundY = this.physics.groundY;
+        const snowDepth = (this.snowAccumulation / 100) * 15; // Max 15px snow depth
+        
+        this.ctx.save();
+        
+        // Draw snow layer on ground with gradient
+        const gradient = this.ctx.createLinearGradient(0, groundY - snowDepth, 0, groundY);
+        const alpha = Math.min(this.snowAccumulation / 100, 0.95);
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+        gradient.addColorStop(0.5, `rgba(240, 248, 255, ${alpha * 0.9})`);
+        gradient.addColorStop(1, `rgba(220, 235, 255, ${alpha * 0.8})`);
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, groundY - snowDepth, this.canvas.width, snowDepth);
+        
+        // Add sparkle effect to snow surface
+        if (this.snowAccumulation > 20) {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            const sparkleCount = Math.floor(this.snowAccumulation / 10);
+            for (let i = 0; i < sparkleCount; i++) {
+                const x = (i * 50 + Date.now() / 100) % this.canvas.width;
+                const y = groundY - snowDepth + Math.sin(Date.now() / 500 + i) * 2;
+                const size = 1 + Math.random() * 2;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, size, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+        
+        this.ctx.restore();
+    }
+    
     applyWeatherEffects() {
         if (this.currentWeather === 'none') return;
         
         // Note: Weather direction timer is updated in updateWeatherParticles()
         // This keeps the visual particles and physics effects synchronized
         
+        // Update snow accumulation
+        if (this.currentWeather === 'snow') {
+            // Accumulate snow while snowing (max 100)
+            if (this.snowAccumulation < 100) {
+                this.snowAccumulation += 0.15; // Slower accumulation
+            }
+            this.snowMeltTimer = 0; // Reset melt timer while snowing
+        } else {
+            // Melt snow when not snowing
+            if (this.snowAccumulation > 0) {
+                this.snowMeltTimer += 1/60; // Assuming 60 FPS
+                
+                // Start melting after 2 seconds, complete melt in ~10 seconds
+                if (this.snowMeltTimer > 2) {
+                    this.snowAccumulation -= 0.8;
+                    if (this.snowAccumulation < 0) this.snowAccumulation = 0;
+                }
+            }
+        }
+        
         // Apply effects to all balls
         for (let ball of this.balls) {
             if (!ball) continue;
             
             if (this.currentWeather === 'rain') {
-                // Rain adds horizontal drift (changes direction every 2 seconds)
+                // Rain adds horizontal drift (changes direction every 5 seconds)
                 ball.vx += 0.2 * this.weatherDirection;
                 ball.vy += 0.08; // Slight downward push
             } else if (this.currentWeather === 'snow') {
-                // Snow reduces friction, making ball and players slide more
+                // Snow reduces friction, making ball slide more
                 ball.vx *= 1.008; // Less friction slowdown for ball
                 ball.vy *= 1.003;
+                
+                // Apply snow accumulation effects when ball is near ground
+                const groundY = this.physics.groundY - ball.radius;
+                if (ball.y >= groundY - 5) {
+                    // Snow slows the ball
+                    const snowFactor = this.snowAccumulation / 100;
+                    ball.vx *= (1 - snowFactor * 0.15); // Up to 15% speed reduction
+                    
+                    // Chance ball gets stuck in deep snow (no bounce)
+                    if (this.snowAccumulation > 50 && Math.random() < snowFactor * 0.12) {
+                        ball.vy = Math.min(ball.vy, 0); // Kill upward velocity
+                        ball.vx *= 0.5; // Dramatic slow down
+                    }
+                }
             } else if (this.currentWeather === 'wind') {
-                // Wind pushes ball horizontally (changes direction every 2 seconds)
-                ball.vx += 0.2 * this.weatherDirection;
+                // Wind pushes ball horizontally - REDUCED STRENGTH
+                ball.vx += 0.08 * this.weatherDirection; // Reduced from 0.2
             }
         }
         
-        // Set player friction for snow
-        if (this.currentWeather === 'snow') {
-            this.physics.weatherFriction = 0.96; // Much less friction (normal is 0.9)
+        // Apply snow effects to players
+        if (this.currentWeather === 'snow' && this.snowAccumulation > 0) {
+            const snowFactor = this.snowAccumulation / 100;
+            
+            // Reduce player friction based on snow depth
+            this.physics.weatherFriction = 0.9 - (snowFactor * 0.06); // Up to 0.84 friction
+            
+            // Slow player movement in deep snow
+            if (this.player1) {
+                const player1GroundY = this.physics.groundY - this.player1.height;
+                if (this.player1.y >= player1GroundY - 5) {
+                    this.player1.vx *= (1 - snowFactor * 0.1); // Up to 10% slower
+                }
+            }
+            
+            if (this.player2) {
+                const player2GroundY = this.physics.groundY - this.player2.height;
+                if (this.player2.y >= player2GroundY - 5) {
+                    this.player2.vx *= (1 - snowFactor * 0.1); // Up to 10% slower
+                }
+            }
         } else {
-            this.physics.weatherFriction = 0.9;
+            this.physics.weatherFriction = 0.9; // Normal friction
         }
     }
     
