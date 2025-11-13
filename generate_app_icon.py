@@ -5,94 +5,59 @@ Creates all required mipmap sizes with game-themed design
 from PIL import Image, ImageDraw, ImageFont
 import os
 import math
+from pathlib import Path
+
+def load_source_icon():
+    """Return a PIL image if a user-provided icon exists at assets/app_icon.png.
+    The image is center-cropped to square with alpha preserved."""
+    src_path = Path('assets/app_icon.png')
+    if src_path.exists():
+        img = Image.open(src_path).convert('RGBA')
+        w, h = img.size
+        # center-crop to square
+        side = min(w, h)
+        left = (w - side) // 2
+        top = (h - side) // 2
+        img = img.crop((left, top, left + side, top + side))
+        return img
+    return None
 
 def create_icon(size):
-    """Create a single icon at the specified size"""
-    # Create image with simple dark background
-    img = Image.new('RGB', (size, size), color='#1a1a2e')
+    """Create a single icon at the specified size.
+    If a user-provided source icon exists at assets/app_icon.png, use it; otherwise
+    fall back to generating a clean soccer ball on a dark background."""
+    src = load_source_icon()
+    if src is not None:
+        # Resize source to target size with high-quality downsampling
+        img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+        src_resized = src.resize((size, size), Image.LANCZOS)
+        img.paste(src_resized, (0, 0), src_resized)
+        # Add subtle rounding for legacy non-adaptive icons
+        mask = Image.new('L', (size, size), 0)
+        mdraw = ImageDraw.Draw(mask)
+        radius = max(6, size // 10)
+        mdraw.rounded_rectangle([0, 0, size, size], radius=radius, fill=255)
+        out = Image.new('RGBA', (size, size), (26, 26, 46, 255))
+        out.paste(img, (0, 0), mask)
+        return out.convert('RGBA')
+
+    # Fallback: render soccer ball icon programmatically
+    img = Image.new('RGBA', (size, size), color=(26, 26, 46, 255))
     draw = ImageDraw.Draw(img)
-    
     center_x, center_y = size // 2, size // 2
-    
-    # Draw soccer ball - large and centered
+    # Ball
     ball_size = int(size * 0.42)
-    ball_x = center_x
-    ball_y = center_y
-    
-    # Ball shadow for depth
-    shadow_offset = max(5, size // 30)
-    shadow_blur = 4
-    for i in range(shadow_blur):
-        alpha = 60 - (i * 15)
-        draw.ellipse([ball_x - ball_size + shadow_offset + i*2, 
-                      ball_y - ball_size + shadow_offset + i*2,
-                      ball_x + ball_size + shadow_offset + i*2, 
-                      ball_y + ball_size + shadow_offset + i*2],
-                     fill=(0, 0, 0))
-    
-    # White ball base
-    draw.ellipse([ball_x - ball_size, ball_y - ball_size,
-                  ball_x + ball_size, ball_y + ball_size],
-                 fill='#ffffff')
-    
-    # Add 3D glossy highlight
-    highlight_offset_x = int(ball_size * -0.3)
-    highlight_offset_y = int(ball_size * -0.3)
-    highlight_size = int(ball_size * 0.6)
-    
-    for i in range(highlight_size, 0, -2):
-        alpha = int((i / highlight_size) * 120)
-        h_x = ball_x + highlight_offset_x
-        h_y = ball_y + highlight_offset_y
-        draw.ellipse([h_x - i, h_y - i, h_x + i, h_y + i],
-                     fill=(255, 255, 255))
-    
-    # Draw classic soccer ball hexagon/pentagon pattern
+    draw.ellipse([center_x - ball_size, center_y - ball_size,
+                  center_x + ball_size, center_y + ball_size], fill='#ffffff')
+    # Center hexagon
     hex_size = int(ball_size * 0.22)
-    
-    # Center hexagon (black)
     points = []
     for i in range(6):
         angle = math.radians(i * 60)
-        x = ball_x + hex_size * math.cos(angle)
-        y = ball_y + hex_size * math.sin(angle)
+        x = center_x + hex_size * math.cos(angle)
+        y = center_y + hex_size * math.sin(angle)
         points.append((x, y))
     draw.polygon(points, fill='#000000')
-    
-    # Draw 6 surrounding hexagons
-    for sector in range(6):
-        angle_offset = sector * 60
-        dist = ball_size * 0.58
-        offset_angle = math.radians(angle_offset)
-        px = ball_x + dist * math.cos(offset_angle)
-        py = ball_y + dist * math.sin(offset_angle)
-        
-        points = []
-        h_size = int(hex_size * 0.75)
-        for i in range(6):
-            angle = math.radians(i * 60 + angle_offset)
-            x = px + h_size * math.cos(angle)
-            y = py + h_size * math.sin(angle)
-            points.append((x, y))
-        draw.polygon(points, fill='#1a1a1a')
-    
-    # Add connecting pentagons between hexagons
-    pent_size = int(hex_size * 0.35)
-    for sector in range(6):
-        angle_offset = sector * 60 + 30
-        dist = ball_size * 0.75
-        offset_angle = math.radians(angle_offset)
-        px = ball_x + dist * math.cos(offset_angle)
-        py = ball_y + dist * math.sin(offset_angle)
-        
-        points = []
-        for i in range(5):
-            angle = math.radians(i * 72 + angle_offset - 90)
-            x = px + pent_size * math.cos(angle)
-            y = py + pent_size * math.sin(angle)
-            points.append((x, y))
-        draw.polygon(points, fill='#2a2a2a')
-    
     return img
 
 def create_round_icon(size):

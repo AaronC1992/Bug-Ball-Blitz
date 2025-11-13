@@ -159,19 +159,12 @@ export class AdsManager {
         }
     }
 
-    // Optional banner stub
-    async showBanner(position = 'bottom') {
-        if (!this.initialized) return;
-        const bannerEl = document.getElementById('adBanner');
-        if (!bannerEl) return;
-        bannerEl.textContent = 'Banner Ad (Placeholder)';
-        bannerEl.style.display = 'flex';
-        bannerEl.dataset.position = position;
-        this.log('Banner displayed at', position);
+    // Banner ads disabled per product decision
+    async showBanner() {
+        this.log('Banner ads disabled. Skipping showBanner().');
     }
 
     hideBanner() {
-        const bannerEl = document.getElementById('adBanner');
-        if (bannerEl) bannerEl.style.display = 'none';
+        /* no-op */
     }
 }

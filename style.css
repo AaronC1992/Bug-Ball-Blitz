@@ -16,6 +16,10 @@ body {
     align-items: center;
     /* Safe area padding for notched phones */
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    /* Improve font rendering across devices */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 #gameContainer {
@@ -138,11 +142,25 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    -webkit-text-stroke: 3px #fff;
+    /* Avoid heavy inline stroke to prevent glyph seams */
+    -webkit-text-stroke: 0 transparent;
+    paint-order: stroke fill;
     letter-spacing: 8px;
     animation: titlePulse 2s ease-in-out infinite;
     filter: drop-shadow(0 4px 8px rgba(27, 94, 32, 0.5)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.4));
     text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+}
+
+/* Outline layer for title main placed behind to avoid clipping at joins */
+.title-main::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    -webkit-text-stroke: 2px #ffffff;
+    z-index: -1;
+    pointer-events: none;
 }
 
 .title-sub {
@@ -156,11 +174,23 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    -webkit-text-stroke: 2px #fff;
+    -webkit-text-stroke: 0 transparent;
+    paint-order: stroke fill;
     letter-spacing: 20px;
     animation: titlePulse 2s ease-in-out infinite 0.3s;
     filter: drop-shadow(0 4px 8px rgba(27, 94, 32, 0.5)) drop-shadow(0 0 20px rgba(76, 175, 80, 0.4));
     text-shadow: 0 0 25px rgba(76, 175, 80, 0.6);
+}
+
+.title-sub::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    -webkit-text-stroke: 2px #ffffff;
+    z-index: -1;
+    pointer-events: none;
 }
 
 @keyframes titlePulse {
