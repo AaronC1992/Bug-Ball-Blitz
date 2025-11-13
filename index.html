@@ -6,16 +6,29 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1a0033">
-            <title>Bug Ball Blitz v1.22.3-debug</title>
+        <meta name="theme-color" content="#1a0033">
+            <title>Bug Ball Blitz v1.23.0</title>
 
     <link rel="stylesheet" href="style.css">
     <!-- AdsManager module (placeholder on web; real AdMob via native wrapper) -->
     <script type="module" src="./ads.js"></script>
+        <script>
+            // Apply safer text rendering on Android/mobile to avoid background-clip seams
+            (function(){
+                const ua = navigator.userAgent || '';
+                const isAndroid = /Android|Adr/i.test(ua);
+                const isMobile = /Mobile|wv|iPhone|iPad|iPod|Android/i.test(ua);
+                if (isAndroid || isMobile || (window.Capacitor && window.Capacitor.isNativePlatform)) {
+                    document.addEventListener('DOMContentLoaded', function(){
+                        document.body.classList.add('no-clip-text');
+                    });
+                }
+            })();
+        </script>
 </head>
 <body>
     <!-- Version number - always visible -->
-    <div class="version">v1.22.3</div>    
+    <div class="version">v1.23.0</div>    
     <div id="gameContainer">
         <!-- Title Screen -->
         <div id="titleScreen" class="screen active">

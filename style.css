@@ -22,6 +22,25 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+/* Mobile-safe fallback to avoid glyph seams from background-clip:text */
+body.no-clip-text .title-main,
+body.no-clip-text .title-sub,
+body.no-clip-text h2 {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: #ffeb3b !important;
+    color: #ffeb3b !important;
+    text-shadow: 0 0 18px rgba(255, 235, 59, 0.6), 0 2px 4px rgba(0,0,0,0.6);
+}
+
+/* Keep outline layer behind text for headings when fallback is active */
+body.no-clip-text h2:not(#matchResultTitle)::before,
+body.no-clip-text .title-main::before,
+body.no-clip-text .title-sub::before {
+    -webkit-text-stroke: 2px #1b5e20 !important;
+}
+
 #gameContainer {
     width: 100%;
     max-width: 1200px;
