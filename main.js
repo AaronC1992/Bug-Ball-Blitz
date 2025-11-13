@@ -136,8 +136,9 @@ class Game {
         this.dragOffset = { x: 0, y: 0 };
         this.editorPreviewBackground = null;
         
-    // Debug flags
-    this.debugDragLogs = f
+        // Debug flags
+        this.debugDragLogs = false;
+        
         // Animation
         this.animationId = null;
         
